@@ -92,7 +92,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    const int     iRebinData   = 1;
    const TString pseudodatafile     = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root";
    const TString datafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative.root";
-   
+   const TString covariancefile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1258_matrices.root";
    //double scale = TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral();
    //cout<<"Integral "<<TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral()<<endl;
 
@@ -312,34 +312,65 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 	}
       }
       bin_offset += cov_stat_dat->GetNbinsX() - 1;
-      //cov_stat_dat->Print("All");
+      cov_stat_dat->Print("All");
    }
    combined_covariance->Print("All");
+   vector<vector<double > > vecCov2_1 = TH2D_to_vecvec(combined_covariance);
+   for ( auto& tmp_vec: vecCov2_1 ){
+     for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
+     cout<<endl;
+   }
+   bin_offset = 0;
+   for ( int v1 = 0; v1 < fit_vars_short.size(); v1++ ) {
+     for ( int v2 = v1+1; v2 < fit_vars_short.size(); v2++ ) {
+       TString histname = fit_vars_short[v1]+"_"+fit_vars_short[v2];
+       TH2D* cov = TFile::Open(covariancefile)->Get<TH2D>(histname);
+       if ( !cov ) { cerr<<"Could not find covariance matrix " << histname <<endl; exit(1);}
+       else cout<<"Found covarinace matrix "<<histname<<endl;
+       TH1D* h_err_v1 = file->Get<TH1D>("unfolding_error_"+fit_vars[v1]+"_direct_envelope_STAT_DATA__1up");
+       TH1D* h_err_v2 = file->Get<TH1D>("unfolding_error_"+fit_vars[v2]+"_direct_envelope_STAT_DATA__1up"); // get relative error
+       //TH1D* hist_data = ... //get cross section in single bin // might have to divide by bin width later
+       bin_offset += h_err_v1->GetNbinsX()-1;
+       cout<<"New bin offset"<<bin_offset<<endl;
+       // Projections of correlation matrix
+       TH1D* projection_var1 = cov->ProjectionY("",0,-1,"e");
+       TH1D* projection_var2 = cov->ProjectionX("",0,-1,"e");
+       
+       // Cross section file
+       TH1D* h_data_var1 = TFile::Open(pseudodatafile)->Get<TH1D>(fit_vars_short[v1]);
+       TH1D* h_data_var2 = TFile::Open(pseudodatafile)->Get<TH1D>(fit_vars_short[v2]);
+
+       for ( int i = 1; i < h_data_var1->GetNbinsX(); i++ ) cout<<projection_var1->GetBinContent(i) / h_data_var1->GetBinContent(i)<<endl;
+       
+       cout<<"Dimensions"<<endl;
+       cout<<"cov x "<<cov->GetNbinsX()<<" y "<<cov->GetNbinsY()<<endl;
+       cout<<"h_err_1 "<<h_err_v1->GetNbinsX()<<endl;
+       cout<<"h_err_2 "<<h_err_v2->GetNbinsX()<<endl;
+       cout<<"h_data_var1 "<<h_data_var1->GetNbinsX()<<endl;
+       cout<<"h_data_var2 "<<h_data_var2->GetNbinsX()<<endl;
+
+       for ( int i = 1; i < h_err_v1->GetNbinsX(); i++ ) {
+	 for ( int j = 1; j < h_err_v2->GetNbinsX(); j++ ) {
+	   double sigma_data1 = h_data_var1->GetBinContent(i) * h_err_v1->GetBinContent(i);
+	   double sigma_data2 = h_data_var2->GetBinContent(j) *	h_err_v2->GetBinContent(j);
+	   double sigma_template1 = projection_var1->GetBinError(i);
+	   double sigma_template2 = projection_var2->GetBinError(j);
+	   cout<<"Correlation "<<cov->GetBinError(i,j)/ sigma_template1<<endl;
+	   combined_covariance->SetBinContent(i, j+bin_offset, cov->GetBinError(i,j)*sigma_data1 / sigma_template1);
+	   combined_covariance->SetBinContent(j+bin_offset, i, cov->GetBinError(i,j)*sigma_data2 / sigma_template2);
+
+	 }
+       }
+       cov->Print("All");
+     }
+   }
    vector<vector<double > > vecCov2 = TH2D_to_vecvec(combined_covariance);
    for ( auto& tmp_vec: vecCov2 ){
      for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
      cout<<endl;
    }
    //ltf.AddErrorRelative("STAT_DATA", vecCov2);
-//
-//      for ( int v1 = 0; v1 < fit_vars.size(); v1++ ) {
-//        for ( int v2 = v1+1; v2 < fit_vars.size(); v2++ ) {
-//
-//
-//      vector<vector<double > > vecCov2 = TH2D_to_vecvec(cov_stat_dat);
-//
-//      
-//
-//
-//      for ( auto& tmp_vec: vecCov2 ){
-//         for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
-//         cout<<endl;
-//      }
-//      ltf.AddErrorRelative("STAT_DATA", vecCov2);
-//   }
-//
-
-	
+   exit(0);
    
    // Systematical uncertainties
    for ( auto& uncertainty: uncertainties ) {
