@@ -54,10 +54,10 @@ int example_ATLAS_topmass() {
 
   const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
   const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax", "dr_bl", "dr_bw", "pT_lep1", "pT_bjet1", "m_whad", "y_whad"};
-  if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
-  if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
   if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
-  if (fitMultipleObservables("plots/fit_mbl_mbw_ptb1.ps", {"mbl_selected", "mbwhad_selected", "ptb1"}, {"m_bl", "m_bw", "pT_bjet1"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbl_mbw_ptb1.ps", {"mbl_selected", "mbwhad_selected", "ptb1"}, {"m_bl", "m_bw", "pT_bjet1"}) > 0) return 1;
 
   return 0;
 }
@@ -103,7 +103,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      bins_number += tmp_data->GetNbinsX();
      tmp_data->Clear();
    }
-
+   
    TH1D* combined_data = new TH1D("combined_data", "combined_data", bins_number, 0, bins_number);
    int bin_offset = 0;
    for ( auto& tmp: fit_vars_short ) {
@@ -292,24 +292,54 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
       std::cerr << "Error: Couldn't open the file!" << std::endl;
       return 1;
    }
-   /*
-   bool passDataCovMatrix = true;
-   if ( passDataCovMatrix ) {
-      TString histnameCovStat("unfolding_"+fit_vars[0]+"_NOSYS"); // "unfolding_mbl_selected_NOSYS"  ->  unfolding_covariance_matrix_ptl1_covariance_STAT_DATA
+
+   TH2D* combined_covariance = new TH2D("combined_cov", "combined_cov", bins_number, 0, bins_number, bins_number, 0, bins_number);
+   bin_offset = 0;
+   for ( auto& fit_var: fit_vars ) {
+     TString histnameCovStat("unfolding_"+fit_var+"_NOSYS"); // "unfolding_mbl_selected_NOSYS"  ->  unfolding_covariance_matrix_ptl1_covariance_STAT_DATA
       histnameCovStat.ReplaceAll("unfolding_","unfolding_covariance_matrix_");
       histnameCovStat.ReplaceAll("_NOSYS","_covariance_STAT_DATA");
       TH2D* cov_stat_dat = TFile::Open(datafile)->Get<TH2D>(histnameCovStat);
       if ( !cov_stat_dat ) { cerr<<"Could not find covariance matrix " << histnameCovStat <<endl; exit(1);}
       else cout<<"Found covarinace matrix "<<histnameCovStat<<endl;
-      cov_stat_dat->Print("All");
-      vector<vector<double > > vecCov2 = TH2D_to_vecvec(cov_stat_dat);
-      for ( auto& tmp_vec: vecCov2 ){
-         for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
-         cout<<endl;
+      TH1D* hist = file->Get<TH1D>("unfolding_error_"+fit_var+"_direct_envelope_STAT_DATA__1up");
+      for ( int i = 1; i < cov_stat_dat->GetNbinsX(); i++ ) {
+	for ( int j = 1; j < cov_stat_dat->GetNbinsY(); j++ ) {
+	  double bin_width_x = hist->GetXaxis()->GetBinWidth(i);
+	  double bin_width_y = hist->GetXaxis()->GetBinWidth(j);
+	  combined_covariance->SetBinContent(i+bin_offset,j+bin_offset, cov_stat_dat->GetBinContent(i,j)/(bin_width_x*bin_width_y));
+	  //cout<<"Filling histo with "<<cov_stat_dat->GetBinContent(i,j)<<" / ("<<bin_width_x<<" * "<<bin_width_y<<")"<<endl;
+	}
       }
-      ltf.AddErrorRelative("stat.", vecCov2);
+      bin_offset += cov_stat_dat->GetNbinsX() - 1;
+      //cov_stat_dat->Print("All");
    }
-   */
+   combined_covariance->Print("All");
+   vector<vector<double > > vecCov2 = TH2D_to_vecvec(combined_covariance);
+   for ( auto& tmp_vec: vecCov2 ){
+     for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
+     cout<<endl;
+   }
+   //ltf.AddErrorRelative("STAT_DATA", vecCov2);
+//
+//      for ( int v1 = 0; v1 < fit_vars.size(); v1++ ) {
+//        for ( int v2 = v1+1; v2 < fit_vars.size(); v2++ ) {
+//
+//
+//      vector<vector<double > > vecCov2 = TH2D_to_vecvec(cov_stat_dat);
+//
+//      
+//
+//
+//      for ( auto& tmp_vec: vecCov2 ){
+//         for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
+//         cout<<endl;
+//      }
+//      ltf.AddErrorRelative("STAT_DATA", vecCov2);
+//   }
+//
+
+	
    
    // Systematical uncertainties
    for ( auto& uncertainty: uncertainties ) {
