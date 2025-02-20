@@ -37,7 +37,7 @@ void PrintAsciiTable(const map<double,TH1D*>&, TH1D* data);
 int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, const vector<TString> fit_vars_short);
 
 vector<vector<double > > TH2D_to_vecvec(TH2D* hist2D) {
-   const int n = hist2D->GetNbinsX() - 1;
+   const int n = hist2D->GetNbinsX();
    vector<vector<double > > vecvec(n);
    for ( size_t i = 0 ; i<n ; i++ ) {
       vecvec[i].resize(n);
@@ -331,24 +331,34 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        TH1D* h_err_v2 = file->Get<TH1D>("unfolding_error_"+fit_vars[v2]+"_direct_envelope_STAT_DATA__1up"); // get relative error
        //TH1D* hist_data = ... //get cross section in single bin // might have to divide by bin width later
        bin_offset += h_err_v1->GetNbinsX()-1;
-       cout<<"New bin offset"<<bin_offset<<endl;
        // Projections of correlation matrix
-       TH1D* projection_var1 = cov->ProjectionY("",0,-1,"e");
-       TH1D* projection_var2 = cov->ProjectionX("",0,-1,"e");
-       
+       TH1D* projection_var1 = cov->ProjectionX("pro_v1",0,-1,"e");
+       TH1D* projection_var2 = cov->ProjectionY("pro_v2",0,-1,"e");
+       //projection_var1->Print("All");
+       //projection_var2->Print("All");
+
        // Cross section file
        TH1D* h_data_var1 = TFile::Open(pseudodatafile)->Get<TH1D>(fit_vars_short[v1]);
        TH1D* h_data_var2 = TFile::Open(pseudodatafile)->Get<TH1D>(fit_vars_short[v2]);
+       cout<<"Var1 content ";
+       for ( int i = 1; i <= h_data_var1->GetNbinsX(); i++ ) cout<<projection_var1->GetBinContent(i) / h_data_var1->GetBinContent(i)<<"\t";
+       cout<<endl<<"Var1 error   ";
+       for ( int i = 1; i <= h_data_var1->GetNbinsX(); i++ ) cout<<projection_var1->GetBinError(i) / h_data_var1->GetBinError(i)<<"\t";
+       cout<<endl<<"Var2 content ";
+       for ( int i = 1; i <= h_data_var2->GetNbinsX(); i++ ) cout<<projection_var2->GetBinContent(i) / h_data_var2->GetBinContent(i)<<"\t";
+       cout<<endl<<"Var2 error   ";
+       for ( int i = 1; i <= h_data_var2->GetNbinsX(); i++ ) cout<<projection_var2->GetBinError(i) / h_data_var2->GetBinError(i)<<"\t";
+       cout<<endl;
 
-       for ( int i = 1; i < h_data_var1->GetNbinsX(); i++ ) cout<<projection_var1->GetBinContent(i) / h_data_var1->GetBinContent(i)<<endl;
-       
        cout<<"Dimensions"<<endl;
        cout<<"cov x "<<cov->GetNbinsX()<<" y "<<cov->GetNbinsY()<<endl;
        cout<<"h_err_1 "<<h_err_v1->GetNbinsX()<<endl;
        cout<<"h_err_2 "<<h_err_v2->GetNbinsX()<<endl;
        cout<<"h_data_var1 "<<h_data_var1->GetNbinsX()<<endl;
        cout<<"h_data_var2 "<<h_data_var2->GetNbinsX()<<endl;
-
+       cout<<"projection_var1 "<<projection_var1->GetNbinsX()<<endl;
+       cout<<"projection_var2 "<<projection_var2->GetNbinsX()<<endl;
+       
        for ( int i = 1; i < h_err_v1->GetNbinsX(); i++ ) {
 	 for ( int j = 1; j < h_err_v2->GetNbinsX(); j++ ) {
 	   double sigma_data1 = h_data_var1->GetBinContent(i) * h_err_v1->GetBinContent(i);
@@ -369,7 +379,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
      cout<<endl;
    }
-   //ltf.AddErrorRelative("STAT_DATA", vecCov2);
+   ltf.AddErrorRelative("STAT_DATA", vecCov2);
    exit(0);
    
    // Systematical uncertainties
