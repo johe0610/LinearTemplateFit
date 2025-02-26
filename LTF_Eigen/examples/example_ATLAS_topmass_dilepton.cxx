@@ -69,7 +69,7 @@ int main(int ,const char **) {
 
    gROOT->SetBatch();
 
-   return example_ATLAS_topmass();
+   return example_ATLAS_topmass_dilepton();
 }
 #endif
 
@@ -123,26 +123,27 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      TH1D* combined_template_175 = new TH1D("combined_template_175", "combined_template_175", bins_number, 0, bins_number);
      TH1D* combined_template_180 = new TH1D("combined_template_180", "combined_template_180", bins_number, 0, bins_number);
      int bin_offset = 0;
+     vector<double> scaledBy = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
      for ( auto& tmp: fit_vars_short ) {
        TH1D* h_tmp_160 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_165 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_165_1246.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_170 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_175 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_175_1250.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_180 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_180_1252.root")->Get<TH1D>(tmp);
-       for ( int i = 1; i<= h_tmp_155->GetNbinsX(); i++ ) {
-	 combined_template_160->SetBinContent(i+bin_offset, h_tmp_160->GetBinContent(i)*scaledBy[1] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-	 combined_template_165->SetBinContent(i+bin_offset, h_tmp_165->GetBinContent(i)*scaledBy[2] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-	 combined_template_170->SetBinContent(i+bin_offset, h_tmp_170->GetBinContent(i)*scaledBy[3] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-	 combined_template_175->SetBinContent(i+bin_offset, h_tmp_175->GetBinContent(i)*scaledBy[4] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-	 combined_template_180->SetBinContent(i+bin_offset, h_tmp_180->GetBinContent(i)*scaledBy[5] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
+       for ( int i = 1; i<= h_tmp_160->GetNbinsX(); i++ ) {
+	 combined_template_160->SetBinContent(i+bin_offset, h_tmp_160->GetBinContent(i)*scaledBy[1] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000); // check if cross sec needs to be scaled
+	 combined_template_165->SetBinContent(i+bin_offset, h_tmp_165->GetBinContent(i)*scaledBy[2] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
+	 combined_template_170->SetBinContent(i+bin_offset, h_tmp_170->GetBinContent(i)*scaledBy[3] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
+	 combined_template_175->SetBinContent(i+bin_offset, h_tmp_175->GetBinContent(i)*scaledBy[4] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
+	 combined_template_180->SetBinContent(i+bin_offset, h_tmp_180->GetBinContent(i)*scaledBy[5] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
 
-         combined_template_160->SetBinError(i+bin_offset, h_tmp_160->GetBinError(i)*scaledBy[1] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_165->SetBinError(i+bin_offset, h_tmp_165->GetBinError(i)*scaledBy[2] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_170->SetBinError(i+bin_offset, h_tmp_170->GetBinError(i)*scaledBy[3] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_175->SetBinError(i+bin_offset, h_tmp_175->GetBinError(i)*scaledBy[4] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_180->SetBinError(i+bin_offset, h_tmp_180->GetBinError(i)*scaledBy[5] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
+         combined_template_160->SetBinError(i+bin_offset, h_tmp_160->GetBinError(i)*scaledBy[1] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
+         combined_template_165->SetBinError(i+bin_offset, h_tmp_165->GetBinError(i)*scaledBy[2] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
+         combined_template_170->SetBinError(i+bin_offset, h_tmp_170->GetBinError(i)*scaledBy[3] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
+         combined_template_175->SetBinError(i+bin_offset, h_tmp_175->GetBinError(i)*scaledBy[4] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
+         combined_template_180->SetBinError(i+bin_offset, h_tmp_180->GetBinError(i)*scaledBy[5] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
        }
-       bin_offset += h_tmp_155->GetNbinsX();
+       bin_offset += h_tmp_160->GetNbinsX();
      }
      templates[160] = combined_template_160;
      templates[165] = combined_template_165;
@@ -272,8 +273,8 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    // Systematical uncertainties
    for ( int i = 5; i <= 175; i++ ) {
      vector<double> combined_error;
-     for ( auto& fit_variable: fit_vars ) {
-       TH1D* hist = file->Get<TH1D>("Table 23/Hist1D_"+fit_vars+"_e"+i+"plus");
+     for ( auto& fit_variable: fit_vars ) { //johannes loop over files, not variables
+       TH1D* hist = file->Get<TH1D>("Table 23/Hist1D_"+fit_variable+"_e"+std::to_string(i)+"plus");
        for (int j=1; j< hist->GetNbinsX(); j++) {
 	 combined_error.push_back(hist->GetBinContent(j));
        }
