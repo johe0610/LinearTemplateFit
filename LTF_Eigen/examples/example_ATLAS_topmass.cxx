@@ -53,9 +53,9 @@ int example_ATLAS_topmass() {
 
 
   if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_mbl_mbw_ptb1.ps", {"mbl_selected", "mbwhad_selected", "ptb1"}, {"m_bl", "m_bw", "pT_bjet1"}) > 0) return 1;
 
   return 0;
@@ -72,14 +72,13 @@ int example_ATLAS_topmass();
 int main(int ,const char **) {
 
    gROOT->SetBatch();
-
    return example_ATLAS_topmass();
 }
 #endif
 
 int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, const vector<TString> fit_vars_short) {
    using namespace std;
-
+  
 #ifdef __CLING__
    TH1D::AddDirectory(false);
 #endif
@@ -225,13 +224,13 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        }
        bin_offset += h_tmp_155->GetNbinsX();
      }
-//     templates[155] = combined_template_155;
-//     templates[160] = combined_template_160;
-//     templates[165] = combined_template_165;
-//     templates[170] = combined_template_170;
-//     templates[175] = combined_template_175;
-//     templates[180] = combined_template_180;
-//     templates[185] = combined_template_185;
+     templates[155] = combined_template_155;
+     templates[160] = combined_template_160;
+     templates[165] = combined_template_165;
+     templates[170] = combined_template_170;
+     templates[175] = combined_template_175;
+     templates[180] = combined_template_180;
+     templates[185] = combined_template_185;
      }
 
    for ( auto [MM,hist] : templates ) {
@@ -240,13 +239,13 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 
    
      // Add predictions to see if chisquare is as expected
+   /*
    {
      constexpr double LuminosityMC16a = 3244.54 + 33402.2;
      constexpr double LuminosityMC16d = 44630.6;
      constexpr double LuminosityMC16e = 58791.6;
      constexpr double LuminosityFull = LuminosityMC16a + LuminosityMC16d + LuminosityMC16e;
      constexpr double LuminosityInverse = 1.0 / LuminosityFull;
-     constexpr double LuminosityUncertainty = 0.0083;
 
      TH1D* combined_template_190 = new TH1D("combined_template_190", "combined_template_190", bins_number, 0, bins_number);
      TH1D* h_tmp_aMCNLO_ttbar  = TFile::Open(aMCatNLO_ttbar)->Get<TH1D>( "THEORY_NOSYS_signal/hist/l_Whad_particle_"+fit_vars[0]);
@@ -263,7 +262,6 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      h_tmp_MiNNLO_ttbar_alt->Add(h_tmp_pythia_DR_single);
      
      for ( int i = 1; i <= h_tmp_aMCNLO_ttbar->GetNbinsX(); i++ ) {
-       cout<<"Filling bin "<<i<<" with "<<LuminosityInverse*h_tmp_aMCNLO_ttbar->GetBinContent(i)<<endl;
        combined_template_190->SetBinContent(i, LuminosityInverse*h_tmp_aMCNLO_ttbar->GetBinContent(i));
        combined_template_195->SetBinContent(i, LuminosityInverse*h_tmp_MiNNLO_ttbar->GetBinContent(i));
        combined_template_200->SetBinContent(i, LuminosityInverse*h_tmp_MiNNLO_ttbar_alt->GetBinContent(i));
@@ -274,7 +272,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      templates[200] = combined_template_200;
 
    }
-   
+  */
      
    // ------------------------------------------------ //
    // --- List of uncertainties

@@ -34,6 +34,7 @@ TGraphErrors* MakeTGraph(const Eigen::VectorXd& xvalues, int ibin, const Eigen::
                          const std::map<std::string,Eigen::MatrixXd >& VSysY = {} );
 
 
+  
 // __________________________________________________________________________________ //
 //! 
 //!  MakeTGraph2D
@@ -67,7 +68,14 @@ TH1D* MakeHistogram(int nEvents, int seed, double mean, double sigma, vector<dou
 static
 TH1D* MakeHistogram(const Eigen::VectorXd& values, vector<double> bins ={}, const std::vector<std::pair<std::string,Eigen::MatrixXd > >& V = {} );
 
+// __________________________________________________________________________________ //
+static
+double makeErrorPlot(TCanvas&, const char*, const char*, const LTF::LiTeFit&, const vector<string>&);
 
+static
+void makeErrorPlotSingle(TCanvas&, const char*, const LTF::LiTeFit&);
+
+  
 // __________________________________________________________________________________ //
 //!
 //!
@@ -110,8 +118,4 @@ void plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins,
                  const string& yaxistitle    = "value [unit]",
                  const string& referencename = "Reference value (#alpha) [unit]",
                  const string& observablename = "Observable [unit]");
-
-static
-   double makeErrorPlot(TCanvas&, const char*, const char*, const LTF::LiTeFit& fit, const vector<string>&);
-
 };
