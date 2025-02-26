@@ -73,6 +73,9 @@ static
 double makeErrorPlot(TCanvas&, const char*, const char*, const LTF::LiTeFit&, const vector<string>&);
 
 static
+void makeErrorPlotDilepton(TCanvas&, const char*, const LTF::LiTeFit&);
+  
+static
 void makeErrorPlotSingle(TCanvas&, const char*, const LTF::LiTeFit&);
 
   

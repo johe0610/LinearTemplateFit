@@ -256,6 +256,15 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
    return std::sqrt(sum_error);
 }
 
+void LTF_ROOTTools::makeErrorPlotDilepton(TCanvas& c1, const char* ps_name, const LTF::LiTeFit& fit) {
+
+  c1.Clear();
+  c1.SetLogy(0);
+  c1.SetLeftMargin(0.2);
+
+  cout<<"Continue here tomorrow"<<endl;
+}
+
 void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const LTF::LiTeFit& fit) {
 
   c1.Clear();
@@ -413,6 +422,7 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
 
 
 
+
 // __________________________________________________________________________________ //
 //!
 //!
@@ -524,7 +534,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    // print relative size of all errors
    // ---------------------------------------------- //
    makeErrorPlotSingle(c1, ps_name, fit);
-
+   makeErrorPlotDilepton(c1, ps_name, fit);
 
    // ---------------------------------------------- //
    // print linear-functions in every bin
