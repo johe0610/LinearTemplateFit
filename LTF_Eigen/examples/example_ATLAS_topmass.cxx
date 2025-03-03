@@ -55,7 +55,7 @@ int example_ATLAS_topmass() {
   if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
   if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
-  if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_mbl_mbw_ptb1.ps", {"mbl_selected", "mbwhad_selected", "ptb1"}, {"m_bl", "m_bw", "pT_bjet1"}) > 0) return 1;
 
   return 0;

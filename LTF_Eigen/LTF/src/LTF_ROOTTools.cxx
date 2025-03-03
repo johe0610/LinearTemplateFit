@@ -192,8 +192,6 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
          c.cd(1);
          TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
 
-         for ( auto& [name,val]: fit.Vsource ) cout<<name<<" "<<val(1,1)<<endl;
-
          for ( const string &source: uncertainties ) {
            double error = 0;
            if (source.find("STAT_DATA")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
@@ -220,7 +218,8 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
             h1->Fill(uncertainties[j].c_str(), fit.map_nuisance.find(uncertainties[j])->second.first);
             h1->SetBinError(j,fit.map_nuisance.find(uncertainties[j])->second.second);
             g->SetPoint(j, fit.map_nuisance.find(uncertainties[j])->second.first, j+0.5);
-            g->SetPointError(j, fit.map_nuisance.find(uncertainties[j])->second.second, 0);
+	    g->SetPointError(j, fit.map_nuisance.find(uncertainties[j])->second.second, 0);
+	    //g->SetPointError(j, fit.map_nuisance.find(uncertainties[j])->second.second / fit.DeltaSys.find(uncertainties[j])->second(i), 0);
          }
          h1->SetBinContent(h1->GetNbinsX(), 0.);
          h1->GetXaxis()->SetBinLabel(h1->GetNbinsX(), "");
@@ -235,6 +234,7 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
          h1->GetYaxis()->SetTitle("Nuisance parameter");
          h1->GetXaxis()->SetLabelSize(0.02);
          h1->GetXaxis()->SetTickLength(0);
+	 h1->GetYaxis()->SetRangeUser(-3,3);
          g->SetMarkerSize(1);
          g->SetMarkerStyle(20);
          g->SetMarkerColor(kBlue);
@@ -439,12 +439,36 @@ void LTF_ROOTTools::makeErrorPlotDilepton(TCanvas& c1, const char* ps_name, cons
 					    "Recoil to top",
 					    "PDF",
 					    "top mass"};
+
+  std::map<string, double> error_summary;
+  error_summary.insert({"Lepton",           makeErrorPlot(c1, ps_name, "Lepton uncertainties", fit, lepton_uncertainties)});
+  error_summary.insert({"JES",              makeErrorPlot(c1, ps_name, "JES uncertainties", fit, jes_uncertainties)});
+  error_summary.insert({"JER",              makeErrorPlot(c1, ps_name, "JER uncertainties", fit, jer_uncertainties)});
+  error_summary.insert({"JVT+PileUp+MET",   makeErrorPlot(c1, ps_name, "JVT+PileUp+MET uncertainties", fit, jvt_pileup_met_uncertainties)});
+  error_summary.insert({"b-tagging",        makeErrorPlot(c1, ps_name, "b-tagging uncertainties", fit, b_tagging_uncertainties)});
+  error_summary.insert({"theory modelling", makeErrorPlot(c1, ps_name, "modelling uncertainties", fit, modelling_uncertainties)});
+  error_summary.insert({"bkgd modelling",   makeErrorPlot(c1, ps_name, "background uncertainties", fit, bkgd_uncertainties)});
+  //error_summary.insert({"Stat.+Lumi",       makeErrorPlot(c1, ps_name, "statistical uncertainties", fit, other_uncertainties)});
+
+  TH1D* h  = new TH1D("Full error breakdown", "Full error breakdown", error_summary.size()+1, 0, error_summary.size()+1);
+  double sum_error_sq = 0;
+  for( auto& tmp_err: error_summary ) {
+    h->Fill(tmp_err.first.c_str(), tmp_err.second);
+    sum_error_sq += pow(tmp_err.second,2);
+  }
+
+  h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error_sq));
+  h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
+  h->SetBarWidth(0.85);
+  h->GetYaxis()->SetLabelSize(0.03);
+  h->GetYaxis()->SetTitle("Uncertainty [GeV]");
+  h->GetXaxis()->SetLabelSize(0.02);
+  h->GetXaxis()->SetTickLength(0);
+  h->GetXaxis()->LabelsOption("<");
+  h->Draw("hbar");
+  c1.Print(ps_name);
+  c1.Clear();
 }
-
-
-
-
-
 
 void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const LTF::LiTeFit& fit) {
 
@@ -715,7 +739,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    // print relative size of all errors
    // ---------------------------------------------- //
    makeErrorPlotSingle(c1, ps_name, fit);
-   makeErrorPlotDilepton(c1, ps_name, fit);
+   //makeErrorPlotDilepton(c1, ps_name, fit);
 
    // ---------------------------------------------- //
    // print linear-functions in every bin
@@ -725,7 +749,8 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    c1.SetTopMargin(0.02);
    c1.SetLeftMargin(0.16);
    c1.SetBottomMargin(0.16);
-
+   c1.SetLogy();
+   
    gPad->SetTicky(1);
 
    gStyle->SetLabelSize(0.05,"XYZ");
@@ -733,7 +758,6 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    gStyle->SetTitleOffset(1.1,"X");
    gStyle->SetTitleOffset(1.6,"Y");
    gStyle->SetMarkerSize(2);
-
 
    //map < string, vector<double> > input_table = read_input_table2("data/CMS_data.txt",32);
 
@@ -757,7 +781,6 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       TF1* f2= new TF1("f2","[0]+[1]*pow(x,2)", -FLT_MIN,FLT_MAX );
       graph->Fit(f2,"QW");
       TF1* f1= new TF1("f1","[0]+[1]*pow(x,[2])", -FLT_MIN,FLT_MAX );
-      
 
       graph->Fit("pol1","QW"); // "W": Ignore all point errors when fitting a TGraphErrors 
       bool UseLTFOutput = true;
@@ -816,7 +839,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
          graph->SetMinimum(0);
 
       graph->SetMaximum( max(gdata->GetY()[0],max(graph->GetY()[0],graph->GetY()[graph->GetN()-1]))*1.2);
-      graph->GetYaxis()->SetRangeUser(0,20);
+      graph->GetYaxis()->SetRangeUser(0.000001, 1);
       //graph->SetMinimum( -20 );
       graph->Draw("APE0");
       if ( fit.GetLogNormal() )
@@ -1073,14 +1096,11 @@ void LTF_ROOTTools::plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double>
       gdata->SetMarkerStyle(20);
       gdata->SetMarkerSize(2);
 
-
       TGraph2DErrors* graph = MakeTGraph2D(fit.M.col(1),fit.M.col(2),ibin,fit.Y,fit.SysY);
       TF2* f2 = new TF2(Form("Linear Template Fit (2-dim., bin %d)",ibin),"[0]+[1]*x+[2]*y",
                         xmin,xmax,ymin,ymax
          );
       graph->Fit(f2,"QW");
-
-
 
       TGraph2D* gtheo = new TGraph2D();
       gtheo->SetPoint(0, fit.ahat(0), fit.ahat(1), f2->Eval(fit.ahat(0), fit.ahat(1)));

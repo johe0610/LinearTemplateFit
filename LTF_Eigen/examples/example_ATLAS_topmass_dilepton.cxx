@@ -34,7 +34,7 @@
 
 void PrintAsciiTable(const map<double,TH1D*>&, TH1D* data);
 
-int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, const vector<TString> fit_vars_short);
+int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, const vector<TString> fit_vars_rivet);
 
 vector<vector<double > > TH2D_to_vecvec(TH2D* hist2D) {
    const int n = hist2D->GetNbinsX();
@@ -48,12 +48,13 @@ vector<vector<double > > TH2D_to_vecvec(TH2D* hist2D) {
    return vecvec;
 }
 
-
 int example_ATLAS_topmass_dilepton() {
 
 
-  if (fitMultipleObservables("plots_dilepton/fit_minimax.ps", {"y1"},    {"minimaxmbl"}) > 0) return 1;
-
+  //if (fitMultipleObservables("plots_dilepton/fit_minimax.ps", {"22"}, {"minimaxmbl"}) > 0) return 1;
+  //if (fitMultipleObservables("plots_dilepton/fit_mT_bb4l.ps", {"5"}, {"mT_bb4l"}) > 0) return 1;
+  if (fitMultipleObservables("plots_dilepton/fit_m_bbll.ps", {"3"}, {"m_bbll"}) > 0) return 1;
+  
   return 0;
 }
 
@@ -73,7 +74,7 @@ int main(int ,const char **) {
 }
 #endif
 
-int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, const vector<TString> fit_vars_short) {
+int fitMultipleObservables(const char* ps_name, const vector<TString> file_number, const vector<TString> fit_vars_rivet) {
    using namespace std;
 
 #ifdef __CLING__
@@ -85,15 +86,19 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    
    const int     iRebin       = 1;
    const int     iRebinData   = 1;
-   const TString datafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output_dilepton/HEPData-1739985874-v1-Table_23.root";
+   const TString datafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output_dilepton/HEPData-1739985874-v1-Table_"+file_number[0]+".root";
+   //const TString datafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output_dilepton/S3beta_Cluster_WbWb_dilepton_170.root";
    //const TString covariancefile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1258_matrices.root";
 
    int bins_number = 0;
-   for ( auto& tmp: fit_vars ) { //johannes loop over files, not over observables (only true for data and systematics
-     TString name = "Table 23/Hist1D_"+tmp;
+   //for ( auto& tmp: fit_vars_rivet ) {
+   for ( auto& tmp: file_number ) { //johannes loop over files, not over observables (only true for data and systematics
+     TString name = "Table "+tmp+"/Hist1D_y1";
      TH1F* tmp_data = TFile::Open(datafile)->Get<TH1F>(name);
-     if ( !tmp_data ) { cerr<<"Could not find data histogram " << name <<endl; exit(1);}
-     else cout<<"Found data histogram "<<name<<endl;
+     //TH1D* tmp_data = TFile::Open(datafile)->Get<TH1D>(tmp);
+
+     //if ( !tmp_data ) { cerr<<"Could not find data histogram " << name <<endl; exit(1);}
+     //else cout<<"Found data histogram "<<name<<endl;
      cout<<"Adding "<<tmp_data->GetNbinsX()-1<<" bins for variable "<<tmp<<endl;
      bins_number += tmp_data->GetNbinsX()-1;
      tmp_data->Clear();
@@ -101,9 +106,11 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    
    TH1D* combined_data = new TH1D("combined_data", "combined_data", bins_number, 0, bins_number);
    int bin_offset = 0;
-   for ( auto& tmp: fit_vars ) {
-     TString name = "Table 23/Hist1D_"+tmp;
-     TH1F* tmp_data = TFile::Open(datafile)->Get<TH1F>(name);
+   for ( auto& tmp: file_number ) {
+   TString name = "Table "+tmp+"/Hist1D_y1";
+   TH1F* tmp_data = TFile::Open(datafile)->Get<TH1F>(name);
+   //for ( auto& tmp: fit_vars_rivet ) {
+   //TH1D* tmp_data = TFile::Open(datafile)->Get<TH1D>(tmp);
      for ( int i = 1; i <= tmp_data->GetNbinsX()-1; i++ ) {
        combined_data->SetBinContent(i+bin_offset, tmp_data->GetBinContent(i));
      }
@@ -123,28 +130,27 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      TH1D* combined_template_175 = new TH1D("combined_template_175", "combined_template_175", bins_number, 0, bins_number);
      TH1D* combined_template_180 = new TH1D("combined_template_180", "combined_template_180", bins_number, 0, bins_number);
      int bin_offset = 0;
-     vector<double> scaledBy = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-     cout<<"Try to get histo for templates"<<endl;
-     for ( auto& tmp: fit_vars_short ) {
-       TH1D* h_tmp_160 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output_dilepton/S3beta_Cluster_WbWb_dilepton_160.root")->Get<TH1D>("/RAW/WbWb_dilepton/"+tmp);
-       TH1D* h_tmp_165 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output_dilepton/S3beta_Cluster_WbWb_dilepton_165.root")->Get<TH1D>("/RAW/WbWb_dilepton/"+tmp);
-       TH1D* h_tmp_170 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output_dilepton/S3beta_Cluster_WbWb_dilepton_170.root")->Get<TH1D>("/RAW/WbWb_dilepton/"+tmp);
-       TH1D* h_tmp_175 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output_dilepton/S3beta_Cluster_WbWb_dilepton_175.root")->Get<TH1D>("/RAW/WbWb_dilepton/"+tmp);
-       TH1D* h_tmp_180 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output_dilepton/S3beta_Cluster_WbWb_dilepton_180.root")->Get<TH1D>("/RAW/WbWb_dilepton/"+tmp);
-       cout<<"Got all the histos"<<endl;
-       h_tmp_160->Print("All");
-       for ( int i = 1; i<= h_tmp_160->GetNbinsX(); i++ ) {
-	 combined_template_160->SetBinContent(i+bin_offset, h_tmp_160->GetBinContent(i)*scaledBy[1] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000); // check if cross sec needs to be scaled
-	 combined_template_165->SetBinContent(i+bin_offset, h_tmp_165->GetBinContent(i)*scaledBy[2] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
-	 combined_template_170->SetBinContent(i+bin_offset, h_tmp_170->GetBinContent(i)*scaledBy[3] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
-	 combined_template_175->SetBinContent(i+bin_offset, h_tmp_175->GetBinContent(i)*scaledBy[4] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
-	 combined_template_180->SetBinContent(i+bin_offset, h_tmp_180->GetBinContent(i)*scaledBy[5] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
+     //vector<double> lumi={803.612954972981, 904.407021431961, 1145.08363345207, 1176.18904529949, 1354.78090409675};
+     vector<double> lumi={815.805084365513, 919.340378420208, 1170.27887095863, 1190.7914999182, 1370.88882772107};
 
-         combined_template_160->SetBinError(i+bin_offset, h_tmp_160->GetBinError(i)*scaledBy[1] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_165->SetBinError(i+bin_offset, h_tmp_165->GetBinError(i)*scaledBy[2] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_170->SetBinError(i+bin_offset, h_tmp_170->GetBinError(i)*scaledBy[3] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_175->SetBinError(i+bin_offset, h_tmp_175->GetBinError(i)*scaledBy[4] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_180->SetBinError(i+bin_offset, h_tmp_180->GetBinError(i)*scaledBy[5] / h_tmp_160->GetXaxis()->GetBinWidth(i) * 1000);
+     for ( auto& tmp: fit_vars_rivet ) {
+       TH1D* h_tmp_160 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output_dilepton/S3beta_Cluster_WbWb_dilepton_160.root")->Get<TH1D>("/RAW"+tmp);
+       TH1D* h_tmp_165 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output_dilepton/S3beta_Cluster_WbWb_dilepton_165.root")->Get<TH1D>("/RAW"+tmp);
+       TH1D* h_tmp_170 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output_dilepton/S3beta_Cluster_WbWb_dilepton_170.root")->Get<TH1D>("/RAW"+tmp);
+       TH1D* h_tmp_175 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output_dilepton/S3beta_Cluster_WbWb_dilepton_175.root")->Get<TH1D>("/RAW"+tmp);
+       TH1D* h_tmp_180 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output_dilepton/S3beta_Cluster_WbWb_dilepton_180.root")->Get<TH1D>("/RAW"+tmp);
+       for ( int i = 1; i<= h_tmp_160->GetNbinsX(); i++ ) {
+	 combined_template_160->SetBinContent(i+bin_offset, h_tmp_160->GetBinContent(i) / h_tmp_160->GetXaxis()->GetBinWidth(i) / lumi[0] / 1000);
+         combined_template_165->SetBinContent(i+bin_offset, h_tmp_165->GetBinContent(i) / h_tmp_160->GetXaxis()->GetBinWidth(i) / lumi[1] / 1000);
+         combined_template_170->SetBinContent(i+bin_offset, h_tmp_170->GetBinContent(i) / h_tmp_160->GetXaxis()->GetBinWidth(i) / lumi[2] / 1000);
+         combined_template_175->SetBinContent(i+bin_offset, h_tmp_175->GetBinContent(i) / h_tmp_160->GetXaxis()->GetBinWidth(i) / lumi[3] / 1000);
+         combined_template_180->SetBinContent(i+bin_offset, h_tmp_180->GetBinContent(i) / h_tmp_160->GetXaxis()->GetBinWidth(i) / lumi[4] / 1000);
+
+	 combined_template_160->SetBinError(i+bin_offset, h_tmp_160->GetBinError(i) / h_tmp_160->GetXaxis()->GetBinWidth(i));
+         combined_template_165->SetBinError(i+bin_offset, h_tmp_165->GetBinError(i) / h_tmp_160->GetXaxis()->GetBinWidth(i));
+         combined_template_170->SetBinError(i+bin_offset, h_tmp_170->GetBinError(i) / h_tmp_160->GetXaxis()->GetBinWidth(i));
+         combined_template_175->SetBinError(i+bin_offset, h_tmp_175->GetBinError(i) / h_tmp_160->GetXaxis()->GetBinWidth(i));
+         combined_template_180->SetBinError(i+bin_offset, h_tmp_180->GetBinError(i) / h_tmp_160->GetXaxis()->GetBinWidth(i));
        }
        bin_offset += h_tmp_160->GetNbinsX();
      }
@@ -158,6 +164,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    for ( auto [MM,hist] : templates ) {
       hist->Rebin(iRebin);
    }
+
    // ------------------------------------------------ //
    // ---  Do linear template fit
    // ------------------------------------------------ //
@@ -213,9 +220,9 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    }
    if ( fit_vars.size() > 1 ) {
      bin_offset = 0;
-     for ( int v1 = 0; v1 < fit_vars_short.size(); v1++ ) {
-       for ( int v2 = v1+1; v2 < fit_vars_short.size(); v2++ ) {
-	 TString histname = fit_vars_short[v1]+"_"+fit_vars_short[v2];
+     for ( int v1 = 0; v1 < fit_vars_rivet.size(); v1++ ) {
+       for ( int v2 = v1+1; v2 < fit_vars_rivet.size(); v2++ ) {
+	 TString histname = fit_vars_rivet[v1]+"_"+fit_vars_rivet[v2];
 	 TH2D* cov = TFile::Open(covariancefile)->Get<TH2D>(histname);
 	 if ( !cov ) { cerr<<"Could not find covariance matrix " << histname <<endl; exit(1);}
 	 else cout<<"Found covarinace matrix "<<histname<<endl;
@@ -273,100 +280,104 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 */
 
 
-     vector<string> uncertainties = {"Electron energy resolution", "Electron energy scale AF2", "Electron energy scale", "Muon ID momentum resolution",
-                                     "Muon MS momentum resolution", "Muon sagitta residual bias", "Muon sagitta rho", "Muon momentum scale",
-				     "Electron ID efficiency", "Electron isolation efficiency", "Electron reconstruction efficiency",
-				     "Electron trigger efficiency", "Muon ID efficiency (stat.)", "Muon ID efficiency (syst.)", "Muon isolation efficiency (stat.)",
-				     "Muon isolation efficiency (syst.)", "Muon trigger efficiency (stat.)", "Muon trigger efficiency (syst.)",
-				     "Muon TTVA efficiency (stat.)", "Muon TTVA efficiency (syst.)", // lepton uncertainties
-				     "Jet vertex tagger efficiency","b-jet energy scale", "Jet energy scale (detector NP1)", "Jet energy scale (detector NP2)",
-				     "Jet energy scale (mixed NP1)", "Jet energy scale (mixed NP2)", "Jet energy scale (mixed NP3)", "Jet energy scale (modelling NP1)",
-				     "Jet energy scale (modelling NP2)", "Jet energy scale (modelling NP3)", "Jet energy scale (modelling NP4)", "Jet energy scale (statistical NP1)",
-				     "Jet energy scale (statistical NP2)", "Jet energy scale (statistical NP3)", "Jet energy scale (statistical NP4)",
-				     "Jet energy scale (statistical NP5)", "Jet energy scale (statistical NP6)", "Jet energy scale $\eta$ intercalib (modelling)",
-				     "Jet energy scale $\eta$ intercalib (non-closure 2018 data)", "Jet energy scale $\eta$ intercalib (non-closure high $E$)",
-				     "Jet energy scale $\eta$ intercalib (non-closure neg $\eta$)", "Jet energy scale $\eta$ intercalib (non-closure pos $\eta$)",
-				     "Jet energy scale $\eta$ intercalib (stat.)","Jet energy scale (flavour composition)",
-				     "Jet energy scale (flavour response)", // JES uncertainties
-				     "Jet energy resolution (data vs MC)", "Jet energy resolution (NP1)", "Jet energy resolution (NP10)", "Jet energy resolution (NP11)",
-				     "Jet energy resolution (NP12restTerm)", "Jet energy resolution (NP2)", "Jet energy resolution (NP3)", "Jet energy resolution (NP4)", "Jet energy resolution (NP5)",
-				     "Jet energy resolution (NP6)", "Jet energy resolution (NP7)", "Jet energy resolution (NP8)", "Jet energy resolution (NP9)", // JER uncertainties
-				     "Jet energy scale (pileup offset)", "Jet energy scale (pileup NPV)", "Jet energy scale (pileup pT term)", "Jet energy scale (pileup rho topology",
-				     "Jet energy scale (punch-through)", "Jet energy scale (single particle high pT)", "MET soft term resolution (parallel)",
-				     "MET soft term resolution (perpendicular)", "MET soft term scale", // pile-up and MET
-				     "b-jet efficiency (eigenvar 0)",
-				     "b-jet efficiency (eigenvar 1)", "b-jet efficiency (eigenvar 10)", "b-jet efficiency (eigenvar 11)", "b-jet efficiency (eigenvar 12)",
-				     "b-jet efficiency (eigenvar 13)", "b-jet efficiency (eigenvar 14)", "b-jet efficiency (eigenvar 15)", "b-jet efficiency (eigenvar 16)",
-				     "b-jet efficiency (eigenvar 17)", "b-jet efficiency (eigenvar 18)", "b-jet efficiency (eigenvar 19)", "b-jet efficiency (eigenvar 2)",
-				     "b-jet efficiency (eigenvar 20)", "b-jet efficiency (eigenvar 21)", "b-jet efficiency (eigenvar 22)", "b-jet efficiency (eigenvar 23)",
-				     "b-jet efficiency (eigenvar 24)", "b-jet efficiency (eigenvar 25)", "b-jet efficiency (eigenvar 26)", "b-jet efficiency (eigenvar 27)",
-				     "b-jet efficiency (eigenvar 28)", "b-jet efficiency (eigenvar 29)", "b-jet efficiency (eigenvar 3)", "b-jet efficiency (eigenvar 30)",
-				     "b-jet efficiency (eigenvar 31)", "b-jet efficiency (eigenvar 32)", "b-jet efficiency (eigenvar 33)", "b-jet efficiency (eigenvar 34)",
-				     "b-jet efficiency (eigenvar 35)", "b-jet efficiency (eigenvar 36)", "b-jet efficiency (eigenvar 37)", "b-jet efficiency (eigenvar 38)",
-				     "b-jet efficiency (eigenvar 39)", "b-jet efficiency (eigenvar 4)", "b-jet efficiency (eigenvar 40)", "b-jet efficiency (eigenvar 41)",
-				     "b-jet efficiency (eigenvar 42)", "b-jet efficiency (eigenvar 43)", "b-jet efficiency (eigenvar 44)", "b-jet efficiency (eigenvar 5)",
-				     "b-jet efficiency (eigenvar 6)", "b-jet efficiency (eigenvar 7)", "b-jet efficiency (eigenvar 8)", "b-jet efficiency (eigenvar 9)",
-				     "c-jet efficiency (eigenvar 0)", "c-jet efficiency (eigenvar 1)", "c-jet efficiency (eigenvar 10)", "c-jet efficiency (eigenvar 11)",
-				     "c-jet efficiency (eigenvar 12)", "c-jet efficiency (eigenvar 13)", "c-jet efficiency (eigenvar 14)", "c-jet efficiency (eigenvar 15)",
-				     "c-jet efficiency (eigenvar 16)", "c-jet efficiency (eigenvar 17)", "c-jet efficiency (eigenvar 18)", "c-jet efficiency (eigenvar 19)",
-				     "c-jet efficiency (eigenvar 2)", "c-jet efficiency (eigenvar 3)", "c-jet efficiency (eigenvar 4)", "c-jet efficiency (eigenvar 5)",
-				     "c-jet efficiency (eigenvar 6)", "c-jet efficiency (eigenvar 7)", "c-jet efficiency (eigenvar 8)", "c-jet efficiency (eigenvar 9)",
-				     "light-jet efficiency (eigenvar 0)", "light-jet efficiency (eigenvar 1)", "light-jet efficiency (eigenvar 10",
-				     "light-jet efficiency (eigenvar 11", "light-jet efficiency (eigenvar 12", "light-jet efficiency (eigenvar 13", "light-jet efficiency (eigenvar 14",
-				     "light-jet efficiency (eigenvar 15", "light-jet efficiency (eigenvar 16", "light-jet efficiency (eigenvar 17", "light-jet efficiency (eigenvar 18",
-				     "light-jet efficiency (eigenvar 19", "light-jet efficiency (eigenvar 2)", "light-jet efficiency (eigenvar 3)", "light-jet efficiency (eigenvar 4)",
-				     "light-jet efficiency (eigenvar 5)", "light-jet efficiency (eigenvar 6)", "light-jet efficiency (eigenvar 7)", "light-jet efficiency (eigenvar 8)",
-				     "light-jet efficiency (eigenvar 9)", //b-tagging uncertainties
-				     "pileup reweighting", "$ttV$ normalisation", "Diboson normalisation", "Fakes normalisation", "Z+jets",
-				     "ttbar normalisation", "tW normalisation", "tW DS vs DR", "Luminosity", // background uncertainties
-				     "h_{damp}", "FSR #mu_{R}", "Scale #mu_{R}", "Scale #mu_{F}", "ISR #alpha_{S} Var3c", "Parton shower",
-				     "Matching", "Recoil to top", "PDF", "top mass" //modeling uncertainties
-     };
-
+   vector<string> uncertainties = {"stat", "systematics", "total uncertainty", "MC stat", //will not be used
+				   "Electron energy resolution", "Electron energy scale AF2", "Electron energy scale", "Muon ID momentum resolution",
+				   "Muon MS momentum resolution", "Muon sagitta residual bias", "Muon sagitta rho", "Muon momentum scale",
+				   "Electron ID efficiency", "Electron isolation efficiency", "Electron reconstruction efficiency",
+				   "Electron trigger efficiency", "Muon ID efficiency (stat.)", "Muon ID efficiency (syst.)", "Muon isolation efficiency (stat.)",
+				   "Muon isolation efficiency (syst.)", "Muon trigger efficiency (stat.)", "Muon trigger efficiency (syst.)",
+				   "Muon TTVA efficiency (stat.)", "Muon TTVA efficiency (syst.)", // lepton uncertainties
+				   "Jet vertex tagger efficiency","b-jet energy scale", "Jet energy scale (detector NP1)", "Jet energy scale (detector NP2)",
+				   "Jet energy scale (mixed NP1)", "Jet energy scale (mixed NP2)", "Jet energy scale (mixed NP3)", "Jet energy scale (modelling NP1)",
+				   "Jet energy scale (modelling NP2)", "Jet energy scale (modelling NP3)", "Jet energy scale (modelling NP4)", "Jet energy scale (statistical NP1)",
+				   "Jet energy scale (statistical NP2)", "Jet energy scale (statistical NP3)", "Jet energy scale (statistical NP4)",
+				   "Jet energy scale (statistical NP5)", "Jet energy scale (statistical NP6)", "Jet energy scale $\eta$ intercalib (modelling)",
+				   "Jet energy scale $\eta$ intercalib (non-closure 2018 data)", "Jet energy scale $\eta$ intercalib (non-closure high $E$)",
+				   "Jet energy scale $\eta$ intercalib (non-closure neg $\eta$)", "Jet energy scale $\eta$ intercalib (non-closure pos $\eta$)",
+				   "Jet energy scale $\eta$ intercalib (stat.)","Jet energy scale (flavour composition)",
+				   "Jet energy scale (flavour response)", // JES uncertainties
+				   "Jet energy resolution (data vs MC)", "Jet energy resolution (NP1)", "Jet energy resolution (NP10)", "Jet energy resolution (NP11)",
+				   "Jet energy resolution (NP12restTerm)", "Jet energy resolution (NP2)", "Jet energy resolution (NP3)", "Jet energy resolution (NP4)", "Jet energy resolution (NP5)",
+				   "Jet energy resolution (NP6)", "Jet energy resolution (NP7)", "Jet energy resolution (NP8)", "Jet energy resolution (NP9)", // JER uncertainties
+				   "Jet energy scale (pileup offset)", "Jet energy scale (pileup NPV)", "Jet energy scale (pileup pT term)", "Jet energy scale (pileup rho topology",
+				   "Jet energy scale (punch-through)", "Jet energy scale (single particle high pT)", "MET soft term resolution (parallel)",
+				   "MET soft term resolution (perpendicular)", "MET soft term scale", // pile-up and MET
+				   "b-jet efficiency (eigenvar 0)",
+				   "b-jet efficiency (eigenvar 1)", "b-jet efficiency (eigenvar 10)", "b-jet efficiency (eigenvar 11)", "b-jet efficiency (eigenvar 12)",
+				   "b-jet efficiency (eigenvar 13)", "b-jet efficiency (eigenvar 14)", "b-jet efficiency (eigenvar 15)", "b-jet efficiency (eigenvar 16)",
+				   "b-jet efficiency (eigenvar 17)", "b-jet efficiency (eigenvar 18)", "b-jet efficiency (eigenvar 19)", "b-jet efficiency (eigenvar 2)",
+				   "b-jet efficiency (eigenvar 20)", "b-jet efficiency (eigenvar 21)", "b-jet efficiency (eigenvar 22)", "b-jet efficiency (eigenvar 23)",
+				   "b-jet efficiency (eigenvar 24)", "b-jet efficiency (eigenvar 25)", "b-jet efficiency (eigenvar 26)", "b-jet efficiency (eigenvar 27)",
+				   "b-jet efficiency (eigenvar 28)", "b-jet efficiency (eigenvar 29)", "b-jet efficiency (eigenvar 3)", "b-jet efficiency (eigenvar 30)",
+				   "b-jet efficiency (eigenvar 31)", "b-jet efficiency (eigenvar 32)", "b-jet efficiency (eigenvar 33)", "b-jet efficiency (eigenvar 34)",
+				   "b-jet efficiency (eigenvar 35)", "b-jet efficiency (eigenvar 36)", "b-jet efficiency (eigenvar 37)", "b-jet efficiency (eigenvar 38)",
+				   "b-jet efficiency (eigenvar 39)", "b-jet efficiency (eigenvar 4)", "b-jet efficiency (eigenvar 40)", "b-jet efficiency (eigenvar 41)",
+				   "b-jet efficiency (eigenvar 42)", "b-jet efficiency (eigenvar 43)", "b-jet efficiency (eigenvar 44)", "b-jet efficiency (eigenvar 5)",
+				   "b-jet efficiency (eigenvar 6)", "b-jet efficiency (eigenvar 7)", "b-jet efficiency (eigenvar 8)", "b-jet efficiency (eigenvar 9)",
+				   "c-jet efficiency (eigenvar 0)", "c-jet efficiency (eigenvar 1)", "c-jet efficiency (eigenvar 10)", "c-jet efficiency (eigenvar 11)",
+				   "c-jet efficiency (eigenvar 12)", "c-jet efficiency (eigenvar 13)", "c-jet efficiency (eigenvar 14)", "c-jet efficiency (eigenvar 15)",
+				   "c-jet efficiency (eigenvar 16)", "c-jet efficiency (eigenvar 17)", "c-jet efficiency (eigenvar 18)", "c-jet efficiency (eigenvar 19)",
+				   "c-jet efficiency (eigenvar 2)", "c-jet efficiency (eigenvar 3)", "c-jet efficiency (eigenvar 4)", "c-jet efficiency (eigenvar 5)",
+				   "c-jet efficiency (eigenvar 6)", "c-jet efficiency (eigenvar 7)", "c-jet efficiency (eigenvar 8)", "c-jet efficiency (eigenvar 9)",
+				   "light-jet efficiency (eigenvar 0)", "light-jet efficiency (eigenvar 1)", "light-jet efficiency (eigenvar 10",
+				   "light-jet efficiency (eigenvar 11", "light-jet efficiency (eigenvar 12", "light-jet efficiency (eigenvar 13", "light-jet efficiency (eigenvar 14",
+				   "light-jet efficiency (eigenvar 15", "light-jet efficiency (eigenvar 16", "light-jet efficiency (eigenvar 17", "light-jet efficiency (eigenvar 18",
+				   "light-jet efficiency (eigenvar 19", "light-jet efficiency (eigenvar 2)", "light-jet efficiency (eigenvar 3)", "light-jet efficiency (eigenvar 4)",
+				   "light-jet efficiency (eigenvar 5)", "light-jet efficiency (eigenvar 6)", "light-jet efficiency (eigenvar 7)", "light-jet efficiency (eigenvar 8)",
+				   "light-jet efficiency (eigenvar 9)", //b-tagging uncertainties
+				   "pileup reweighting", "$ttV$ normalisation", "Diboson normalisation", "Fakes normalisation", "Z+jets",
+				   "ttbar normalisation", "tW normalisation", "tW DS vs DR", "Luminosity", // background uncertainties
+				   "h_{damp}", "FSR #mu_{R}", "Scale #mu_{R}", "Scale #mu_{F}", "ISR #alpha_{S} Var3c", "Parton shower",
+				   "Matching", "Recoil to top", "PDF", "top mass" //modeling uncertainties
+   };
+   
 
    
    // Systematical uncertainties
    for ( int i = 5; i <= 175; i++ ) {
      vector<double> combined_error;
-     for ( auto& fit_variable: fit_vars ) { //johannes loop over files, not variables
-       TH1F* hist = file->Get<TH1F>("Table 23/Hist1D_"+fit_variable+"_e"+std::to_string(i)+"plus");
+     for ( auto& tmp: file_number ) { //johannes loop over files, not variables
+       TH1F* hist = file->Get<TH1F>("Table "+tmp+"/Hist1D_y1_e"+std::to_string(i)+"plus");
+       cout<<uncertainties[i-1]<<"\t";
        for (int j=1; j< hist->GetNbinsX(); j++) {
+	 cout<<hist->GetBinContent(j)<<"\t";
 	 combined_error.push_back(hist->GetBinContent(j));
        }
+       cout<<endl;
      }
      double corr = 1.0;
-     if ( combined_error.size() > 0 ) ltf.AddErrorRelative("e"+i, combined_error, corr, LTF::Uncertainty::Constrained);
+     if ( combined_error.size() > 0 ) ltf.AddError(uncertainties[i-1], combined_error, corr, LTF::Uncertainty::Constrained);
      combined_error.clear();
    }
    
    // Stat uncertainties
    {
      vector<double> combined_error;
-     for ( auto& fit_variable: fit_vars ) {
-       TH1F* hist = file->Get<TH1F>("Table 23/Hist1D_"+fit_variable+"_e1"); // data stat
+     for ( auto& tmp: file_number ) {
+       TH1F* hist = file->Get<TH1F>("Table "+tmp+"/Hist1D_y1_e1"); // data stat
        for (int i=1; i< hist->GetNbinsX(); i++) {
          combined_error.push_back(hist->GetBinContent(i));
        }
      }
      double corr = 0.0;
-     if ( combined_error.size() > 0 ) ltf.AddErrorRelative("e1", combined_error, corr, LTF::Uncertainty::Constrained);
+     if ( combined_error.size() > 0 ) ltf.AddError("STAT_DATA", combined_error, corr, LTF::Uncertainty::Constrained);
      combined_error.clear();
    }
    {
      vector<double> combined_error;
-     for ( auto& fit_variable: fit_vars ) {
-       TH1F* hist = file->Get<TH1F>("Table 23/Hist1D_"+fit_variable+"_e4plus"); // MC stat
+     for ( auto& tmp: file_number ) {
+       TH1F* hist = file->Get<TH1F>("Table "+tmp+"/Hist1D_y1_e4plus"); // MC stat
        for (int i=1; i< hist->GetNbinsX(); i++) {
          combined_error.push_back(hist->GetBinContent(i));
        }
      }
      double corr = 0.0;
-     if ( combined_error.size() > 0 ) ltf.AddErrorRelative("e4", combined_error, corr, LTF::Uncertainty::Constrained);
+     if ( combined_error.size() > 0 ) ltf.AddError("STAT_MC", combined_error, corr, LTF::Uncertainty::Constrained);
      combined_error.clear();
    }
 
    
-//   // External uncertainties
+//   // External uncertainties -> e2 (sys unc) and e3 (total unc)
 //   for ( auto& uncertainty: external_uncertainties ) {
 //     vector<double> combined_error;
 //     for ( auto& fit_variable: fit_vars ) {
@@ -391,8 +402,9 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    }
    bins.push_back(combined_data->GetXaxis()->GetBinUpEdge(combined_data->GetNbinsX()));
    string label = "";
-   for (TString tmp: fit_vars_short) label += tmp+"\t"; 
-   //LTF_ROOTTools::plotLiTeFit(fit, bins, ps_name, "1/#sigma d#sigma/dx", label,"m_{t} [GeV]"); // Johannes take care of plotting later
+   for (TString tmp: fit_vars_rivet) label += tmp+"\t"; 
+
+   LTF_ROOTTools::plotLiTeFit(fit, bins, ps_name, "1/#sigma d#sigma/dx", label,"m_{t} [GeV]"); // Johannes take care of plotting later
 
    return 0;
 }
