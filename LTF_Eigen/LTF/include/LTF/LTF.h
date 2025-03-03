@@ -93,6 +93,8 @@ public:
       std::map<std::string,Eigen::MatrixXd >                SysA;                //!< uncertainty of the response matrix
       std::map<std::string,double>                          corrSys;             //!< Correlation coefficient of the systematic uncertainties
       vector<double> Gamma;                                                      //!< Use non-linear Gamma-factor
+      Eigen::VectorXd y0new;                                                     //!< Alternativ nominal template
+      Eigen::VectorXd a0new;                                                     //!< Reference value of alternative nominal template
 
       // --- output
       double a0 = 0;                                                             //!< Fit result
@@ -103,6 +105,8 @@ public:
       double chisq = 0;                                                          //!< chi^2
       double chisq_error = 0;                                                    //!< uncertainty of chi^2
       Eigen::MatrixXd F;                                                         //!< Projection matrix of LiTeFit
+      Eigen::MatrixXd Hesse;                                                     //!< Hesse matrix of the fit
+      Eigen::MatrixXd InvHesse;                                                  //!< Inverse Hesse matrix of the fit, i.e. the total uncertainties
       Eigen::VectorXd chisq_y;                                                   //!< chi^2 for each template
       std::map<std::string,double> chisq_part;                                   //!< 'partial' chi^2 for each error source
       std::map<std::string, std::pair<double,double>> map_nuisance;              //!< Map with all nuisance parameters and their errrors
@@ -203,6 +207,29 @@ public:
    //!< \brief Add new template for a given reference point
    void AddTemplate(const vector<double>& mvals, const vector<double>& dist);
 
+   // ------------------------------------------- //
+   // --- set a new nominal template
+   // ------------------------------------------- //
+   //!< \brief Set new nominal template. This functionality will keep the derivatives from the template matrix, but a new/alternative nominal prediction is used
+   //!< \param a0new   Reference value(s) of new nominal prediction
+   //!< \param y0new   Template values of the new nominal prediction
+   void SetNewNominalTemplate(const vector<double>& a0new, const vector<double>& y0new ) {  
+      // checks:
+      if ( int(y0new.size()) != fDt.size() ) {
+	 std::cerr<<"Error! Incompatible size of data vector and new nominal template (data.size="
+		  <<fDt.size()<<", y0new.size="<<y0new.size()<<")"<<endl;
+	 exit(1);
+      }
+      if ( a0new.size() != fTmplDistN.begin()->first.size() ) {
+	 std::cerr<<"Error! Incompatible size of number of number of fit parameters and reference value(s) of the new nominal template (number of fit parameters="
+		  <<fTmplDistN.begin()->first.size() <<", y0new.size="<<a0new.size()<<")"<<endl;
+	 exit(1);
+      }
+      std::vector<double> a0_tmp = a0new; // copy to no-const for eigen...
+      std::vector<double> y0_tmp = y0new; // copy to no-const for eigen...
+      fa0New = Eigen::Map<Eigen::VectorXd>(&a0_tmp[0], a0_tmp.size());
+      fy0New = Eigen::Map<Eigen::VectorXd>(&y0_tmp[0], y0_tmp.size());
+   }
 
    // ------------------------------------------- //
    // --- set error
@@ -522,7 +549,10 @@ protected:
    std::map<std::string,std::map<vector<double>,Eigen::VectorXd> > fSysY;     //!< uncertainty of the templates (uncorrelated)
    std::map<std::string,Eigen::MatrixXd>                 fSysA;               //!< uncertainty of the response matrix (uncorrelated)
    std::map<std::string,double>                          fcorrSys;            //!< Correlation coefficient of the systematic uncertainties (dA,dY)
-                                                                           
+
+   Eigen::VectorXd fy0New;                                                    //!< New nominal template
+   Eigen::VectorXd fa0New;                                                    //!< Reference value of new nominal template
+
    Eigen::VectorXd fErrorScale;                                               //!< Reference values for error rescaling (default: data)
    std::vector<double> fGamma;                                                //!< exponential parameter (a+b*x^\gamma)
    bool   fUseLog = false;                                                    //!< Use relative uncertainties
