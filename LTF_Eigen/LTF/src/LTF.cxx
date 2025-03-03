@@ -559,7 +559,6 @@ void LTF::LiTeFit::PrintFull() const {
       for ( auto& [name,s] : DeltaSysY )       printf("                             +/- % 8.6f (%s)\n", s(i), name.c_str());
       for ( auto& [name,s] : DeltaSysA )       printf("                             +/- % 8.6f (%s)\n", s(i), name.c_str());
    }
-  //Eigen::MatrixXd V = VFit();
    Eigen::MatrixXd V = InvHesse; // VFit(); VFit and InvHesse are equivalent for fit parameters, but different for nuisance parameters
    if ( ahat.rows() > nPar ) {
       std::cout<<std::endl;
@@ -1492,7 +1491,8 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
    //  ---------------------------------------------------------------- //
    //  --- Nuisance parameter saved in a map
    //  ---------------------------------------------------------------- //
-   Eigen::MatrixXd V = VFit();
+   // Eigen::MatrixXd V = VFit();
+   Eigen::MatrixXd V = InvHesse; // VFit(); VFit and InvHesse are equivalent for fit parameters, but different for nuisance parameters
    if ( ahat.rows() > nPar ) {
       map_nuisance[Sys[0].first] = std::make_pair(ahat(nPar),sqrt(fabs(V(nPar,nPar))));
       for ( int i = nPar+1 ; i<int(ahat.rows()) ; i++ ) {

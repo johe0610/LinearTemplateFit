@@ -188,8 +188,8 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
    }
    else {
       for ( int i = 0 ; i<nPar ; i++ ) {
-         c.Divide(2,1);
-         c.cd(1);
+	//c.Divide(2,1);
+	//c.cd(1);
          TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
 
          for ( const string &source: uncertainties ) {
@@ -211,14 +211,38 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
          h->GetXaxis()->SetLabelSize(0.02);
          h->GetXaxis()->SetTickLength(0);
          h->Draw("hbar");
-	 c.cd(2)->SetLeftMargin(0.15);
-         TH1D* h1  = new TH1D("NP", "NP", uncertainties.size()+1, 0, uncertainties.size()+1);
+
+	 //c.cd(2)->SetLeftMargin(0.15);
+	 c.Print(ps_name);
+         c.Clear();
+	 c.SetBottomMargin(0.4);
+	 int nbins = uncertainties.size()+3;
+	 double x[nbins], y[nbins], xerr[nbins], yerr[nbins], yerr2[nbins];
+	 for (int i = 0; i <= nbins; i++) {
+	   x[i] = h->GetBinCenter(i);
+	   y[i] = 0;
+	   xerr[i] = 1.0;
+	   yerr[i] = 1.0;
+	   yerr2[i] = 2.0;
+	 }
+	 TGraphErrors *band = new TGraphErrors(nbins, x, y, xerr, yerr);
+	 band->SetFillColor(kYellow);
+	 TGraphErrors *band2 = new TGraphErrors(nbins, x, y, xerr, yerr2);
+         band2->SetFillColor(kGreen);
+
+	 //band->SetFillColorAlpha(kBlue, 0.3); // Set band color (blue with 30% transparency)
+         //band->SetLineWidth(0);
+	 //band->Draw("3 SAME");
+
+	 TH1D* h1  = new TH1D("NP", "NP", uncertainties.size()+1, 0, uncertainties.size()+1);
          TGraphErrors* g = new TGraphErrors(uncertainties.size());
          for ( long unsigned int j = 0; j < uncertainties.size(); j++ ) {
-            h1->Fill(uncertainties[j].c_str(), fit.map_nuisance.find(uncertainties[j])->second.first);
+	    h1->Fill(uncertainties[j].c_str(), fit.map_nuisance.find(uncertainties[j])->second.first);
             h1->SetBinError(j,fit.map_nuisance.find(uncertainties[j])->second.second);
-            g->SetPoint(j, fit.map_nuisance.find(uncertainties[j])->second.first, j+0.5);
-	    g->SetPointError(j, fit.map_nuisance.find(uncertainties[j])->second.second, 0);
+            //g->SetPoint(j, fit.map_nuisance.find(uncertainties[j])->second.first, j+0.5);
+	    //g->SetPointError(j, fit.map_nuisance.find(uncertainties[j])->second.second, 0);
+	    g->SetPoint(j, j+0.5, fit.map_nuisance.find(uncertainties[j])->second.first);
+            g->SetPointError(j, 0, fit.map_nuisance.find(uncertainties[j])->second.second);
 	    //g->SetPointError(j, fit.map_nuisance.find(uncertainties[j])->second.second / fit.DeltaSys.find(uncertainties[j])->second(i), 0);
          }
          h1->SetBinContent(h1->GetNbinsX(), 0.);
@@ -228,6 +252,7 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
          h1->SetBarWidth(0);
          h1->SetLineColor(10);
          h1->SetFillColor(10);
+	 h1->SetMarkerColor(10);
          h1->SetLineColorAlpha(10,0);
 
          h1->GetYaxis()->SetLabelSize(0.03);
@@ -237,20 +262,29 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
 	 h1->GetYaxis()->SetRangeUser(-3,3);
          g->SetMarkerSize(1);
          g->SetMarkerStyle(20);
-         g->SetMarkerColor(kBlue);
-         h1->Draw("hbar e");
-         g->Draw("same PE");
+         
+	 g->SetMarkerColor(kBlue);
 
-         TLine* l = new TLine(0, 0, 0, h1->GetNbinsX());
-         l->SetLineStyle(3);
-         l->Draw("same");
+         h1->Draw("bar e");
+	 band2->Draw("same 3");
+	 band->Draw("same 3");
+	 g->Draw("same PE");
+	 //band->Draw("same 3");//("3 SAME");
+	 //g->Draw("same PE");
+
+         //TLine* l = new TLine(0, 0, 0, h1->GetNbinsX());
+         //l->SetLineStyle(3);
+         //l->Draw("same");
 
          c.Print(ps_name);
          c.Clear();
          h->Delete();
          h1->Delete();
          g->Delete();
-         l->Delete();
+	 band->Delete();
+	 band2->Delete();
+		  
+         //l->Delete();
       }
    }
    return std::sqrt(sum_error);
