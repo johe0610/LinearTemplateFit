@@ -188,10 +188,8 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
    }
    else {
       for ( int i = 0 ; i<nPar ; i++ ) {
-	//c.Divide(2,1);
-	//c.cd(1);
-         TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
-
+	 c.SetLeftMargin(0.6);
+	 TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
          for ( const string &source: uncertainties ) {
            double error = 0;
            if (source.find("STAT_DATA")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
@@ -212,41 +210,36 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
          h->GetXaxis()->SetTickLength(0);
          h->Draw("hbar");
 
-	 //c.cd(2)->SetLeftMargin(0.15);
 	 c.Print(ps_name);
          c.Clear();
-	 c.SetBottomMargin(0.4);
-	 int nbins = uncertainties.size()+3;
-	 double x[nbins], y[nbins], xerr[nbins], yerr[nbins], yerr2[nbins];
+	 //c.SetLeftMargin(0.6);
+	 int nbins = uncertainties.size()+2;
+	 double x[nbins], y[nbins], xerr[nbins], xerr2[nbins], yerr[nbins];
 	 for (int i = 0; i <= nbins; i++) {
-	   x[i] = h->GetBinCenter(i);
-	   y[i] = 0;
+	   y[i] = h->GetBinCenter(i);
+	   x[i] = 0;
 	   xerr[i] = 1.0;
+	   xerr2[i] = 2.0;
 	   yerr[i] = 1.0;
-	   yerr2[i] = 2.0;
 	 }
 	 TGraphErrors *band = new TGraphErrors(nbins, x, y, xerr, yerr);
-	 band->SetFillColor(kYellow);
-	 TGraphErrors *band2 = new TGraphErrors(nbins, x, y, xerr, yerr2);
-         band2->SetFillColor(kGreen);
+	 band->SetFillColor(kGreen);
+	 TGraphErrors *band2 = new TGraphErrors(nbins, x, y, xerr2, yerr);
+         band2->SetFillColor(kYellow);
 
-	 //band->SetFillColorAlpha(kBlue, 0.3); // Set band color (blue with 30% transparency)
-         //band->SetLineWidth(0);
-	 //band->Draw("3 SAME");
-
-	 TH1D* h1  = new TH1D("NP", "NP", uncertainties.size()+1, 0, uncertainties.size()+1);
+	 TH1D* h1  = new TH1D("NP", "NP", uncertainties.size(), 0, uncertainties.size());
          TGraphErrors* g = new TGraphErrors(uncertainties.size());
          for ( long unsigned int j = 0; j < uncertainties.size(); j++ ) {
 	    h1->Fill(uncertainties[j].c_str(), fit.map_nuisance.find(uncertainties[j])->second.first);
             h1->SetBinError(j,fit.map_nuisance.find(uncertainties[j])->second.second);
-            //g->SetPoint(j, fit.map_nuisance.find(uncertainties[j])->second.first, j+0.5);
-	    //g->SetPointError(j, fit.map_nuisance.find(uncertainties[j])->second.second, 0);
-	    g->SetPoint(j, j+0.5, fit.map_nuisance.find(uncertainties[j])->second.first);
-            g->SetPointError(j, 0, fit.map_nuisance.find(uncertainties[j])->second.second);
+            g->SetPoint(j, fit.map_nuisance.find(uncertainties[j])->second.first, j+0.5);
+	    g->SetPointError(j, fit.map_nuisance.find(uncertainties[j])->second.second, 0);
+	    //g->SetPoint(j, j+0.5, fit.map_nuisance.find(uncertainties[j])->second.first);
+            //g->SetPointError(j, 0, fit.map_nuisance.find(uncertainties[j])->second.second);
 	    //g->SetPointError(j, fit.map_nuisance.find(uncertainties[j])->second.second / fit.DeltaSys.find(uncertainties[j])->second(i), 0);
          }
-         h1->SetBinContent(h1->GetNbinsX(), 0.);
-         h1->GetXaxis()->SetBinLabel(h1->GetNbinsX(), "");
+         //h1->SetBinContent(h1->GetNbinsX(), 0.);
+         //h1->GetXaxis()->SetBinLabel(h1->GetNbinsX(), "");
          gStyle->SetHistMinimumZero();
          h1->SetBarOffset(0.95);
          h1->SetBarWidth(0);
@@ -255,36 +248,47 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
 	 h1->SetMarkerColor(10);
          h1->SetLineColorAlpha(10,0);
 
-         h1->GetYaxis()->SetLabelSize(0.03);
-         h1->GetYaxis()->SetTitle("Nuisance parameter");
-         h1->GetXaxis()->SetLabelSize(0.02);
+         if ( uncertainties.size() > 20 ) {
+	   h1->GetYaxis()->SetLabelSize(0.01);
+	   h1->GetXaxis()->SetLabelSize(0.01);
+	   g->SetMarkerSize(.5);
+	 }
+	 else {
+	   h1->GetYaxis()->SetLabelSize(0.035);
+	   h1->GetXaxis()->SetLabelSize(0.02);
+	   g->SetMarkerSize(1);
+
+         }
+	 h1->GetYaxis()->SetTitle("Nuisance parameter");
          h1->GetXaxis()->SetTickLength(0);
 	 h1->GetYaxis()->SetRangeUser(-3,3);
-         g->SetMarkerSize(1);
          g->SetMarkerStyle(20);
-         
 	 g->SetMarkerColor(kBlue);
 
-         h1->Draw("bar e");
-	 band2->Draw("same 3");
-	 band->Draw("same 3");
+         h1->Draw("hbar e");
+	 band2->Draw("same 2");
+	 band->Draw("same 2");
 	 g->Draw("same PE");
 	 //band->Draw("same 3");//("3 SAME");
 	 //g->Draw("same PE");
 
-         //TLine* l = new TLine(0, 0, 0, h1->GetNbinsX());
-         //l->SetLineStyle(3);
-         //l->Draw("same");
-
-         c.Print(ps_name);
+         TLine* l = new TLine(0, 0, 0, h1->GetNbinsX());
+         l->SetLineStyle(3);
+         l->Draw("same");
+	 gPad->RedrawAxis();
+	 //gPad->RedrawAxis("G");
+	 TLine l1;
+	 l1.DrawLine(-3, h1->GetXaxis()->GetXmax (), 3, h1->GetXaxis()->GetXmax ());
+	 
+	 c.Print(ps_name);
          c.Clear();
          h->Delete();
          h1->Delete();
          g->Delete();
 	 band->Delete();
 	 band2->Delete();
-		  
-         //l->Delete();
+	 l->Delete();
+	 l1.Delete();
       }
    }
    return std::sqrt(sum_error);
@@ -473,6 +477,9 @@ void LTF_ROOTTools::makeErrorPlotDilepton(TCanvas& c1, const char* ps_name, cons
 					    "Recoil to top",
 					    "PDF",
 					    "top mass"};
+  vector<string> all_uncertainties;
+  all_uncertainties.insert(all_uncertainties.end(), lepton_uncertainties.begin(), lepton_uncertainties.end());
+  all_uncertainties.insert(all_uncertainties.end(), jes_uncertainties.begin(), jes_uncertainties.end());
 
   std::map<string, double> error_summary;
   error_summary.insert({"Lepton",           makeErrorPlot(c1, ps_name, "Lepton uncertainties", fit, lepton_uncertainties)});
@@ -482,6 +489,7 @@ void LTF_ROOTTools::makeErrorPlotDilepton(TCanvas& c1, const char* ps_name, cons
   error_summary.insert({"b-tagging",        makeErrorPlot(c1, ps_name, "b-tagging uncertainties", fit, b_tagging_uncertainties)});
   error_summary.insert({"theory modelling", makeErrorPlot(c1, ps_name, "modelling uncertainties", fit, modelling_uncertainties)});
   error_summary.insert({"bkgd modelling",   makeErrorPlot(c1, ps_name, "background uncertainties", fit, bkgd_uncertainties)});
+  makeErrorPlot(c1, ps_name, "all uncertainties", fit, all_uncertainties); 
   //error_summary.insert({"Stat.+Lumi",       makeErrorPlot(c1, ps_name, "statistical uncertainties", fit, other_uncertainties)});
 
   TH1D* h  = new TH1D("Full error breakdown", "Full error breakdown", error_summary.size()+1, 0, error_summary.size()+1);
@@ -629,6 +637,16 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
                                         "STAT_MC",
                                         "LUMINOSITY"};
 
+  vector<string> all_uncertainties;
+  all_uncertainties.insert(all_uncertainties.end(), lepton_uncertainties.begin(), lepton_uncertainties.end());
+  all_uncertainties.insert(all_uncertainties.end(), jes_uncertainties.begin(), jes_uncertainties.end());
+  all_uncertainties.insert(all_uncertainties.end(), jer_uncertainties.begin(), jer_uncertainties.end());
+  all_uncertainties.insert(all_uncertainties.end(), jvt_pileup_met_uncertainties.begin(), jvt_pileup_met_uncertainties.end());
+  all_uncertainties.insert(all_uncertainties.end(), b_tagging_uncertainties.begin(), b_tagging_uncertainties.end());
+  all_uncertainties.insert(all_uncertainties.end(), modelling_uncertainties.begin(), modelling_uncertainties.end());
+  all_uncertainties.insert(all_uncertainties.end(), bkgd_uncertainties.begin(), bkgd_uncertainties.end());
+  all_uncertainties.insert(all_uncertainties.end(), "LUMINOSITY");
+  
   std::map<string, double> error_summary;
   error_summary.insert({"Lepton",           makeErrorPlot(c1, ps_name, "Lepton uncertainties", fit, lepton_uncertainties)});
   error_summary.insert({"JES",              makeErrorPlot(c1, ps_name, "JES uncertainties", fit, jes_uncertainties)});
@@ -638,7 +656,8 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
   error_summary.insert({"theory modelling", makeErrorPlot(c1, ps_name, "modelling uncertainties", fit, modelling_uncertainties)});
   error_summary.insert({"bkgd modelling",   makeErrorPlot(c1, ps_name, "background uncertainties", fit, bkgd_uncertainties)});
   error_summary.insert({"Stat.+Lumi",       makeErrorPlot(c1, ps_name, "statistical uncertainties", fit, other_uncertainties)});
-
+  makeErrorPlot(c1, ps_name, "all uncertainties", fit, all_uncertainties);
+  
   TH1D* h  = new TH1D("Full error breakdown", "Full error breakdown", error_summary.size()+1, 0, error_summary.size()+1);
   double sum_error_sq = 0;
   for( auto& tmp_err: error_summary ) {

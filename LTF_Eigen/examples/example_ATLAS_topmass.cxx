@@ -53,9 +53,9 @@ int example_ATLAS_topmass() {
 
 
   if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_mbl_mbw_ptb1.ps", {"mbl_selected", "mbwhad_selected", "ptb1"}, {"m_bl", "m_bw", "pT_bjet1"}) > 0) return 1;
 
   return 0;
@@ -98,9 +98,6 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    const TString MiNNLO_ttbar = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/ttbar_enhanced_MiNNLO.Theory.root";
 
    
-   //double scale = TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral();
-   //cout<<"Integral "<<TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral()<<endl;
-
    int bins_number = 0;
    for ( auto& tmp: fit_vars ) {
      //TH1D* tmp_data = TFile::Open(pseudodatafile)->Get<TH1D>(tmp);
@@ -124,7 +121,6 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      bin_offset += tmp_data->GetNbinsX()-1;
    }
    combined_data -> Rebin(iRebinData);
-   //combined_data->Scale(scale);
    combined_data->SetLineColor(kBlack);
    combined_data->SetMarkerSize(1.8);
    cout<<"This is the new combined data hist"<<endl;
@@ -139,8 +135,6 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    //   data->SetBinContent(i, data_tmp->GetBinContent(i));
    //   data->SetBinError(i, data_tmp->GetBinError(i));
    //}
-   data -> Rebin(iRebinData);
-   //data->Scale(scale);
    data->SetLineColor(kBlack);
    data->SetMarkerSize(1.8);
 
@@ -196,7 +190,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      TH1D* combined_template_180 = new TH1D("combined_template_180", "combined_template_180", bins_number, 0, bins_number);
      TH1D* combined_template_185 = new TH1D("combined_template_185", "combined_template_185", bins_number, 0, bins_number);
      int bin_offset = 0;
-     vector<double> scaledBy = {1.49788552234040135e-07, 1.55132336667129386e-07, 1.66147986054345596e-07, 1.71259900682463466e-07, 1.85850877053844685e-07, 1.97334578811742925e-07, 2.07257073181839433e-07};
+     vector<double> lumi = {251.187482705465, 277.360827848659, 374.772832082939, 424.14952166365, 547.471221949265, 690.365695102541, 954.671771338349};
      for ( auto& tmp: fit_vars_short ) {
        TH1D* h_tmp_155 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_160 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(tmp);
@@ -206,21 +200,21 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        TH1D* h_tmp_180 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_180_1252.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_185 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_185_1254.root")->Get<TH1D>(tmp);
        for ( int i = 1; i<= h_tmp_155->GetNbinsX(); i++ ) {
-	 combined_template_155->SetBinContent(i+bin_offset, h_tmp_155->GetBinContent(i)*scaledBy[0] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-	 combined_template_160->SetBinContent(i+bin_offset, h_tmp_160->GetBinContent(i)*scaledBy[1] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-	 combined_template_165->SetBinContent(i+bin_offset, h_tmp_165->GetBinContent(i)*scaledBy[2] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-	 combined_template_170->SetBinContent(i+bin_offset, h_tmp_170->GetBinContent(i)*scaledBy[3] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-	 combined_template_175->SetBinContent(i+bin_offset, h_tmp_175->GetBinContent(i)*scaledBy[4] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-	 combined_template_180->SetBinContent(i+bin_offset, h_tmp_180->GetBinContent(i)*scaledBy[5] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-	 combined_template_185->SetBinContent(i+bin_offset, h_tmp_185->GetBinContent(i)*scaledBy[6] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
+	 combined_template_155->SetBinContent(i+bin_offset, h_tmp_155->GetBinContent(i) / lumi[0] / 1000);
+	 combined_template_160->SetBinContent(i+bin_offset, h_tmp_160->GetBinContent(i) / lumi[1] / 1000);
+	 combined_template_165->SetBinContent(i+bin_offset, h_tmp_165->GetBinContent(i) / lumi[2] / 1000);
+	 combined_template_170->SetBinContent(i+bin_offset, h_tmp_170->GetBinContent(i) / lumi[3] / 1000);
+	 combined_template_175->SetBinContent(i+bin_offset, h_tmp_175->GetBinContent(i) / lumi[4] / 1000);
+	 combined_template_180->SetBinContent(i+bin_offset, h_tmp_180->GetBinContent(i) / lumi[5] / 1000);
+	 combined_template_185->SetBinContent(i+bin_offset, h_tmp_185->GetBinContent(i) / lumi[6] / 1000);
 
-	 combined_template_155->SetBinError(i+bin_offset, h_tmp_155->GetBinError(i)*scaledBy[0] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_160->SetBinError(i+bin_offset, h_tmp_160->GetBinError(i)*scaledBy[1] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_165->SetBinError(i+bin_offset, h_tmp_165->GetBinError(i)*scaledBy[2] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_170->SetBinError(i+bin_offset, h_tmp_170->GetBinError(i)*scaledBy[3] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_175->SetBinError(i+bin_offset, h_tmp_175->GetBinError(i)*scaledBy[4] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_180->SetBinError(i+bin_offset, h_tmp_180->GetBinError(i)*scaledBy[5] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
-         combined_template_185->SetBinError(i+bin_offset, h_tmp_185->GetBinError(i)*scaledBy[6] / h_tmp_155->GetXaxis()->GetBinWidth(i) * 1000);
+	 combined_template_155->SetBinError(i+bin_offset, h_tmp_155->GetBinError(i) / lumi[0] / 1000);
+         combined_template_160->SetBinError(i+bin_offset, h_tmp_160->GetBinError(i) / lumi[1] / 1000);
+         combined_template_165->SetBinError(i+bin_offset, h_tmp_165->GetBinError(i) / lumi[2] / 1000);
+         combined_template_170->SetBinError(i+bin_offset, h_tmp_170->GetBinError(i) / lumi[3] / 1000);
+         combined_template_175->SetBinError(i+bin_offset, h_tmp_175->GetBinError(i) / lumi[4] / 1000);
+         combined_template_180->SetBinError(i+bin_offset, h_tmp_180->GetBinError(i) / lumi[5] / 1000);
+         combined_template_185->SetBinError(i+bin_offset, h_tmp_185->GetBinError(i) / lumi[6] / 1000);
        }
        bin_offset += h_tmp_155->GetNbinsX();
      }
@@ -307,7 +301,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      "LUMINOSITY" // lumi uncertainty
    };
 
-   vector<string> statistical_uncertainties = {"STAT_DATA", "STAT_MC"};
+   vector<string> statistical_uncertainties = {"STAT_MC"};
    
    vector<string> external_uncertainties = {"FULL_SYS_SUM", "FULL_SYS_SUM_DETECTOR", "FULL_SYS_SUM_THEORY", "TOTAL_SYSONLY", "TOTAL", "TOTAL_NO_DR_DS", "FULL_SYS_TOYS"};
 
@@ -323,11 +317,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    // --- initialize templates
    for ( auto [MM,hist] : templates ) {
       ltf.AddTemplate(MM,  hist->GetNbinsX(),  hist->GetArray()+1 ); // set template
-      //for(int i = 1; i <= hist->GetNbinsX(); i++) { cout<<hist->GetBinContent(i)<<"\t"<<hist->GetBinError(i)<<"\t"<<std::sqrt((hist->GetSumw2()->GetArray())[i])<<endl;}
-      //for(int i = 1; i <= hist->GetNbinsX(); i++) { cout<<hist->GetBinContent(i)<<"\t"<<hist->GetBinError(i)<<"\t"<<std::sqrt((hist->GetSumw2()->GetArray()+1)[i-1])<<endl;}
       ltf.AddTemplateErrorSquared("statY", MM , hist->GetNbinsX(), hist->GetSumw2()->GetArray()+1, 0.); // set template error dY
-      
-      //cout<<"MM: "<<MM<<"\tnBins: "<<hist->GetNbinsX()<<endl;
    }
 
    // --- initialize data
@@ -425,8 +415,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
      cout<<endl;
    }
-   //ltf.AddErrorRelative("STAT_DATA", vecCov2, LTF::Uncertainty::Constrained);
-
+   ltf.AddErrorRelative("STAT_DATA", vecCov2, LTF::Uncertainty::Constrained);
 
    TH1D* total_error = new TH1D("total_error", "total_error", bins_number, 0, bins_number);
 
@@ -489,8 +478,6 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    }
 
    PrintAsciiTable(templates,combined_data);
-
-   //exit(0);
    
    LTF::LiTeFit fit = ltf.DoLiTeFit();
    fit.PrintFull();
