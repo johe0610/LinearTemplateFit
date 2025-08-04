@@ -726,15 +726,19 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    //   "plots/LTFlog_plots.ps" :
    //   "plots/LTF_plots.ps";
    c1.Print( (string(ps_name)+"[").c_str() );
-   if (!fit.GetLogNormal()) c1.SetLogy();
+   c1.Divide(1, 2, 0, 0);
+   c1.cd(1)->SetBottomMargin(0);
+   c1.cd(2)->SetTopMargin(0);
+   if (!fit.GetLogNormal()) c1.cd(1)->SetLogy();
    // ---------------------------------------------- //
    // main plot
    // ---------------------------------------------- //
    for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
+      c1.cd(1);
       templates[iref]->SetLineWidth(2);
       templates[iref]->Print("All");
       if ( iref == 0 ) {
-         templates[0]->SetTitle(("Linear Template Fit;"+xaxistitle+";"+yaxistitle).c_str());
+         templates[0]->SetTitle((";"+xaxistitle+";"+yaxistitle).c_str());
          templates[0]->SetLineColor(kRed+1);
          //if ( templates[0]->GetMaximum()>0 )templates[0]->SetMinimum(0);
          if ( !fit.GetLogNormal() ) {
@@ -759,8 +763,22 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
          templates[iref]->SetLineWidth(2);
          templates[iref]->Draw("histsame");
       }
+      c1.cd(2);
+      TH1D* tmp = (TH1D*)templates[iref]->Clone("tmp");
+      tmp->Divide(data);
+      if ( iref == 0 ) {
+	tmp->GetYaxis()->SetRangeUser(0.05, 1.95);
+	tmp->GetYaxis()->SetTitle("Ratio to data");
+      }
+      tmp->Draw("hist same");
    }   
+   TLine *line1 = new TLine(templates[0]->GetXaxis()->GetXmin(), 1.0, templates[0]->GetXaxis()->GetXmax(), 1.0);
+   line1->SetLineColor(kBlack);
+   line1->SetLineStyle(2);
+   line1->SetLineWidth(2);
+   line1->Draw("same");
    //if ( templates[0]->GetMaximum()>0 )templates[0]->SetFillColorAlpha(kRed,0.15);
+   c1.cd(1);
    templates[0]->Draw("histsame");
 
    data->SetMarkerStyle(20);
@@ -773,7 +791,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    TheoFit->SetLineStyle(2);
    TheoFit->Draw("histsame");
 
-   TLegend legend(0.18,0.70,0.94,0.92,"","NDC");
+   TLegend legend(0.18,0.74,0.94,0.97,"","NDC");
    legend.SetNColumns(3);
    legend.SetFillStyle(0);
    legend.SetBorderSize(0);
@@ -785,6 +803,11 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    legend.Draw();
 
    c1.Print(ps_name);
+   c1.Clear();
+   c1.SetRightMargin(0.02);
+   c1.SetTopMargin(0.02);
+   c1.SetLeftMargin(0.16);
+   c1.SetBottomMargin(0.16);
    //c1.Print("plots/LTF_plot.pdf");
 
 
