@@ -791,8 +791,8 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    // ---------------------------------------------- //
    // print relative size of all errors
    // ---------------------------------------------- //
-   makeErrorPlotSingle(c1, ps_name, fit);
-   //makeErrorPlotDilepton(c1, ps_name, fit);
+   //makeErrorPlotSingle(c1, ps_name, fit);
+   makeErrorPlotDilepton(c1, ps_name, fit);
 
    // ---------------------------------------------- //
    // print linear-functions in every bin

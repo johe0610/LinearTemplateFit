@@ -54,8 +54,8 @@ int example_ATLAS_topmass() {
 
   if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
   if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
-  if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_mbl_mbw_ptb1.ps", {"mbl_selected", "mbwhad_selected", "ptb1"}, {"m_bl", "m_bw", "pT_bjet1"}) > 0) return 1;
 
   return 0;
@@ -91,11 +91,11 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    const TString pseudodatafile     = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root";
    const TString datafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative.root";
    const TString covariancefile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1258_matrices.root";
-   const TString aMCatNLO_ttbar = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/ttbar_enhanced_aMcAtNlo_fast.Theory.root";
-   const TString aMCatNLO_single = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/singletop_inclusive_Wt_DR_aMcAtNlo_fast.Theory.root";
-   const TString pythia_single_DR = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/singletop_inclusive_Wt_DR.Theory.root";
-   const TString MiNNLO_ttbar_alt = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/ttbar_enhanced_MiNNLO_alt.Theory.root";
-   const TString MiNNLO_ttbar = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/ttbar_enhanced_MiNNLO.Theory.root";
+   //const TString aMCatNLO_ttbar = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/ttbar_enhanced_aMcAtNlo_fast.Theory.root";
+   //const TString aMCatNLO_single = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/singletop_inclusive_Wt_DR_aMcAtNlo_fast.Theory.root";
+   //const TString pythia_single_DR = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/singletop_inclusive_Wt_DR.Theory.root";
+   //const TString MiNNLO_ttbar_alt = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/ttbar_enhanced_MiNNLO_alt.Theory.root";
+   //const TString MiNNLO_ttbar = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/ttbar_enhanced_MiNNLO.Theory.root";
 
    
    int bins_number = 0;
@@ -116,7 +116,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      TString name = "unfolding_"+tmp+"_NOSYS";
      TH1D* tmp_data = TFile::Open(datafile)->Get<TH1D>(name);
      for ( int i = 1; i <= tmp_data->GetNbinsX()-1; i++ ) {
-       combined_data->SetBinContent(i+bin_offset, tmp_data->GetBinContent(i));
+       combined_data->SetBinContent(i+bin_offset, tmp_data->GetBinContent(i)); //johannes divide by bin width here!!
      }
      bin_offset += tmp_data->GetNbinsX()-1;
    }
@@ -189,8 +189,14 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      TH1D* combined_template_175 = new TH1D("combined_template_175", "combined_template_175", bins_number, 0, bins_number);
      TH1D* combined_template_180 = new TH1D("combined_template_180", "combined_template_180", bins_number, 0, bins_number);
      TH1D* combined_template_185 = new TH1D("combined_template_185", "combined_template_185", bins_number, 0, bins_number);
+     TH1D* combined_template_190 = new TH1D("combined_template_170_WbWb", "combined_template_170_WbWb", bins_number, 0, bins_number);
+     TH1D* combined_template_1 = new TH1D("combined_template_LO_PS_Had", "combined_template_LO_PS_Had", bins_number, 0, bins_number);
+     TH1D* combined_template_2 = new TH1D("combined_template_LO_PS_Had_k", "combined_template_LO_PS_Had_k", bins_number, 0, bins_number);
+
      int bin_offset = 0;
-     vector<double> lumi = {251.187482705465, 277.360827848659, 374.772832082939, 424.14952166365, 547.471221949265, 690.365695102541, 954.671771338349};
+     vector<double> lumi = {251.187482705465, 277.360827848659, 374.772832082939, 424.14952166365, 547.471221949265, 690.365695102541, 954.671771338349,
+			    1, 1 , 1.0}; //91.9096106034933, 9.1711e-07, 9.1596e-07, 1.0, 9.1596e-07};
+     
      for ( auto& tmp: fit_vars_short ) {
        TH1D* h_tmp_155 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_160 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(tmp);
@@ -199,6 +205,14 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        TH1D* h_tmp_175 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_175_1250.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_180 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_180_1252.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_185 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_185_1254.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_190 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/S3beta_WbWb_mt_170_42.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_1 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/LO_PS_Had_allWchannels.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_2 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/LO_PS_Had_allWchannels.root")->Get<TH1D>(tmp);
+
+       //johannes binning:
+       vector<double> binning = {0,   40,  80,  120, 160, 200, 280, 360, 480, 640, 960};
+       
+       double kFactor =  1.3;
        for ( int i = 1; i<= h_tmp_155->GetNbinsX(); i++ ) {
 	 combined_template_155->SetBinContent(i+bin_offset, h_tmp_155->GetBinContent(i) / lumi[0] / 1000);
 	 combined_template_160->SetBinContent(i+bin_offset, h_tmp_160->GetBinContent(i) / lumi[1] / 1000);
@@ -207,6 +221,9 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 	 combined_template_175->SetBinContent(i+bin_offset, h_tmp_175->GetBinContent(i) / lumi[4] / 1000);
 	 combined_template_180->SetBinContent(i+bin_offset, h_tmp_180->GetBinContent(i) / lumi[5] / 1000);
 	 combined_template_185->SetBinContent(i+bin_offset, h_tmp_185->GetBinContent(i) / lumi[6] / 1000);
+	 combined_template_190->SetBinContent(i+bin_offset, h_tmp_190->GetBinContent(i) / lumi[7] / 1000);
+	 combined_template_1->SetBinContent(i+bin_offset, h_tmp_1->GetBinContent(i) * lumi[8] * (binning[i]-binning[i-1]));
+	 combined_template_2->SetBinContent(i+bin_offset, h_tmp_2->GetBinContent(i) * lumi[9] * (binning[i]-binning[i-1]) * kFactor);
 
 	 combined_template_155->SetBinError(i+bin_offset, h_tmp_155->GetBinError(i) / lumi[0] / 1000);
          combined_template_160->SetBinError(i+bin_offset, h_tmp_160->GetBinError(i) / lumi[1] / 1000);
@@ -215,17 +232,23 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
          combined_template_175->SetBinError(i+bin_offset, h_tmp_175->GetBinError(i) / lumi[4] / 1000);
          combined_template_180->SetBinError(i+bin_offset, h_tmp_180->GetBinError(i) / lumi[5] / 1000);
          combined_template_185->SetBinError(i+bin_offset, h_tmp_185->GetBinError(i) / lumi[6] / 1000);
+	 combined_template_190->SetBinError(i+bin_offset, h_tmp_190->GetBinError(i) / lumi[7] / 1000);
+	 combined_template_1->SetBinError(i+bin_offset, h_tmp_1->GetBinError(i) * lumi[8] * (binning[i]-binning[i-1]));
+         combined_template_2->SetBinError(i+bin_offset, h_tmp_2->GetBinError(i) * lumi[9] * (binning[i]-binning[i-1]) * kFactor);
        }
        bin_offset += h_tmp_155->GetNbinsX();
      }
-     templates[155] = combined_template_155;
-     templates[160] = combined_template_160;
-     templates[165] = combined_template_165;
-     templates[170] = combined_template_170;
-     templates[175] = combined_template_175;
-     templates[180] = combined_template_180;
-     templates[185] = combined_template_185;
-     }
+     //templates[155] = combined_template_155;
+     //templates[160] = combined_template_160;
+     //templates[165] = combined_template_165;
+     //templates[170] = combined_template_170;
+     //templates[175] = combined_template_175;
+     //templates[180] = combined_template_180;
+     //templates[185] = combined_template_185;
+     //templates[190] = combined_template_190;
+     templates[1] = combined_template_1;
+     templates[2] = combined_template_2;
+   }
 
    for ( auto [MM,hist] : templates ) {
       hist->Rebin(iRebin);
@@ -492,7 +515,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    bins.push_back(combined_data->GetXaxis()->GetBinUpEdge(combined_data->GetNbinsX()));
    string label = "";
    for (TString tmp: fit_vars_short) label += tmp+"\t"; 
-   LTF_ROOTTools::plotLiTeFit(fit, bins, ps_name, "1/#sigma d#sigma/dx", label,"m_{t} [GeV]");
+   LTF_ROOTTools::plotLiTeFit(fit, bins, ps_name, "d#sigma/dx [pb]", label,"m_{t} [GeV]");
 
    return 0;
 }
