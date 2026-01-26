@@ -51,13 +51,34 @@ vector<vector<double > > TH2D_to_vecvec(TH2D* hist2D) {
 
 int example_ATLAS_topmass() {
 
-
   if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
   if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
   if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_mbw_ptb1.ps", {"mbl_selected", "mbwhad_selected", "ptb1"}, {"m_bl", "m_bw", "pT_bjet1"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_drbl.ps", {"dRbl_selected"},    {"dr_bl"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_drbw.ps", {"dRbwhad_selected"},    {"dr_bw"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_etal1.ps", {"etal1"},    {"eta_lep1"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mtlepmet.ps", {"mtlepmet"},    {"mT_lep1met"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_minimax.ps", {"minimax_whadbbl"},    {"m_minimax"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mwbbl.ps", {"mwhadbbl"},    {"m_wbbl"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptb1.ps", {"ptb1"},    {"pT_bjet1"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptb2.ps", {"ptb2"},    {"pT_bjet2"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptbl.ps", {"ptbl_selected"},    {"pT_bl"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptbw.ps", {"ptbwhad_selected"},    {"pT_bw"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptj1.ps", {"ptj1"},    {"pT_jet1"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_ptj2.ps", {"ptj2"},    {"pT_jet2"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_ptmet.ps", {"met"},    {"pT_met"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptowj1.ps", {"ptOWj1"},    {"pT_owj1"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptowj2.ps", {"ptOWj2"},    {"pT_owj2"}) > 0) return 1;
+  //ptwhadbbl
+  if (fitMultipleObservables("plots/fit_ywhad.ps", {"rapiditywhad"},    {"y_whad"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptwhad.ps", {"ptwhad"},    {"pT_whad"}) > 0) return 1;
 
+  if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mbl_ptl1.ps", {"mbl_selected", "ptl1"}, {"m_bl", "pT_lep1"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mbw_ptl1.ps", {"mbwhad_selected", "ptl1"}, {"m_bw", "pT_lep1"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mbl_mbw_ptl1.ps", {"mbl_selected", "mbwhad_selected", "ptl1"}, {"m_bl", "m_bw", "pT_lep1"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mbl_mbw_ptl1_ptw.ps", {"mbl_selected", "mbwhad_selected", "ptl1", "ptwhad"}, {"m_bl", "m_bw", "pT_lep1", "pT_whad"}) > 0) return 1;
+  
   return 0;
 }
 
@@ -85,47 +106,55 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    TH1::SetDefaultSumw2(true);
 
    map<double,TH1D*> templates;
-   
+   double doPseudo = true;
    const int     iRebin       = 1;
    const int     iRebinData   = 1;
-   const TString pseudodatafile     = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root";
+   const int     iRemoveBins  = 0;
    const TString datafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative.root";
-   const TString covariancefile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1258_matrices.root";
-   //const TString aMCatNLO_ttbar = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/ttbar_enhanced_aMcAtNlo_fast.Theory.root";
-   //const TString aMCatNLO_single = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/singletop_inclusive_Wt_DR_aMcAtNlo_fast.Theory.root";
-   //const TString pythia_single_DR = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/singletop_inclusive_Wt_DR.Theory.root";
-   //const TString MiNNLO_ttbar_alt = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/ttbar_enhanced_MiNNLO_alt.Theory.root";
-   //const TString MiNNLO_ttbar = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/ttbar_enhanced_MiNNLO.Theory.root";
+   const TString pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171.root";
+   //const TString pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171_JES_095.root";
+   //const TString covariancefile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1258_matrices.root";
+   const TString covariancefile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171.root";
 
-   
    int bins_number = 0;
+   std::vector<int> matrix_dimension = {0}; // Needed to put covariance matrix together
    for ( auto& tmp: fit_vars ) {
-     //TH1D* tmp_data = TFile::Open(pseudodatafile)->Get<TH1D>(tmp);
      TString name = "unfolding_"+tmp+"_NOSYS";
      TH1D* tmp_data = TFile::Open(datafile)->Get<TH1D>(name);
-     if ( !tmp_data ) { cerr<<"Could not find data histogram " << name <<endl; exit(1);}
-     else cout<<"Found data histogram "<<name<<endl;
-     cout<<"Adding "<<tmp_data->GetNbinsX()-1<<" bins for variable "<<tmp<<endl;
-     bins_number += tmp_data->GetNbinsX()-1;
+     if ( !tmp_data ) { cerr<<"Could not find data histogram " << name <<" in file "<<datafile<<endl; exit(1);}
+     bins_number += tmp_data->GetNbinsX()-1 - iRemoveBins;
+     matrix_dimension.push_back(tmp_data->GetNbinsX()-1 - iRemoveBins);
      tmp_data->Clear();
    }
    
    TH1D* combined_data = new TH1D("combined_data", "combined_data", bins_number, 0, bins_number);
    int bin_offset = 0;
-   for ( auto& tmp: fit_vars ) {
-     TString name = "unfolding_"+tmp+"_NOSYS";
-     TH1D* tmp_data = TFile::Open(datafile)->Get<TH1D>(name);
-     for ( int i = 1; i <= tmp_data->GetNbinsX()-1; i++ ) {
-       combined_data->SetBinContent(i+bin_offset, tmp_data->GetBinContent(i)/tmp_data->GetXaxis()->GetBinWidth(i)); //johannes
+   if ( doPseudo ) {
+     for ( auto& tmp: fit_vars_short ) {
+       TH1D* tmp_data = TFile::Open(pseudodatafile)->Get<TH1D>(tmp);
+       for ( int i = 1; i <= tmp_data->GetNbinsX() - iRemoveBins; i++ ) {
+	 combined_data->SetBinContent(i+bin_offset, tmp_data->GetBinContent(i));
+	 combined_data->SetBinError(i+bin_offset, tmp_data->GetBinError(i));
+	 cout<<"For bin "<<i<<" add content "<<tmp_data->GetBinContent(i)<<" with error "<<tmp_data->GetBinError(i)<<"  (pseudo)"<<endl;
+       }
+       bin_offset += tmp_data->GetNbinsX() - iRemoveBins;
      }
-     bin_offset += tmp_data->GetNbinsX()-1;
    }
-   combined_data -> Rebin(iRebinData);
+   else {
+     for ( auto& tmp: fit_vars ) {
+       TString name = "unfolding_"+tmp+"_NOSYS";
+       TH1D* tmp_data = TFile::Open(datafile)->Get<TH1D>(name);
+       // Loop only to NbinsX-1, because last bin is overflow bin
+       for ( int i = 1; i <= tmp_data->GetNbinsX()-1 - iRemoveBins; i++ ) {
+	 combined_data->SetBinContent(i+bin_offset, tmp_data->GetBinContent(i)/tmp_data->GetXaxis()->GetBinWidth(i));
+	 cout<<"For bin "<<i<<" add content "<<tmp_data->GetBinContent(i)<<" (data)"<<endl;
+       }
+       bin_offset += tmp_data->GetNbinsX()-1 - iRemoveBins;
+     }
+   }
+   combined_data->Rebin(iRebinData);
    combined_data->SetLineColor(kBlack);
    combined_data->SetMarkerSize(1.8);
-   cout<<"This is the new combined data hist"<<endl;
-   combined_data->Print("All");
-   
    /*   
    TH1D* data = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data, use Sherpa 3 with m_t = 170 GeV for now
    double binning[9] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0};
@@ -182,75 +211,62 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    }
    else */
    {
-     TH1D* combined_template_155 = new TH1D("combined_template_155", "combined_template_155", bins_number, 0, bins_number);
-     TH1D* combined_template_160 = new TH1D("combined_template_160", "combined_template_160", bins_number, 0, bins_number);
-     TH1D* combined_template_165 = new TH1D("combined_template_165", "combined_template_165", bins_number, 0, bins_number);
-     TH1D* combined_template_170 = new TH1D("combined_template_170", "combined_template_170", bins_number, 0, bins_number);
-     TH1D* combined_template_175 = new TH1D("combined_template_175", "combined_template_175", bins_number, 0, bins_number);
-     TH1D* combined_template_180 = new TH1D("combined_template_180", "combined_template_180", bins_number, 0, bins_number);
-     TH1D* combined_template_185 = new TH1D("combined_template_185", "combined_template_185", bins_number, 0, bins_number);
-     TH1D* combined_template_190 = new TH1D("combined_template_170_WbWb", "combined_template_170_WbWb", bins_number, 0, bins_number);
-     TH1D* combined_template_1 = new TH1D("combined_template_LO_PS_Had", "combined_template_LO_PS_Had", bins_number, 0, bins_number);
-     TH1D* combined_template_2 = new TH1D("combined_template_LO_PS_Had_k", "combined_template_LO_PS_Had_k", bins_number, 0, bins_number);
+     TH1D* combined_template_162_5 = new TH1D("combined_template_162_5", "combined_template_162_5", bins_number, 0, bins_number);
+     TH1D* combined_template_165   = new TH1D("combined_template_165", "combined_template_165", bins_number, 0, bins_number);
+     TH1D* combined_template_167_5 = new TH1D("combined_template_167_5", "combined_template_167_5", bins_number, 0, bins_number);
+     TH1D* combined_template_170   = new TH1D("combined_template_170", "combined_template_170", bins_number, 0, bins_number);
+     TH1D* combined_template_172_5 = new TH1D("combined_template_172_5", "combined_template_172_5", bins_number, 0, bins_number);
+     TH1D* combined_template_175   = new TH1D("combined_template_175", "combined_template_175", bins_number, 0, bins_number);
+     TH1D* combined_template_177_5 = new TH1D("combined_template_177_5", "combined_template_177_5", bins_number, 0, bins_number);
+     TH1D* combined_template_180   = new TH1D("combined_template_180", "combined_template_180", bins_number, 0, bins_number);
+     TH1D* combined_template_182_5 = new TH1D("combined_template_182_5", "combined_template_182_5", bins_number, 0, bins_number);
 
      int bin_offset = 0;
-     vector<double> lumi = {251.187482705465, 277.360827848659, 374.772832082939, 424.14952166365, 547.471221949265, 690.365695102541, 954.671771338349,
-			    1, 1, 1, 1 , 1.0}; //91.9096106034933, 9.1711e-07, 9.1596e-07, 1.0, 9.1596e-07};
-     
      for ( auto& tmp: fit_vars_short ) {
-       TH1D* h_tmp_155 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_160 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_165 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_165_1246.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_170 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_175 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_175_1250.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_180 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_180_1252.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_185 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_185_1254.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_190 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/S3beta_WbWb_mt_170_42.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_1 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/WbWb.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_2 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/ttbar.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_162_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_162_5.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_165   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_165.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_167_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_167_5.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_170   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_170.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_172_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_172_5.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_175   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_175.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_177_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_177_5.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_180   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_180.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_182_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_182_5.root")->Get<TH1D>(tmp);
 
-       //johannes binning:
-       vector<double> binning = {0,   40,  80,  120, 160, 200, 280, 360, 480, 640, 960};
-       
-       //double kFactor =  1.3;
-       for ( int i = 1; i<= h_tmp_155->GetNbinsX(); i++ ) {
-	 combined_template_155->SetBinContent(i+bin_offset, h_tmp_155->GetBinContent(i) / lumi[0] / 1000);
-	 combined_template_160->SetBinContent(i+bin_offset, h_tmp_160->GetBinContent(i) / lumi[1] / 1000);
-	 combined_template_165->SetBinContent(i+bin_offset, h_tmp_165->GetBinContent(i) / lumi[2] / 1000);
-	 combined_template_170->SetBinContent(i+bin_offset, h_tmp_170->GetBinContent(i) / lumi[3] / 1000);
-	 combined_template_175->SetBinContent(i+bin_offset, h_tmp_175->GetBinContent(i) / lumi[4] / 1000);
-	 combined_template_180->SetBinContent(i+bin_offset, h_tmp_180->GetBinContent(i) / lumi[5] / 1000);
-	 combined_template_185->SetBinContent(i+bin_offset, h_tmp_185->GetBinContent(i) / lumi[6] / 1000);
-	 combined_template_190->SetBinContent(i+bin_offset, h_tmp_190->GetBinContent(i) / lumi[7] / 1000);
-	 combined_template_1->SetBinContent(i+bin_offset, h_tmp_1->GetBinContent(i) * lumi[8]);
-         combined_template_2->SetBinContent(i+bin_offset, h_tmp_2->GetBinContent(i) * lumi[9]);
+       double kFactor =  1.0; // Use ~1.5 as k factor
+       for ( int i = 1; i<= h_tmp_165->GetNbinsX() - iRemoveBins; i++ ) {
+         combined_template_162_5->SetBinContent(i+bin_offset, h_tmp_162_5->GetBinContent(i)*kFactor);
+	 combined_template_165->SetBinContent(i+bin_offset, h_tmp_165->GetBinContent(i)*kFactor);
+         combined_template_167_5->SetBinContent(i+bin_offset, h_tmp_167_5->GetBinContent(i)*kFactor);
+	 combined_template_170->SetBinContent(i+bin_offset, h_tmp_170->GetBinContent(i)*kFactor);
+	 combined_template_172_5->SetBinContent(i+bin_offset, h_tmp_172_5->GetBinContent(i)*kFactor);
+	 combined_template_175->SetBinContent(i+bin_offset, h_tmp_175->GetBinContent(i)*kFactor);
+         combined_template_177_5->SetBinContent(i+bin_offset, h_tmp_177_5->GetBinContent(i)*kFactor);
+         combined_template_180->SetBinContent(i+bin_offset, h_tmp_180->GetBinContent(i)*kFactor);
+         combined_template_182_5->SetBinContent(i+bin_offset, h_tmp_182_5->GetBinContent(i)*kFactor);
 
-	 //combined_template_1->SetBinContent(i+bin_offset, h_tmp_1->GetBinContent(i) * lumi[8] * (binning[i]-binning[i-1]));
-	 //combined_template_2->SetBinContent(i+bin_offset, h_tmp_2->GetBinContent(i) * lumi[9] * (binning[i]-binning[i-1]) * kFactor);
-
-	 combined_template_155->SetBinError(i+bin_offset, h_tmp_155->GetBinError(i) / lumi[0] / 1000);
-         combined_template_160->SetBinError(i+bin_offset, h_tmp_160->GetBinError(i) / lumi[1] / 1000);
-         combined_template_165->SetBinError(i+bin_offset, h_tmp_165->GetBinError(i) / lumi[2] / 1000);
-         combined_template_170->SetBinError(i+bin_offset, h_tmp_170->GetBinError(i) / lumi[3] / 1000);
-         combined_template_175->SetBinError(i+bin_offset, h_tmp_175->GetBinError(i) / lumi[4] / 1000);
-         combined_template_180->SetBinError(i+bin_offset, h_tmp_180->GetBinError(i) / lumi[5] / 1000);
-         combined_template_185->SetBinError(i+bin_offset, h_tmp_185->GetBinError(i) / lumi[6] / 1000);
-	 combined_template_190->SetBinError(i+bin_offset, h_tmp_190->GetBinError(i) / lumi[7] / 1000);
-	 combined_template_1->SetBinError(i+bin_offset, h_tmp_1->GetBinError(i) * lumi[8]);
-         combined_template_2->SetBinError(i+bin_offset, h_tmp_2->GetBinError(i) * lumi[9]);
+	 combined_template_162_5->SetBinError(i+bin_offset, h_tmp_162_5->GetBinError(i)*kFactor);
+	 combined_template_165->SetBinError(i+bin_offset, h_tmp_165->GetBinError(i)*kFactor);
+         combined_template_167_5->SetBinError(i+bin_offset, h_tmp_167_5->GetBinError(i)*kFactor);
+	 combined_template_170->SetBinError(i+bin_offset, h_tmp_170->GetBinError(i)*kFactor);
+	 combined_template_172_5->SetBinError(i+bin_offset, h_tmp_172_5->GetBinError(i)*kFactor);
+         combined_template_175->SetBinError(i+bin_offset, h_tmp_175->GetBinError(i)*kFactor);
+	 combined_template_177_5->SetBinError(i+bin_offset, h_tmp_177_5->GetBinError(i)*kFactor);
+         combined_template_180->SetBinError(i+bin_offset, h_tmp_180->GetBinError(i)*kFactor);
+         combined_template_182_5->SetBinError(i+bin_offset, h_tmp_182_5->GetBinError(i)*kFactor);
        }
-       bin_offset += h_tmp_155->GetNbinsX();
+       bin_offset += h_tmp_165->GetNbinsX() - iRemoveBins;
      }
-     //templates[155] = combined_template_155;
-     //templates[160] = combined_template_160;
-     //templates[165] = combined_template_165;
-     //templates[170] = combined_template_170;
-     //templates[175] = combined_template_175;
-     //templates[180] = combined_template_180;
-     //templates[185] = combined_template_185;
-     //templates[190] = combined_template_190;
-     templates[1] = combined_template_1;
-     templates[2] = combined_template_2;
+     templates[162.5] = combined_template_162_5;
+     templates[165] = combined_template_165;
+     templates[167.5] = combined_template_167_5;
+     templates[170] = combined_template_170;
+     templates[172.5] = combined_template_172_5;
+     templates[175] = combined_template_175;
+     //templates[177.5] = combined_template_177_5;
+     templates[180] = combined_template_180;
+     templates[182.5] = combined_template_182_5;
+
    }
 
    for ( auto [MM,hist] : templates ) {
@@ -258,8 +274,13 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    }
 
    
-     // Add predictions to see if chisquare is as expected
+   // Add predictions to see if chisquare is as expected
    /*
+   const TString aMCatNLO_ttbar = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/ttbar_enhanced_aMcAtNlo_fast.Theory.root";
+   const TString aMCatNLO_single = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/singletop_inclusive_Wt_DR_aMcAtNlo_fast.Theory.root";
+   const TString pythia_single_DR = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/singletop_inclusive_Wt_DR.Theory.root";
+   const TString MiNNLO_ttbar_alt = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/ttbar_enhanced_MiNNLO_alt.Theory.root";
+   const TString MiNNLO_ttbar = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/ttbar_enhanced_MiNNLO.Theory.root";
    {
      constexpr double LuminosityMC16a = 3244.54 + 33402.2;
      constexpr double LuminosityMC16d = 44630.6;
@@ -282,9 +303,9 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      h_tmp_MiNNLO_ttbar_alt->Add(h_tmp_pythia_DR_single);
      
      for ( int i = 1; i <= h_tmp_aMCNLO_ttbar->GetNbinsX(); i++ ) {
-       combined_template_190->SetBinContent(i, LuminosityInverse*h_tmp_aMCNLO_ttbar->GetBinContent(i));
-       combined_template_195->SetBinContent(i, LuminosityInverse*h_tmp_MiNNLO_ttbar->GetBinContent(i));
-       combined_template_200->SetBinContent(i, LuminosityInverse*h_tmp_MiNNLO_ttbar_alt->GetBinContent(i));
+       combined_template_190->SetBinContent(i, LuminosityInverse*h_tmp_aMCNLO_ttbar->GetBinContent(i) / h_tmp_aMCNLO_ttbar->GetXaxis()->GetBinWidth(i));
+       combined_template_195->SetBinContent(i, LuminosityInverse*h_tmp_MiNNLO_ttbar->GetBinContent(i) / h_tmp_MiNNLO_ttbar->GetXaxis()->GetBinWidth(i));
+       combined_template_200->SetBinContent(i, LuminosityInverse*h_tmp_MiNNLO_ttbar_alt->GetBinContent(i) / h_tmp_MiNNLO_ttbar_alt->GetXaxis()->GetBinWidth(i));
 
      }
      templates[190] = combined_template_190;
@@ -292,44 +313,53 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      templates[200] = combined_template_200;
 
    }
-  */
-     
+   */
+   
    // ------------------------------------------------ //
    // --- List of uncertainties
    // ------------------------------------------------ //
-
-   //vector<string> uncertainties = {"WMASS_VAR_signal"};
-   
    vector<string> uncertainties = {
      "EG_RESOLUTION_ALL", "EG_SCALE_ALL", "EL_EFF_ID_TOTAL_1NPCOR_PLUS_UNCOR", "EL_EFF_Iso_TOTAL_1NPCOR_PLUS_UNCOR",
-     "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR", "EL_EFF_TriggerEff_TOTAL_1NPCOR_PLUS_UNCOR", "EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR", "MUON_SAGITTA_DATASTAT",
-     "MUON_SAGITTA_RESBIAS", "MUON_EFF_BADMUON_SYS", "MUON_EFF_ISO_STAT", "MUON_EFF_ISO_SYS", "MUON_EFF_RECO_STAT", "MUON_EFF_RECO_SYS", "MUON_EFF_TTVA_STAT",
-     "MUON_EFF_TTVA_SYS", "MUON_EFF_TrigStatUncertainty", "MUON_EFF_TrigSystUncertainty", // Lepton uncertainties
-     "JET_EffectiveNP_Detector1", "JET_EffectiveNP_Detector2", "JET_EffectiveNP_Mixed1", "JET_EffectiveNP_Mixed2", "JET_EffectiveNP_Mixed3", "JET_EffectiveNP_Modelling1",
-     "JET_EffectiveNP_Modelling2", "JET_EffectiveNP_Modelling3", "JET_EffectiveNP_Modelling4", "JET_EffectiveNP_Statistical1", "JET_EffectiveNP_Statistical2",
-     "JET_EffectiveNP_Statistical3", "JET_EffectiveNP_Statistical4", "JET_EffectiveNP_Statistical5", "JET_EffectiveNP_Statistical6", "JET_EtaIntercalibration_Modelling",
-     "JET_EtaIntercalibration_NonClosure_2018data", "JET_EtaIntercalibration_NonClosure_highE", "JET_EtaIntercalibration_NonClosure_negEta",
-     "JET_EtaIntercalibration_NonClosure_posEta", "JET_EtaIntercalibration_TotalStat", "JET_Flavor_Composition_prop", "JET_Flavor_Response_prop",
-     "JET_Pileup_OffsetMu", "JET_Pileup_OffsetNPV", "JET_Pileup_PtTerm", "JET_Pileup_RhoTopology", "JET_PunchThrough_MC16", // JES uncertainty
-     "JET_JER_DataVsMC_MC16_PseudoData", "JET_JER_EffectiveNP_1_PseudoData", "JET_JER_EffectiveNP_2_PseudoData", "JET_JER_EffectiveNP_3_PseudoData",
-     "JET_JER_EffectiveNP_4_PseudoData", "JET_JER_EffectiveNP_5_PseudoData", "JET_JER_EffectiveNP_6_PseudoData", "JET_JER_EffectiveNP_7_PseudoData",
-     "JET_JER_EffectiveNP_8_PseudoData", "JET_JER_EffectiveNP_9_PseudoData", "JET_JER_EffectiveNP_10_PseudoData", "JET_JER_EffectiveNP_11_PseudoData",
+     "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR", "EL_EFF_TriggerEff_TOTAL_1NPCOR_PLUS_UNCOR",
+     "EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR", "MUON_SAGITTA_DATASTAT", "MUON_SAGITTA_RESBIAS",
+     "MUON_EFF_BADMUON_SYS", "MUON_EFF_ISO_STAT", "MUON_EFF_ISO_SYS", "MUON_EFF_RECO_STAT",
+     "MUON_EFF_RECO_SYS", "MUON_EFF_TTVA_STAT", "MUON_EFF_TTVA_SYS", "MUON_EFF_TrigStatUncertainty",
+     "MUON_EFF_TrigSystUncertainty", // Lepton uncertainties
+     "JET_EffectiveNP_Detector1", "JET_EffectiveNP_Detector2", "JET_EffectiveNP_Mixed1", "JET_EffectiveNP_Mixed2",
+     "JET_EffectiveNP_Mixed3", "JET_EffectiveNP_Modelling1", "JET_EffectiveNP_Modelling2",
+     "JET_EffectiveNP_Modelling3", "JET_EffectiveNP_Modelling4", "JET_EffectiveNP_Statistical1",
+     "JET_EffectiveNP_Statistical2", "JET_EffectiveNP_Statistical3", "JET_EffectiveNP_Statistical4",
+     "JET_EffectiveNP_Statistical5", "JET_EffectiveNP_Statistical6", "JET_EtaIntercalibration_Modelling",
+     "JET_EtaIntercalibration_NonClosure_2018data", "JET_EtaIntercalibration_NonClosure_highE",
+     "JET_EtaIntercalibration_NonClosure_negEta", "JET_EtaIntercalibration_NonClosure_posEta",
+     "JET_EtaIntercalibration_TotalStat", "JET_Flavor_Composition_prop", "JET_Flavor_Response_prop",
+     "JET_Pileup_OffsetMu", "JET_Pileup_OffsetNPV", "JET_Pileup_PtTerm", "JET_Pileup_RhoTopology",
+     "JET_PunchThrough_MC16", // JES uncertainty
+     "JET_JER_DataVsMC_MC16_PseudoData", "JET_JER_EffectiveNP_1_PseudoData", "JET_JER_EffectiveNP_2_PseudoData",
+     "JET_JER_EffectiveNP_3_PseudoData", "JET_JER_EffectiveNP_4_PseudoData", "JET_JER_EffectiveNP_5_PseudoData",
+     "JET_JER_EffectiveNP_6_PseudoData", "JET_JER_EffectiveNP_7_PseudoData", "JET_JER_EffectiveNP_8_PseudoData",
+     "JET_JER_EffectiveNP_9_PseudoData", "JET_JER_EffectiveNP_10_PseudoData", "JET_JER_EffectiveNP_11_PseudoData",
      "JET_JER_EffectiveNP_12restTerm_PseudoData", // JER uncertainty
-     "JET_JvtEfficiency", "PRW_DATASF", "MET_SoftTrk_ResoPara", "MET_SoftTrk_ResoPerp", "MET_SoftTrk_Scale", "WMASS_VAR_signal", //MET+JVT+PileUp
-     "FT_EFF_Eigen_B_0", "FT_EFF_Eigen_B_1", "FT_EFF_Eigen_B_2", "FT_EFF_Eigen_B_3", "FT_EFF_Eigen_B_4", "FT_EFF_Eigen_B_5", "FT_EFF_Eigen_B_6", "FT_EFF_Eigen_B_7",
-     "FT_EFF_Eigen_B_8", "FT_EFF_Eigen_C_0", "FT_EFF_Eigen_C_1", "FT_EFF_Eigen_C_2", "FT_EFF_Eigen_C_3", "FT_EFF_Eigen_Light_0", "FT_EFF_Eigen_Light_1",
+     "JET_JvtEfficiency", "PRW_DATASF", "MET_SoftTrk_ResoPara", "MET_SoftTrk_ResoPerp", "MET_SoftTrk_Scale",
+     "WMASS_VAR_signal", //MET+JVT+PileUp
+     "FT_EFF_Eigen_B_0", "FT_EFF_Eigen_B_1", "FT_EFF_Eigen_B_2", "FT_EFF_Eigen_B_3", "FT_EFF_Eigen_B_4",
+     "FT_EFF_Eigen_B_5", "FT_EFF_Eigen_B_6", "FT_EFF_Eigen_B_7", "FT_EFF_Eigen_B_8", "FT_EFF_Eigen_C_0",
+     "FT_EFF_Eigen_C_1", "FT_EFF_Eigen_C_2", "FT_EFF_Eigen_C_3", "FT_EFF_Eigen_Light_0", "FT_EFF_Eigen_Light_1",
      "FT_EFF_Eigen_Light_2", "FT_EFF_Eigen_Light_3", "FT_EFF_extrapolation", "FT_EFF_extrapolation_from_charm", // b-tagging uncertainties
-     "THEORY_CROSS_SECTION_signal", "THEORY_SHOWERING_HERWIG7_signal", "THEORY_SCALE_FACTORISATION_signal", "THEORY_SCALE_RENORMALISATION_signal",
-     "THEORY_ISR_signal", "THEORY_FSR_signal", "THEORY_HDAMP_signal", "THEORY_PTHARD_signal", "THEORY_TOPRECOIL_signal", "THEORY_TOP_MASS_signal",
+     "THEORY_CROSS_SECTION_signal", "THEORY_SHOWERING_HERWIG7_signal", "THEORY_SCALE_FACTORISATION_signal",
+     "THEORY_SCALE_RENORMALISATION_signal", "THEORY_ISR_signal", "THEORY_FSR_signal", "THEORY_HDAMP_signal",
+     "THEORY_PTHARD_signal", "THEORY_TOPRECOIL_signal", "THEORY_TOP_MASS_signal",
      "THEORY_PDF4LHC_VARIATION_signal", "THEORY_DR_DS_signal", // modelling uncertainties
-     "THEORY_CROSS_SECTION_Wjets", "THEORY_SCALE_COMBINED_Wjets", "THEORY_PDF4LHC_VARIATION_Wjets", "THEORY_EWK_Wjets", "THEORY_SCALE_COMBINED_multiboson_noW",
-     "THEORY_PDF4LHC_VARIATION_multiboson_noW", "THEORY_EWK_multiboson_noW", "THEORY_CROSS_SECTION_other_top_noWt", "FAKES_Electron", "FAKES_Muon", // bkgd uncertainties
+     "THEORY_CROSS_SECTION_Wjets", "THEORY_SCALE_COMBINED_Wjets", "THEORY_PDF4LHC_VARIATION_Wjets", "THEORY_EWK_Wjets",
+     "THEORY_SCALE_COMBINED_multiboson_noW", "THEORY_PDF4LHC_VARIATION_multiboson_noW", "THEORY_EWK_multiboson_noW",
+     "THEORY_CROSS_SECTION_other_top_noWt", "FAKES_Electron", "FAKES_Muon", // bkgd uncertainties
      "LUMINOSITY" // lumi uncertainty
    };
 
    vector<string> statistical_uncertainties = {"STAT_MC"};
    
-   vector<string> external_uncertainties = {"FULL_SYS_SUM", "FULL_SYS_SUM_DETECTOR", "FULL_SYS_SUM_THEORY", "TOTAL_SYSONLY", "TOTAL", "TOTAL_NO_DR_DS", "FULL_SYS_TOYS"};
+   vector<string> external_uncertainties = {"FULL_SYS_SUM", "FULL_SYS_SUM_DETECTOR", "FULL_SYS_SUM_THEORY",
+					    "TOTAL_SYSONLY", "TOTAL", "TOTAL_NO_DR_DS", "FULL_SYS_TOYS"};
 
    // ------------------------------------------------ //
    // ---  Do linear template fit
@@ -356,58 +386,76 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
       return 1;
    }
 
+   if ( !doPseudo ) {
+     vector<double> combined_error;
+     for (int i=1; i<= combined_data->GetNbinsX(); i++ ) {
+       combined_error.push_back(combined_data->GetBinError(i)/combined_data->GetBinContent(i));
+     }
+     ltf.AddErrorRelative("pseudoDataStat", combined_error, 0.0, LTF::Uncertainty::Constrained);
+   }
+   else {
+   // Start building covariance matrix
+   // Get data covariance matrix after unfolding from TUnfold
+   // Covariance defined as rho_ij*sigma_i*sigma_j
+   // sigma is the absolute error
+
+   // In order to plot the correlation matrix in an interactive root session, just do
+   // auto htext = (TH2D*)_file0->Get("combined_corr")
+   // gStyle->SetPaintTextFormat("4.2f");
+   // htext->SetMarkerSize(1.0);
+   // htext->Draw("TEXT colz")
    TH2D* combined_covariance = new TH2D("combined_cov", "combined_cov", bins_number, 0, bins_number, bins_number, 0, bins_number);
+   TH2D* combined_correlation = new TH2D("combined_corr", "combined_corr", bins_number, 0, bins_number, bins_number, 0, bins_number);
    bin_offset = 0;
    for ( auto& fit_var: fit_vars ) {
-     TString histnameCovStat("unfolding_"+fit_var+"_NOSYS"); // "unfolding_mbl_selected_NOSYS"  ->  unfolding_covariance_matrix_ptl1_covariance_STAT_DATA
+     TString histnameCovStat("unfolding_"+fit_var+"_NOSYS"); // "unfolding_ptl1_selected_NOSYS"  ->  unfolding_covariance_matrix_ptl1_covariance_STAT_DATA
       histnameCovStat.ReplaceAll("unfolding_","unfolding_covariance_matrix_");
-      histnameCovStat.ReplaceAll("_NOSYS","_covariance_STAT_DATA");
+      histnameCovStat.ReplaceAll("_NOSYS","_covariance_STAT_DATA"); // johannes do this is one line
+
       TH2D* cov_stat_dat = file->Get<TH2D>(histnameCovStat);
       if ( !cov_stat_dat ) { cerr<<"Could not find covariance matrix " << histnameCovStat <<endl; exit(1);}
       else cout<<"Found covarinace matrix "<<histnameCovStat<<endl;
-      TH1D* hist = file->Get<TH1D>("unfolding_error_"+fit_var+"_direct_envelope_STAT_DATA__1up");
-      for ( int i = 1; i < cov_stat_dat->GetNbinsX(); i++ ) {
-	for ( int j = 1; j < cov_stat_dat->GetNbinsY(); j++ ) {
-	  double bin_width_x = hist->GetXaxis()->GetBinWidth(i);
-	  double bin_width_y = hist->GetXaxis()->GetBinWidth(j);
-	  combined_covariance->SetBinContent(i+bin_offset,j+bin_offset, cov_stat_dat->GetBinContent(i,j)/(bin_width_x*bin_width_y));
+      TH1D* h_err  = file->Get<TH1D>("unfolding_error_"+fit_var+"_direct_envelope_STAT_DATA__1up");
+      TH1D* h_data = file->Get<TH1D>("unfolding_"+fit_var+"_NOSYS");
+      for ( int i = 1; i < cov_stat_dat->GetNbinsX() - iRemoveBins; i++ ) {
+	double bin_width_x = h_err->GetXaxis()->GetBinWidth(i);
+	double sigma_data_x = sqrt(cov_stat_dat->GetBinContent(i,i)); //h_data->GetBinContent(i) * h_err->GetBinContent(i);
+	//cout<<"sqrt(cov) = "<<sqrt(cov_stat_dat->GetBinContent(i,i))<<" abs err "<<sigma_data_x<<" rel err "<< h_err->GetBinContent(i) <<endl;
+	for ( int j = 1; j < cov_stat_dat->GetNbinsY() - iRemoveBins; j++ ) {
+	  double bin_width_y = h_err->GetXaxis()->GetBinWidth(j);
+	  double sigma_data_y = sqrt(cov_stat_dat->GetBinContent(j,j)); //h_data->GetBinContent(j) * h_err->GetBinContent(j);
+	  combined_covariance->SetBinContent(i+bin_offset,j+bin_offset, cov_stat_dat->GetBinContent(i,j) / (bin_width_x*bin_width_y)); // johannes check if it is correct to divide by bin width
+	  combined_correlation->SetBinContent(i+bin_offset,j+bin_offset, cov_stat_dat->GetBinContent(i,j)/(sigma_data_x*sigma_data_y));
 	  //cout<<"Filling histo with "<<cov_stat_dat->GetBinContent(i,j)<<" / ("<<bin_width_x<<" * "<<bin_width_y<<")"<<endl;
 	}
       }
-      bin_offset += cov_stat_dat->GetNbinsX() - 1;
-      //cov_stat_dat->Print("All");
+      bin_offset += cov_stat_dat->GetNbinsX() - 1 - iRemoveBins;
    }
-   //combined_covariance->Print("All");
+   // Print covariance matrix after filling the diagonal blocks
    vector<vector<double > > vecCov2_1 = TH2D_to_vecvec(combined_covariance);
    for ( auto& tmp_vec: vecCov2_1 ){
      for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
      cout<<endl;
    }
+   // Fill off-diagonal block matrices of the covariance matrix
    if ( fit_vars.size() > 1 ) {
-     bin_offset = 0;
      for ( int v1 = 0; v1 < fit_vars_short.size(); v1++ ) {
+       TH1D* h_err_v1 = file->Get<TH1D>("unfolding_error_"+fit_vars[v1]+"_direct_envelope_STAT_DATA__1up");
+       TH1D* h_data_var1 = file->Get<TH1D>("unfolding_"+fit_vars[v1]+"_NOSYS");
+       if ( !h_data_var1 ) { cerr<<"Could not find data for " << fit_vars[v1] <<endl; exit(1);}
        for ( int v2 = v1+1; v2 < fit_vars_short.size(); v2++ ) {
 	 TString histname = fit_vars_short[v1]+"_"+fit_vars_short[v2];
 	 TH2D* cov = TFile::Open(covariancefile)->Get<TH2D>(histname);
 	 if ( !cov ) { cerr<<"Could not find covariance matrix " << histname <<endl; exit(1);}
 	 else cout<<"Found covarinace matrix "<<histname<<endl;
-	 TH1D* h_err_v1 = file->Get<TH1D>("unfolding_error_"+fit_vars[v1]+"_direct_envelope_STAT_DATA__1up");
 	 TH1D* h_err_v2 = file->Get<TH1D>("unfolding_error_"+fit_vars[v2]+"_direct_envelope_STAT_DATA__1up"); // get relative error
 	 //TH1D* hist_data = ... //get cross section in single bin // might have to divide by bin width later
-	 bin_offset += h_err_v1->GetNbinsX()-1;
 	 // Projections of correlation matrix
 	 TH1D* projection_var1 = cov->ProjectionX("pro_v1",0,-1,"e");
 	 TH1D* projection_var2 = cov->ProjectionY("pro_v2",0,-1,"e");
-	 //projection_var1->Print("All");
-	 //projection_var2->Print("All");
-	 
 	 // Cross section file
-	 TH1D* h_data_var1 = file->Get<TH1D>("unfolding_"+fit_vars[v1]+"_NOSYS");
 	 TH1D* h_data_var2 = file->Get<TH1D>("unfolding_"+fit_vars[v2]+"_NOSYS");
-	 if ( !h_data_var1 ) { cerr<<"Could not find data for " << fit_vars[v1] <<endl; exit(1);}
-         else cout<<"Found data for "<<fit_vars[v1]<<endl;
 	 if ( !h_data_var2 ) { cerr<<"Could not find data for " << fit_vars[v2] <<endl; exit(1);}
-         else cout<<"Found data for "<<fit_vars[v2]<<endl;
 	 //cout<<"Var1 content ";
 	 //for ( int i = 1; i <= h_data_var1->GetNbinsX(); i++ ) cout<<projection_var1->GetBinContent(i) / h_data_var1->GetBinContent(i)<<"\t";
 	 //cout<<endl<<"Var1 error   ";
@@ -417,51 +465,91 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 	 //cout<<endl<<"Var2 error   ";
 	 //for ( int i = 1; i <= h_data_var2->GetNbinsX(); i++ ) cout<<projection_var2->GetBinError(i) / h_data_var2->GetBinError(i)<<"\t";
 	 //cout<<endl;
+	 int bin_offset_x = 0;
+	 int bin_offset_y = 0;
+	 for ( int v1_tmp = 0; v1_tmp <= v1; v1_tmp++ ) bin_offset_x += matrix_dimension[v1_tmp];
+	 for ( int v2_tmp = 0; v2_tmp <= v2; v2_tmp++ ) bin_offset_y += matrix_dimension[v2_tmp];
 
-	 for ( int i = 1; i < h_err_v1->GetNbinsX(); i++ ) {
-	   for ( int j = 1; j < h_err_v2->GetNbinsX(); j++ ) {
+	 cout<<"Now taking care of combination "<<fit_vars[v1]<<"_"<<fit_vars[v2]<<endl;
+	 cout<<"Bin offset X: "<<bin_offset_x<<endl;
+	 cout<<"Bin offset Y: "<<bin_offset_y<<endl;
+
+	 TString histnameCovStatX("unfolding_covariance_matrix_"+fit_vars[v1]+"_covariance_STAT_DATA");
+	 TH2D* cov_stat_dat_x = file->Get<TH2D>(histnameCovStatX);
+	 TString histnameCovStatY("unfolding_covariance_matrix_"+fit_vars[v2]+"_covariance_STAT_DATA");
+         TH2D* cov_stat_dat_y = file->Get<TH2D>(histnameCovStatY);
+	 for ( int i = 1; i < h_err_v1->GetNbinsX() - iRemoveBins; i++ ) {
+	   for ( int j = 1; j < h_err_v2->GetNbinsX() - iRemoveBins; j++ ) {
 	     // Calculate the covariance in the data from the one in Sherpa
 	     // 1. Get the Sherpa covariance: std::pow(cov->GetBinError(i,j),2)
 	     // 2. Divide by the std deviation from Sherpa: sigma_template1, sigma_template2
 	     // 3. Multiply with the std deviation from the data: sigma_data1, sigma_data2
-	     double sigma_data1 = h_data_var1->GetBinContent(i) * h_err_v1->GetBinContent(i);
-	     double sigma_data2 = h_data_var2->GetBinContent(j) * h_err_v2->GetBinContent(j);
+	     double sigma_data1 = sqrt(cov_stat_dat_x->GetBinContent(i,i)); //h_data_var1->GetBinContent(i) * h_err_v1->GetBinContent(i);
+	     double sigma_data2 = sqrt(cov_stat_dat_y->GetBinContent(j,j)); //h_data_var2->GetBinContent(j) * h_err_v2->GetBinContent(j);
 	     double sigma_template1 = projection_var1->GetBinError(i);
 	     double sigma_template2 = projection_var2->GetBinError(j);
-	     cout<<"Correlation "<<std::pow(cov->GetBinError(i,j),2)/ sigma_template1 / sigma_template2<<endl;
-	     combined_covariance->SetBinContent(i, j+bin_offset, std::pow(cov->GetBinError(i,j),2)*(sigma_data1*sigma_data2) / (sigma_template1*sigma_template2));
-	     combined_covariance->SetBinContent(j+bin_offset, i, std::pow(cov->GetBinError(i,j),2)*(sigma_data1*sigma_data2) / (sigma_template1*sigma_template2));
+	     //cout<<"Correlation "<<std::pow(cov->GetBinError(i,j),2)/ sigma_template1 / sigma_template2<<endl;
+	     combined_covariance->SetBinContent(i+bin_offset_x, j+bin_offset_y, std::pow(cov->GetBinError(i,j),2)*(sigma_data1*sigma_data2) / (sigma_template1*sigma_template2));
+	     combined_covariance->SetBinContent(j+bin_offset_y, i+bin_offset_x, std::pow(cov->GetBinError(i,j),2)*(sigma_data1*sigma_data2) / (sigma_template1*sigma_template2));
+	     combined_correlation->SetBinContent(i+bin_offset_x, j+bin_offset_y, std::pow(cov->GetBinError(i,j),2) / (sigma_template1*sigma_template2));
+             combined_correlation->SetBinContent(j+bin_offset_y, i+bin_offset_x, std::pow(cov->GetBinError(i,j),2) / (sigma_template1*sigma_template2));
 	   }
 	 }
        }
      }
    }
+   const bool writeCovarianceMatrix = false;
+   if ( writeCovarianceMatrix ) {
+     TString name_outfile = "correlation";
+     for ( auto tmp: fit_vars_short ) name_outfile += tmp;
+     TFile *outfile = new TFile(name_outfile+".root", "RECREATE");
+     combined_covariance->Write();
+     combined_correlation->Write();
+     outfile->Close();
+     outfile->Delete();
+   }
+
+   cout<<"Johannes print final covariance matrix"<<endl;
    vector<vector<double > > vecCov2 = TH2D_to_vecvec(combined_covariance);
    for ( auto& tmp_vec: vecCov2 ){
      for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
      cout<<endl;
    }
-   ltf.AddErrorRelative("STAT_DATA", vecCov2, LTF::Uncertainty::Constrained);
+   ltf.AddError("STAT_DATA", vecCov2, LTF::Uncertainty::Constrained);
 
    TH1D* total_error = new TH1D("total_error", "total_error", bins_number, 0, bins_number);
 
-
+   
    // Systematical uncertainties
    for ( auto& uncertainty: uncertainties ) {
      vector<double> combined_error;
      for ( auto& fit_variable: fit_vars ) {
        TH1D* hist_up   = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up");
        TH1D* hist_down = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1down");
-       for (int i=1; i< hist_up->GetNbinsX(); i++) {
-	 combined_error.push_back(std::max(hist_up->GetBinContent(i), hist_down->GetBinContent(i)));
-	 total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(std::max(hist_up->GetBinContent(i),hist_down->GetBinContent(i)),2)));
+       for (int i=1; i< hist_up->GetNbinsX() - iRemoveBins; i++) {
+	 combined_error.push_back(std::max(abs(hist_up->GetBinContent(i)), abs(hist_down->GetBinContent(i))));
+	 total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(std::max(abs(hist_up->GetBinContent(i)),abs(hist_down->GetBinContent(i))),2)));
+	 //combined_error.push_back(hist_up->GetBinContent(i));
+         //total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(hist_up->GetBinContent(i),2))); // Use up variation
+	 //combined_error.push_back(hist_down->GetBinContent(i));
+         //total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(hist_down->GetBinContent(i),2))); // Use down variation
        }
      }
      double corr = 1.0;
      if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::Constrained);
      combined_error.clear();
    }
-
+   {
+     vector<double> combined_error;
+     for ( auto& fit_variable: fit_vars ) {
+       TH1D* hist_up   = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainties[0]+"__1up");
+       for (int i=1; i< hist_up->GetNbinsX() - iRemoveBins; i++) {
+	 combined_error.push_back(0.1);
+       }
+     }
+     if ( combined_error.size() > 0 ) ltf.AddErrorRelative("UnconstrainedError", combined_error, 1.0, LTF::Uncertainty::Unconstrained);
+   } // Johannes added this unconstrained error for testing purposes
+   
    total_error->Print("All");
    
    // --- Add one systematical uncertainty of 10% in every bin.
@@ -476,7 +564,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      for ( auto& fit_variable: fit_vars ) {
        TH1D* hist_up = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up");
        TH1D* hist_down = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1down");
-       for (int i=1; i< hist_up->GetNbinsX(); i++) {
+       for (int i=1; i< hist_up->GetNbinsX() - iRemoveBins; i++) {
          combined_error.push_back(std::max(hist_up->GetBinContent(i), hist_down->GetBinContent(i)));
 	 total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(std::max(hist_up->GetBinContent(i),hist_down->GetBinContent(i)),2)));
        }
@@ -486,6 +574,14 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      combined_error.clear();
    }
 
+   if ( doPseudo ) {
+     vector<double> combined_error;
+     for (int i=1; i<= combined_data->GetNbinsX(); i++ ) {
+       combined_error.push_back(combined_data->GetBinError(i)/combined_data->GetBinContent(i));
+     }
+     ltf.AddErrorRelative("pseudoDataStat", combined_error, 0.0, LTF::Uncertainty::Constrained);
+   }
+     
    total_error->Print("All");
    
    
@@ -494,7 +590,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      vector<double> combined_error;
      for ( auto& fit_variable: fit_vars ) {
        TH1D* hist = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up");
-       for (int i=1; i< hist->GetNbinsX(); i++) {
+       for (int i=1; i< hist->GetNbinsX() - iRemoveBins; i++) {
          combined_error.push_back(hist->GetBinContent(i));
        }
      }
@@ -502,10 +598,11 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::External);
      combined_error.clear();
    }
-
+   }
    PrintAsciiTable(templates,combined_data);
    
-   LTF::LiTeFit fit = ltf.DoLiTeFit();
+   //LTF::LiTeFit fit = ltf.DoLiTeFit();
+   LTF::LiTeFit fit = ltf.DoQuadraticTemplateFit(3);
    fit.PrintFull();
 
    //fit.DoIterativeFitNewton(6,0.6,2,1);

@@ -160,15 +160,35 @@ TH1D* LTF_ROOTTools::MakeHistogram(const Eigen::VectorXd& values, vector<double>
    return hist;
 }
 
-double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char* title, const LTF::LiTeFit& fit, const vector<string> &uncertainties) {
+// __________________________________________________________________________________ //
+//!
+//!  MakeHistogram
+//!
+//!  make histogram from an Eigen::Vector including stat. uncertainties of the template for plotting purposes
+//!
+TH1D* LTF_ROOTTools::MakeHistogram(const Eigen::VectorXd& values, const Eigen::VectorXd& errors, vector<double> bins )
+{
+   TH1D* hist = bins.empty() ?
+      new TH1D("hist","hist",values.size(),0,values.size() ) :
+      new TH1D("hist","hist",bins.size()-1, &bins[0]);
+   if ( bins.size() && int(values.size()+1) != int(bins.size()) ) {cout<<"ERROR! binning and number of entries does not fit!"<<endl;exit(1);}
+   if ( bins.size() && errors.size() && int(errors.size()+1) != int(bins.size()) ) {cout<<"ERROR! binning and number of errors does not fit!"<<endl;exit(1);}
+   for ( size_t i = 0 ;i<bins.size()-1; i++ ) {
+      hist->SetBinContent(i+1, values(i));
+      if ( errors.size() > 0 ) hist->SetBinError(i+1, errors(i));
+   }
+   return hist;
+}
 
+double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char* title, const LTF::LiTeFit& fit, const vector<string> &uncertainties) {
    bool useNuisanceParameter = true;
    int nPar = 1; //M.cols()-1;
    double sum_error = 0; // this needs to be a vector in the case of more than 1 parameter
+
    if ( !useNuisanceParameter ) {
      for ( int i = 0 ; i<nPar ; i++ ) {
          TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
-
+	 
          for ( const string &source: uncertainties ) {
             double error = 0;
             //if (source.find("stat.")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
@@ -179,9 +199,7 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
          h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error));
          h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
          h->SetBarWidth(0.85);
-         h->GetYaxis()->SetLabelSize(0.03);
          h->GetYaxis()->SetTitle("Uncertainty [GeV]");
-         h->GetXaxis()->SetLabelSize(0.02);
          h->GetXaxis()->SetTickLength(0);
          h->Draw("hbar");
       }
@@ -189,24 +207,36 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
    else {
       for ( int i = 0 ; i<nPar ; i++ ) {
 	 c.SetLeftMargin(0.6);
-	 TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
+	 
+
+	 TH1D* h  = new TH1D(title, "", uncertainties.size()+1, 0, uncertainties.size()+1);
          for ( const string &source: uncertainties ) {
            double error = 0;
-           if (source.find("STAT_DATA")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
-           else if (source.find("STAT_MC")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
-           else    error = fabs(fit.DeltaSys.find(source)->second(i));
-
+	   if (source.find("STAT_DATA")!= std::string::npos ) error =std::sqrt(fit.Vsource.find(source)->second(0,0));
+	   else if (source.find("STAT_MC")!= std::string::npos ) error =std::sqrt(fit.Vsource.find(source)->second(0,0));
+	   else if (source.find("pseudoDataStat")!= std::string::npos ) error =std::sqrt(fit.Vsource.find(source)->second(0,0));
+	   else    error = fabs(fit.DeltaSys.find(source)->second(i));
+	   
            h->Fill(source.c_str(), error);
            sum_error += pow(error,2);
          }
-
+	 if ( uncertainties.size() > 30 ) {
+	   h->GetXaxis()->SetLabelSize(6);
+           h->GetXaxis()->SetTitleSize(6);
+	   h->GetYaxis()->SetLabelSize(6);
+           h->GetYaxis()->SetTitleSize(6);
+	   h->GetYaxis()->SetTitleOffset(1.2);
+	   h->GetYaxis()->SetRangeUser(0.0, 1.5);
+         }
+         else {
+	   h->GetYaxis()->SetRangeUser(0.0, 1.5);
+	   h->GetYaxis()->SetTitleOffset(1.2);
+	 }
          h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error));
          h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
          h->SetBarOffset(0.1);
          h->SetBarWidth(0.8);
-         h->GetYaxis()->SetLabelSize(0.03);
          h->GetYaxis()->SetTitle("Uncertainty [GeV]");
-         h->GetXaxis()->SetLabelSize(0.02);
          h->GetXaxis()->SetTickLength(0);
          h->Draw("hbar");
 
@@ -227,7 +257,7 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
 	 TGraphErrors *band2 = new TGraphErrors(nbins, x, y, xerr2, yerr);
          band2->SetFillColor(kYellow);
 
-	 TH1D* h1  = new TH1D("NP", "NP", uncertainties.size(), 0, uncertainties.size());
+	 TH1D* h1  = new TH1D("NP", "", uncertainties.size(), 0, uncertainties.size());
          TGraphErrors* g = new TGraphErrors(uncertainties.size());
          for ( long unsigned int j = 0; j < uncertainties.size(); j++ ) {
 	    h1->Fill(uncertainties[j].c_str(), fit.map_nuisance.find(uncertainties[j])->second.first);
@@ -241,29 +271,28 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
          //h1->SetBinContent(h1->GetNbinsX(), 0.);
          //h1->GetXaxis()->SetBinLabel(h1->GetNbinsX(), "");
          gStyle->SetHistMinimumZero();
+	 
          h1->SetBarOffset(0.95);
          h1->SetBarWidth(0);
          h1->SetLineColor(10);
          h1->SetFillColor(10);
 	 h1->SetMarkerColor(10);
          h1->SetLineColorAlpha(10,0);
-
-         if ( uncertainties.size() > 20 ) {
-	   h1->GetYaxis()->SetLabelSize(0.01);
-	   h1->GetXaxis()->SetLabelSize(0.01);
-	   g->SetMarkerSize(.5);
+	 g->SetMarkerStyle(20);
+         g->SetMarkerColor(kBlue);
+	 g->SetMarkerSize(0.8);
+	 if ( uncertainties.size() > 30 ) {
+           h1->GetXaxis()->SetLabelSize(6);
+           h1->GetXaxis()->SetTitleSize(6);
+           h1->GetYaxis()->SetLabelSize(6);
+           h1->GetYaxis()->SetTitleSize(6);
+           h1->GetYaxis()->SetTitleOffset(1.2);
+           g->SetMarkerSize(0.5);
 	 }
-	 else {
-	   h1->GetYaxis()->SetLabelSize(0.035);
-	   h1->GetXaxis()->SetLabelSize(0.02);
-	   g->SetMarkerSize(1);
-
-         }
+	 
 	 h1->GetYaxis()->SetTitle("Nuisance parameter");
          h1->GetXaxis()->SetTickLength(0);
 	 h1->GetYaxis()->SetRangeUser(-3,3);
-         g->SetMarkerStyle(20);
-	 g->SetMarkerColor(kBlue);
 
          h1->Draw("hbar e");
 	 band2->Draw("same 2");
@@ -492,7 +521,7 @@ void LTF_ROOTTools::makeErrorPlotDilepton(TCanvas& c1, const char* ps_name, cons
   makeErrorPlot(c1, ps_name, "all uncertainties", fit, all_uncertainties); 
   //error_summary.insert({"Stat.+Lumi",       makeErrorPlot(c1, ps_name, "statistical uncertainties", fit, other_uncertainties)});
 
-  TH1D* h  = new TH1D("Full error breakdown", "Full error breakdown", error_summary.size()+1, 0, error_summary.size()+1);
+  TH1D* h  = new TH1D("Full error breakdown", "", error_summary.size()+1, 0, error_summary.size()+1);
   double sum_error_sq = 0;
   for( auto& tmp_err: error_summary ) {
     h->Fill(tmp_err.first.c_str(), tmp_err.second);
@@ -502,9 +531,9 @@ void LTF_ROOTTools::makeErrorPlotDilepton(TCanvas& c1, const char* ps_name, cons
   h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error_sq));
   h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
   h->SetBarWidth(0.85);
-  h->GetYaxis()->SetLabelSize(0.03);
+  //h->GetYaxis()->SetLabelSize(0.03);
   h->GetYaxis()->SetTitle("Uncertainty [GeV]");
-  h->GetXaxis()->SetLabelSize(0.02);
+  //h->GetXaxis()->SetLabelSize(0.02);
   h->GetXaxis()->SetTickLength(0);
   h->GetXaxis()->LabelsOption("<");
   h->Draw("hbar");
@@ -633,9 +662,10 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
                                        "FAKES_Electron",
                                        "FAKES_Muon"};
 
-  vector<string> other_uncertainties = {"STAT_DATA",
-                                        "STAT_MC",
-                                        "LUMINOSITY"};
+  vector<string> other_uncertainties = {"LUMINOSITY",
+					"pseudoDataStat",
+					"STAT_MC",
+					"STAT_DATA"};
 
   vector<string> all_uncertainties;
   all_uncertainties.insert(all_uncertainties.end(), lepton_uncertainties.begin(), lepton_uncertainties.end());
@@ -645,7 +675,7 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
   all_uncertainties.insert(all_uncertainties.end(), b_tagging_uncertainties.begin(), b_tagging_uncertainties.end());
   all_uncertainties.insert(all_uncertainties.end(), modelling_uncertainties.begin(), modelling_uncertainties.end());
   all_uncertainties.insert(all_uncertainties.end(), bkgd_uncertainties.begin(), bkgd_uncertainties.end());
-  all_uncertainties.insert(all_uncertainties.end(), "LUMINOSITY");
+  all_uncertainties.insert(all_uncertainties.end(), other_uncertainties.begin(), other_uncertainties.end());
   
   std::map<string, double> error_summary;
   error_summary.insert({"Lepton",           makeErrorPlot(c1, ps_name, "Lepton uncertainties", fit, lepton_uncertainties)});
@@ -658,7 +688,7 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
   error_summary.insert({"Stat.+Lumi",       makeErrorPlot(c1, ps_name, "statistical uncertainties", fit, other_uncertainties)});
   makeErrorPlot(c1, ps_name, "all uncertainties", fit, all_uncertainties);
   
-  TH1D* h  = new TH1D("Full error breakdown", "Full error breakdown", error_summary.size()+1, 0, error_summary.size()+1);
+  TH1D* h  = new TH1D("Full error breakdown", "", error_summary.size()+1, 0, error_summary.size()+1);
   double sum_error_sq = 0;
   for( auto& tmp_err: error_summary ) {
     h->Fill(tmp_err.first.c_str(), tmp_err.second);
@@ -668,9 +698,7 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
   h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error_sq));
   h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
   h->SetBarWidth(0.85);
-  h->GetYaxis()->SetLabelSize(0.03);
   h->GetYaxis()->SetTitle("Uncertainty [GeV]");
-  h->GetXaxis()->SetLabelSize(0.02);
   h->GetXaxis()->SetTickLength(0);
   h->GetXaxis()->LabelsOption("<");
   h->Draw("hbar");
@@ -696,6 +724,17 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
 				const string& referencename)
 {
    gStyle->SetOptStat(0);
+   gStyle->SetLabelFont(43, "XYZ");
+   gStyle->SetTitleFont(43, "XYZ");
+   gStyle->SetLegendFont(43);
+   gStyle->SetLabelSize(14, "XYZ");
+   gStyle->SetTitleSize(14, "XYZ");
+   gStyle->SetTitleFontSize(14);
+   gStyle->SetLegendTextSize(14);
+   gStyle->SetTextFont(43);
+   gStyle->SetTextSize(14);
+   gROOT->ForceStyle();
+
    gSystem->mkdir("plots");
    auto& M = fit.M;
    
@@ -708,8 +747,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
 
    map<double,TH1D*> templates;
    for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
-      //double ref = reference_values(iref);
-      templates[iref] = MakeHistogram(fit.Y.col(iref),bins);
+     templates[iref] = MakeHistogram(fit.Y.col(iref), fit.SysY.at("statY").col(iref), bins); // templates including stat. uncertainties
    }
 
    TH1D* data    = MakeHistogram(fit.Dt,bins,fit.Vs);
@@ -733,51 +771,65 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    // ---------------------------------------------- //
    // main plot
    // ---------------------------------------------- //
+
+   data->SetMarkerStyle(20);
+   data->SetMarkerSize(1.4);
+   data->SetLineColor(kBlack);
    for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
       c1.cd(1);
       templates[iref]->SetLineWidth(2);
-      templates[iref]->Print("All");
       if ( iref == 0 ) {
          templates[0]->SetTitle((";"+xaxistitle+";"+yaxistitle).c_str());
          templates[0]->SetLineColor(kRed+1);
          //if ( templates[0]->GetMaximum()>0 )templates[0]->SetMinimum(0);
          if ( !fit.GetLogNormal() ) {
 	   templates[0]->SetMinimum(templates[0]->GetMinimum()*0.5);
-	   templates[0]->SetMaximum(templates[0]->GetMaximum()*50);
+	   templates[0]->SetMaximum(templates[0]->GetMaximum()*100);
 	 }
 	 else {
 	   templates[0]->SetMinimum(templates[0]->GetMinimum()*1.2); // if cross section in one bin is smaller than 1
 	   templates[0]->SetMaximum(templates[0]->GetMaximum()*3.);
 	 }
          templates[0]->SetLineWidth(3);
-         templates[0]->DrawClone("hist");
+         templates[0]->DrawClone("hist E");
       }
       else if ( iref==reference_values.size()-1) {
 	 //if ( templates[0]->GetMaximum()>0 ) templates[iref]->SetFillColorAlpha(kBlue,0.15);
          templates[iref]->SetLineColor(kBlue+2);
          templates[iref]->SetLineWidth(3);
-         templates[iref]->Draw("histsame");
+         templates[iref]->Draw("histsame E");
       }
       else {
          templates[iref]->SetLineColor(iref+2);
          templates[iref]->SetLineWidth(2);
-         templates[iref]->Draw("histsame");
+         templates[iref]->Draw("histsame E");
       }
       c1.cd(2);
       TH1D* tmp = (TH1D*)templates[iref]->Clone("tmp");
-      tmp->Divide(data);
-      if ( iref == 0 ) {
-	tmp->GetYaxis()->SetRangeUser(0.05, 1.95);
-	tmp->GetYaxis()->SetTitle("Ratio to data");
+      for ( int i = 1; i <= data->GetNbinsX(); i++ ) {
+	tmp->SetBinError(i, templates[iref]->GetBinError(i) / templates[iref]->GetBinContent(i) );
+        tmp->SetBinContent(i, templates[iref]->GetBinContent(i) / TheoFit->GetBinContent(i) );
+	//tmp->SetBinContent(i, templates[iref]->GetBinContent(i) / data->GetBinContent(i) );
       }
-      tmp->Draw("hist same");
+      if ( iref == 0 ) {
+	tmp->GetYaxis()->SetRangeUser(0.45, 1.65);
+	tmp->GetYaxis()->CenterTitle();
+	tmp->GetYaxis()->SetTitle("Ratio to best model");
+      }
+      tmp->Draw("hist same E");
    }   
    TLine *line1 = new TLine(templates[0]->GetXaxis()->GetXmin(), 1.0, templates[0]->GetXaxis()->GetXmax(), 1.0);
    line1->SetLineColor(kBlack);
    line1->SetLineStyle(2);
    line1->SetLineWidth(2);
    line1->Draw("same");
-   //if ( templates[0]->GetMaximum()>0 )templates[0]->SetFillColorAlpha(kRed,0.15);
+   TH1D* data_clone = (TH1D*)data->Clone("data_clone");
+   for ( int i = 1; i <= data->GetNbinsX(); i++ ) {
+     data_clone->SetBinError(i, data_clone->GetBinError(i) / data_clone->GetBinContent(i) );
+     data_clone->SetBinContent(i, data_clone->GetBinContent(i) / TheoFit->GetBinContent(i) );
+   }
+   data_clone->Draw("e0same");
+
    c1.cd(1);
    templates[0]->Draw("histsame");
 
@@ -797,10 +849,15 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    legend.SetBorderSize(0);
    legend.AddEntry(data,"Data","E0P");
    for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
-      legend.AddEntry(templates[iref],Form("Template #alpha=%6.2f",reference_values[iref]),"FL");
+      legend.AddEntry(templates[iref],Form("Template m_{t}=%6.2f",reference_values[iref]),"FL");
    }
    legend.AddEntry(TheoFit,"Estimated best model","L");
    legend.Draw();
+
+   TLatex text;
+   text.SetNDC();
+   text.SetTextAlign(13);
+   text.DrawLatex(0.8,0.6,Form("m_{fit} =  %.2f +/- %.2f GeV",fit.ahat(0),fit.ahat_errorFit(0)));
 
    c1.Print(ps_name);
    c1.Clear();
@@ -814,8 +871,8 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    // ---------------------------------------------- //
    // print relative size of all errors
    // ---------------------------------------------- //
-   //makeErrorPlotSingle(c1, ps_name, fit);
-   makeErrorPlotDilepton(c1, ps_name, fit);
+   makeErrorPlotSingle(c1, ps_name, fit);
+   //makeErrorPlotDilepton(c1, ps_name, fit);
 
    // ---------------------------------------------- //
    // print linear-functions in every bin
@@ -826,11 +883,11 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    c1.SetLeftMargin(0.16);
    c1.SetBottomMargin(0.16);
    c1.SetLogy();
-   
+
    gPad->SetTicky(1);
 
-   gStyle->SetLabelSize(0.05,"XYZ");
-   gStyle->SetTitleSize(0.05,"XYZ");
+   //gStyle->SetLabelSize(0.05,"XYZ");
+   //gStyle->SetTitleSize(0.05,"XYZ");
    gStyle->SetTitleOffset(1.1,"X");
    gStyle->SetTitleOffset(1.6,"Y");
    gStyle->SetMarkerSize(2);
@@ -915,7 +972,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
          graph->SetMinimum(0);
 
       graph->SetMaximum( max(gdata->GetY()[0],max(graph->GetY()[0],graph->GetY()[graph->GetN()-1]))*1.2);
-      graph->GetYaxis()->SetRangeUser(0.000001, 1);
+      graph->GetYaxis()->SetRangeUser(0.00001, 0.3); //johannes
       //graph->SetMinimum( -20 );
       graph->Draw("APE0");
       if ( fit.GetLogNormal() )
@@ -934,10 +991,8 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       if ( ibin==0 ) {
          double xmin = fit.GetLogNormal() ? 0.36 : 0.45;
          TLegend legend(xmin,0.19,0.96,0.47,"","NDC");
-         //legend.SetNColumns(3);
          legend.SetFillStyle(0);
          legend.SetBorderSize(0);
-         legend.SetTextSize(0.05);
          legend.AddEntry(data,"Data","E0P");
          legend.AddEntry(graph,"Templates","PE0");
          if ( fit.GetLogNormal() ) {
@@ -953,11 +1008,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
 
       TLatex text;
       text.SetNDC();
-      text.SetTextFont(42);
       text.SetTextAlign(11);
-      text.SetTextSize(0.05);
-      
-      text.SetTextSize(0.04);
       //text.DrawLatex(0.20,0.93,Form("%3.1f_{ }<_{ }|y|_{ }<_{ }%3.1f",input_table["ylow"][ibin],input_table["yhigh"][ibin]));
       TString infotext = "_{ }<_{ }" + xaxistitle + "_{ }<_{ }";
       infotext.Prepend(Form("%3.0f", bins[ibin]));
@@ -1002,9 +1053,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
     //gChi2->SetTitle(";#alpha_{0} [unit];#chi^{2}/ndf");
     gChi2->SetTitle((";"+referencename+";#chi^{2}/ndf").c_str());
     gChi2->SetMinimum(0.0);
-    gChi2->SetMaximum(2.5); 
-    gChi2->SetMinimum(0.75); // use for CMS jet fits
-    gChi2->SetMaximum(1.00); // use for CMS jet fits 
+    gChi2->SetMaximum(3.0); 
 
     gChi2->Draw("ap");
     if ( reference_values.size()+1<= 8 ) 
@@ -1031,7 +1080,6 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
        //legend.SetNColumns(3);
        legend.SetFillStyle(0);
        legend.SetBorderSize(0);
-       legend.SetTextSize(0.045);
        legend.AddEntry(gChi2LTF,"#hat#chi^{2} of the Linear Template Fit","P");
        legend.AddEntry(gChi2,   "#chi^{2}_{#font[12]{j}} of the individual templates","P");
        legend.AddEntry(gChi2->GetFunction("pol2"),"Parabola","L");
@@ -1230,7 +1278,7 @@ void LTF_ROOTTools::plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double>
          //legend.SetNColumns(3);
          legend.SetFillStyle(0);
          legend.SetBorderSize(0);
-         legend.SetTextSize(0.03);
+         //legend.SetTextSize(0.03);
          legend.AddEntry(graph,"Templates","PE0");
          legend.AddEntry(f2leg,"Linearized model","L");
          legend.AddEntry(gtheo,"Projections onto model","P");
@@ -1240,9 +1288,9 @@ void LTF_ROOTTools::plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double>
 
       TLatex text;
       text.SetNDC();
-      text.SetTextFont(42);
+      //text.SetTextFont(43);
       text.SetTextAlign(13);
-      text.SetTextSize(0.05);
+      text.SetTextSize(12);
       //text.DrawLatex(0.75,0.25,Form("Bin %d",ibin));
       text.DrawLatex(0.02,0.97,Form("Bin %d",ibin));
 
@@ -1366,8 +1414,8 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
 
    gPad->SetTicky(1);
 
-   gStyle->SetLabelSize(0.05,"XYZ");
-   gStyle->SetTitleSize(0.05,"XYZ");
+   //gStyle->SetLabelSize(0.05,"XYZ");
+   //gStyle->SetTitleSize(0.05,"XYZ");
    gStyle->SetTitleOffset(1.1,"X");
    gStyle->SetTitleOffset(1.6,"Y");
    gStyle->SetMarkerSize(2);
@@ -1485,7 +1533,7 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
          //legend.SetNColumns(3);
          legend.SetFillStyle(0);
          legend.SetBorderSize(0);
-         legend.SetTextSize(0.045);
+         //legend.SetTextSize(0.045);
          legend.AddEntry(data,"Data","E0P");
          legend.AddEntry(graph,"Templates","PE0");
          if ( fit.GetLogNormal() ) {
@@ -1502,11 +1550,7 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
 
       TLatex text;
       text.SetNDC();
-      text.SetTextFont(42);
       text.SetTextAlign(11);
-      text.SetTextSize(0.045);
-      //text.DrawLatex(0.20,0.20,Form("Bin %d",ibin));
-
       text.SetTextAlign(31);
       text.DrawLatex(0.955,0.20,Form("Bin %d",ibin));
 
@@ -1587,7 +1631,7 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
        //legend.SetNColumns(3);
        legend.SetFillStyle(0);
        legend.SetBorderSize(0);
-       legend.SetTextSize(0.045);
+       //legend.SetTextSize(0.045);
        legend.AddEntry(gChi2LTF,"#hat#chi^{2} of the Quadratic Template Fit","P");
        legend.AddEntry(gChi2,   "#chi^{2}_{#font[12]{j}} of the individual templates","PL");
        legend.AddEntry(gChi2->GetFunction("pol2"),"Parabola","L");

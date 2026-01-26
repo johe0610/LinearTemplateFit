@@ -66,7 +66,15 @@ TH1D* MakeHistogram(int nEvents, int seed, double mean, double sigma, vector<dou
 //!  make a histogram from an Eigen::Vector for plotting purposes
 //!
 static
-TH1D* MakeHistogram(const Eigen::VectorXd& values, vector<double> bins ={}, const std::vector<std::pair<std::string,Eigen::MatrixXd > >& V = {} );
+TH1D* MakeHistogram(const Eigen::VectorXd& values, vector<double> bins = {}, const std::vector<std::pair<std::string,Eigen::MatrixXd > >& V = {} );
+
+
+// __________________________________________________________________________________ //
+//!
+//!  MakeHistogram
+//!
+static
+TH1D* MakeHistogram(const Eigen::VectorXd& values, const Eigen::VectorXd& errors = {}, vector<double> bins = {});
 
 // __________________________________________________________________________________ //
 static
