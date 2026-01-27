@@ -211,6 +211,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    }
    else */
    {
+     TH1D* combined_template_150   = new TH1D("combined_template_150", "combined_template_150", bins_number, 0, bins_number);
      TH1D* combined_template_162_5 = new TH1D("combined_template_162_5", "combined_template_162_5", bins_number, 0, bins_number);
      TH1D* combined_template_165   = new TH1D("combined_template_165", "combined_template_165", bins_number, 0, bins_number);
      TH1D* combined_template_167_5 = new TH1D("combined_template_167_5", "combined_template_167_5", bins_number, 0, bins_number);
@@ -220,9 +221,11 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      TH1D* combined_template_177_5 = new TH1D("combined_template_177_5", "combined_template_177_5", bins_number, 0, bins_number);
      TH1D* combined_template_180   = new TH1D("combined_template_180", "combined_template_180", bins_number, 0, bins_number);
      TH1D* combined_template_182_5 = new TH1D("combined_template_182_5", "combined_template_182_5", bins_number, 0, bins_number);
+     TH1D* combined_template_200   = new TH1D("combined_template_200", "combined_template_200", bins_number, 0, bins_number);
 
      int bin_offset = 0;
      for ( auto& tmp: fit_vars_short ) {
+       TH1D* h_tmp_150   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_150.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_162_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_162_5.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_165   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_165.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_167_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_167_5.root")->Get<TH1D>(tmp);
@@ -232,9 +235,11 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        TH1D* h_tmp_177_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_177_5.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_180   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_180.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_182_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_182_5.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_200   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_200.root")->Get<TH1D>(tmp);
 
        double kFactor =  1.0; // Use ~1.5 as k factor
        for ( int i = 1; i<= h_tmp_165->GetNbinsX() - iRemoveBins; i++ ) {
+         combined_template_150->SetBinContent(i+bin_offset, h_tmp_150->GetBinContent(i)*kFactor);
          combined_template_162_5->SetBinContent(i+bin_offset, h_tmp_162_5->GetBinContent(i)*kFactor);
 	 combined_template_165->SetBinContent(i+bin_offset, h_tmp_165->GetBinContent(i)*kFactor);
          combined_template_167_5->SetBinContent(i+bin_offset, h_tmp_167_5->GetBinContent(i)*kFactor);
@@ -244,7 +249,9 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
          combined_template_177_5->SetBinContent(i+bin_offset, h_tmp_177_5->GetBinContent(i)*kFactor);
          combined_template_180->SetBinContent(i+bin_offset, h_tmp_180->GetBinContent(i)*kFactor);
          combined_template_182_5->SetBinContent(i+bin_offset, h_tmp_182_5->GetBinContent(i)*kFactor);
+         combined_template_200->SetBinContent(i+bin_offset, h_tmp_200->GetBinContent(i)*kFactor);
 
+         combined_template_150->SetBinError(i+bin_offset, h_tmp_150->GetBinError(i)*kFactor);
 	 combined_template_162_5->SetBinError(i+bin_offset, h_tmp_162_5->GetBinError(i)*kFactor);
 	 combined_template_165->SetBinError(i+bin_offset, h_tmp_165->GetBinError(i)*kFactor);
          combined_template_167_5->SetBinError(i+bin_offset, h_tmp_167_5->GetBinError(i)*kFactor);
@@ -254,9 +261,11 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 	 combined_template_177_5->SetBinError(i+bin_offset, h_tmp_177_5->GetBinError(i)*kFactor);
          combined_template_180->SetBinError(i+bin_offset, h_tmp_180->GetBinError(i)*kFactor);
          combined_template_182_5->SetBinError(i+bin_offset, h_tmp_182_5->GetBinError(i)*kFactor);
+	 combined_template_200->SetBinError(i+bin_offset, h_tmp_200->GetBinError(i)*kFactor);
        }
        bin_offset += h_tmp_165->GetNbinsX() - iRemoveBins;
      }
+     templates[150] = combined_template_150;
      templates[162.5] = combined_template_162_5;
      templates[165] = combined_template_165;
      templates[167.5] = combined_template_167_5;
@@ -266,6 +275,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      //templates[177.5] = combined_template_177_5;
      templates[180] = combined_template_180;
      templates[182.5] = combined_template_182_5;
+     templates[200] = combined_template_200;
 
    }
 
