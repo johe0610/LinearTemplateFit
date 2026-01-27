@@ -580,7 +580,10 @@ void LTF::LiTeFit::PrintFull() const {
    std::cout<<std::endl;
    std::cout<<"  Chi^2                                "<< chisq << "  +/- "<<chisq_error<<std::endl;
    std::cout<<"  Chi^2/ndf                            "<< ((Dt.rows()-nPar)!=0 ? chisq / (Dt.rows()-nPar) : 0 ) <<std::endl;
-   std::cout<<"  Chi^2 for each template              "<< chisq_y.transpose() <<endl;
+   std::cout<<"  Chi^2 for each template              ";
+   for ( long int i = 0 ; i<chisq_y.size() ; i++ )  std::cout<<chisq_y[i]<<" +/- "<<chisq_y_error[i]<<"\t";
+   std::cout<<std::endl;
+   
    //std::cout<<"  Partial Chi^2:                  ";
    int kk=0;
    for ( auto [name,c] : chisq_part ) {
@@ -1503,7 +1506,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
    //  ---------------------------------------------------------------- //
    // ---  chi^2
    //  ---------------------------------------------------------------- //
-   //chisq = -42;//((Dt - Ymbar - Ymtil*pow(fLTF.mt,fDelta)).transpose() * W * (Dt - Ymbar - Ymtil*pow(fLTF.mt,fDelta)))(0,0);      
+   //chisq = -42;//((Dt - Ymbar - Ymtil*pow(fLTF.mt,fDelta)).transpose() * W * (Dt - Ymbar - Ymtil*pow(fLTF.mt,fDelta)))(0,0);      //johannes does this correspond to eq 64??
    Eigen::VectorXd aGamma = Eigen::VectorXd::Zero(Gamma.size());
    for ( size_t i = 0 ; i<Gamma.size() ; i++ )  aGamma(i) = pow(ahat(i),Gamma[i]);
    Eigen::VectorXd resid = Dt - ybar - Ytil * aGamma;
@@ -1517,8 +1520,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
    Eigen::VectorXd dChidd = Eigen::VectorXd(Dt.size()); //uncertainty propagation to chi2 
    chisq_error = 0;
    for ( int i=0 ; i<dChidd.rows() ;i++ ) dChidd(i) = 2.*(W.row(i) * resid)(0,0); // = (W.row(i) * resid + (resid).transpose() * W.col(i))(0,0);
-   //for ( const auto& [n,V] : this->Vs  )   chisq_error += (dChidd.transpose()*V*dChidd)(0,0) ; 
-   chisq_error += (dChidd.transpose()*LTF::VSum(Vs)*dChidd)(0,0) ; 
+   chisq_error += (dChidd.transpose()*LTF::VSum(Vs)*dChidd)(0,0) ;
    for ( const auto& [n,s] : this->Sys )   chisq_error += pow((dChidd.transpose()*s)(0,0),2) ; 
    chisq_error = sqrt(chisq_error);
 
@@ -1552,18 +1554,26 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
    //  --- chi^2 for each template
    //  ---------------------------------------------------------------- //
    this->chisq_y = Eigen::VectorXd::Zero(Y.cols());
+   this->chisq_y_error = Eigen::VectorXd::Zero(Y.cols());
    Eigen::MatrixXd Fc2s = (S.transpose() * W * S + Es).inverse() * S.transpose() * W;
+
    for ( int k=0 ; k<Y.cols(); k++ ) {
       Eigen::VectorXd eps = Fc2s * (Dt - Y.col(k));
       Eigen::VectorXd rr = Dt - Y.col(k);
+      Eigen::VectorXd dChidd = Eigen::VectorXd(Dt.size());
+      const auto& dYtmp = SysY.begin()->second; // Matrix of absolute template stat uncertainties
       for ( int is=0 ; is<S.cols(); is++ ) {
          rr = (rr - S.col(is) * eps(is) ).eval();
          chisq_y(k) += eps(is)*eps(is);
       }
       chisq_y(k) = (rr.transpose() * W * rr)(0);
+      
+      for ( int i=0 ; i<dChidd.rows() ;i++ ) dChidd(i) = 2.*(W.row(i) * rr)(0,0); // = (W.row(i) * resid + (resid).transpose() * W.col(i))(0,0);
+      for ( int i = 0 ; i<dYtmp.rows() ; i++ ) chisq_y_error(k) +=dChidd(i) * pow(dYtmp(i,k),2) * dChidd(i); //  xi*V*xi, simplifies since V is diagonal
+      for ( const auto& [n,s] : this->Sys )   chisq_y_error(k) += pow((dChidd.transpose()*s)(0,0),2) ;
+      chisq_y_error(k) = sqrt(chisq_y_error(k));
    }
-
-
+   
    //  ---------------------------------------------------------------- //
    // --- fit chi2-parabola
    //  ---------------------------------------------------------------- //

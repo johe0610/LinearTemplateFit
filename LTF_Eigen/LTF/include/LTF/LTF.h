@@ -108,6 +108,7 @@ public:
       Eigen::MatrixXd Hesse;                                                     //!< Hesse matrix of the fit
       Eigen::MatrixXd InvHesse;                                                  //!< Inverse Hesse matrix of the fit, i.e. the total uncertainties
       Eigen::VectorXd chisq_y;                                                   //!< chi^2 for each template
+      Eigen::VectorXd chisq_y_error;                                             //!< uncertainty of chi^2 for each template
       std::map<std::string,double> chisq_part;                                   //!< 'partial' chi^2 for each error source
       std::map<std::string, std::pair<double,double>> map_nuisance;              //!< Map with all nuisance parameters and their errrors
       Eigen::VectorXd ahat;                                                      //!< results (a0, a1, ..., epsilon1, epsilon2,...)

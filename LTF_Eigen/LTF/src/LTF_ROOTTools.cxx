@@ -1028,18 +1028,21 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    // ---------------------------------------------- //
    //   chisq plot
    // ---------------------------------------------- //
-    TGraph* gChi2 = new TGraph();
+   c1.SetLogy(false);
+   TGraphErrors* gChi2 = new TGraphErrors();
     int ndf = (fit.Dt.rows()-(fit.M.cols()-1));
     for ( int itmpl = 0 ; itmpl<fit.chisq_y.size() ; itmpl++ )  {
        gChi2->SetPoint(itmpl, reference_values[itmpl], fit.chisq_y(itmpl)/ndf);
+       gChi2->SetPointError(itmpl, 0, fit.chisq_y_error(itmpl)/ndf);
     }
-    gChi2->Fit("pol2","QW");
+    gChi2->Fit("pol2","Q");
     gChi2->SetMarkerStyle(20);
-    
+    gChi2->SetMarkerSize(1);
+
     TGraph* gChi2LTF = new TGraph();
     gChi2LTF->SetPoint(0, fit.ahat(0), fit.chisq/ndf);
     gChi2LTF->SetMarkerStyle(29);
-    gChi2LTF->SetMarkerSize(3.1);
+    gChi2LTF->SetMarkerSize(2.5);
     gChi2LTF->SetMarkerColor(kViolet+2);
 
     TGraph* gChi2chk = new TGraph();
@@ -1052,10 +1055,10 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
     
     //gChi2->SetTitle(";#alpha_{0} [unit];#chi^{2}/ndf");
     gChi2->SetTitle((";"+referencename+";#chi^{2}/ndf").c_str());
-    gChi2->SetMinimum(0.0);
-    gChi2->SetMaximum(3.0); 
+    gChi2->SetMinimum(-1.0);
+    gChi2->SetMaximum(3.0); //johannes set these values again once the fit is stable 
 
-    gChi2->Draw("ap");
+    gChi2->Draw("ape");
     if ( reference_values.size()+1<= 8 ) 
        gChi2->GetHistogram()->SetNdivisions(reference_values.size()+1+300,"X");
     else
@@ -1076,7 +1079,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
     gChi2LTF->Draw("Psame");
 
     {
-       TLegend legend(0.18,0.70,0.66,0.97,"","NDC");
+       TLegend legend(0.4,0.80,0.8,0.97,"","NDC");
        //legend.SetNColumns(3);
        legend.SetFillStyle(0);
        legend.SetBorderSize(0);
@@ -1086,7 +1089,16 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
        legend.AddEntry(gChi2chk,"Minimum of #chi^{2} parabola #scale[0.8]{(#check#chi^{2})}","P"); //  (#check#chi^{2})
        legend.DrawClone();
     }
-       
+    {
+      TF1 *fit = gChi2->GetFunction("pol2");
+      TLatex latex;
+      latex.SetNDC();
+      text.SetTextAlign(11);
+      latex.DrawLatex(0.4, 0.750, "Quadratic fit p_{0}+p_{1}*x+p_{2}*x^{2}");
+      latex.DrawLatex(0.4, 0.725, Form("p_{0} = %.2f +/- %.2f", fit->GetParameter(0), fit->GetParError(0)));
+      latex.DrawLatex(0.4, 0.700, Form("p_{1} = %.2f +/- %.2f", fit->GetParameter(1), fit->GetParError(1)));
+      latex.DrawLatex(0.4, 0.675, Form("p_{2} = %.2f +/- %.2f", fit->GetParameter(2), fit->GetParError(2)));
+    }
     c1.Print(ps_name);
     //c1.Print( "plots/LTF_chi2.pdf");
 
