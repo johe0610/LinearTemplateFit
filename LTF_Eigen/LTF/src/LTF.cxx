@@ -1604,68 +1604,65 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
       chisq_y_error(k) = sqrt(chisq_y_error(k));
    }
 
+   //  ---------------------------------------------------------------- //
+   // --- fit chi2-parabola
+   //  ---------------------------------------------------------------- //
    {
-     Eigen::VectorXd template_values(8);
-     template_values << 162.5, 165, 167.5, 170, 172.5, 175, 180, 182.5;
-     //Eigen::VectorXd template_values(10);
-     //template_values << 150, 162.5, 165, 167.5, 170, 172.5, 175, 180, 182.5, 200;
-
-     Eigen::VectorXd fit_results = polyfitWeighted(template_values,chisq_y, chisq_y_error, 2);
-     cout<<"\n Fit results : a = "<<fit_results[2]<<", b = "<<fit_results[1]<<", c = "<<fit_results[0]<<"\n"; //johannes remove this line later again
+     // Pass the template refernce points (M.col(1), the chisq values (chisq_y) and the errors (chisq_y_error) to the quadratic fit
+     Eigen::VectorXd fit_results = polyfitWeighted(M.col(1),chisq_y, chisq_y_error, 2);
      // Calculate position of minimum
      achk          = Eigen::VectorXd::Zero(nPar); // initialize result
      achk_errorFit = Eigen::VectorXd::Zero(nPar);
      double a = fit_results[2];
      double b = fit_results[1];
      double c = fit_results[0];
-     double d = 9; //JOhannes get d.o.f.!!
-     const double delta_chi2 = 1.;
+     double d = Dt.rows()-(M.cols()-1); // ndf = #(data points) - #(fit params)
+     const double delta_chi2 = 1.; // 1-sigma error, set to 4 to get 2-sigma interval
      double x_min = -b/(2*a);
      double y_min = a*pow(x_min,2)+b*x_min+c;
-     double x3 = x_min+1/sqrt(a);
-     double x4 = x_min-1/sqrt(a);
-     cout<<"x_min :"<<x_min<<" y_min: "<<y_min<<endl;
-     cout<<"x3: "<<x3<<" x4: "<<x4<<endl;
+     double x3 = x_min+delta_chi2/sqrt(a);
+     double x4 = x_min-delta_chi2/sqrt(a);
+     //cout<<"x_min :"<<x_min<<" y_min: "<<y_min<<endl;
+     //cout<<"x3: "<<x3<<" x4: "<<x4<<endl;
      achk(0)     = x_min;
      achk_chisq  = y_min / d;
-     achk_errorFit(0) = fabs( x_min - x3 ) / d;
+     achk_errorFit(0) = max(fabs( x_min - x3 ),fabs(x_min-x4));
    }
-
    
-   //  ---------------------------------------------------------------- //
-   // --- fit chi2-parabola
-   //  ---------------------------------------------------------------- //
-   // (note: not tested for multi-dimensional fits!)
-   Eigen::MatrixXd M2tmp(chisq_y.rows(), 1+nPar*2); // quadratic regression
-   for ( int i = 0 ; i<chisq_y.rows() ;i++ ) {
-      M2tmp(i,0) = 1.;
-      for ( int j = 0 ; j<nPar ;j++ ) {
-         M2tmp(i,1+j*2) = M(i,1+j);
-         M2tmp(i,2+j*2) = M(i,1+j)*M(i,1+j);
-      }
-   }
-
-   // Johannes: Linear regression needs to be replaced when errors are considered
-   auto MT = M2tmp.transpose();
-   Eigen::MatrixXd Mc2 = (MT*M2tmp).inverse()*MT;
-   Eigen::VectorXd abc = Mc2 * chisq_y; // do regression !
-   // collect results...
-   achk          = Eigen::VectorXd::Zero(nPar); // initialize result
-   achk_errorFit = Eigen::VectorXd::Zero(nPar); // initialize
-   achk_chisq    = abc(0);
-   for ( int j = 0 ; j<nPar ;j++ ) {
-      double d    = -2.*abc(2+2*j);
-      achk(j)     = abc(1+2*j) / d;
-      achk_chisq += abc(1+2*j) * achk(j) + abc(2+2*j) * achk(j)*achk(j);
-   }
-   const double delta_chi2 = 1.; // get uncertainty from delta-chi2 criterion
-   for ( int j = 0 ; j<nPar ;j++ ) {
-      double d    = -2.*abc(2+2*j);
-      double stmp = abc(1+2*j)*abc(1+2*j) - 4.*abc(2+2*j) * ( abc(0) - (achk_chisq+delta_chi2) ) ;
-      // double Dachk2 = (-abc(1+2*j) - sqrt(stmp) ) / (2.*abc(2+2*j))  -  achk(j);
-      //achk_errorFit(j) = fabs(  (-abc(1+2*j) + sqrt(stmp) ) / (2.*abc(2+2*j))  - achk(j) );
-      if ( stmp>0) achk_errorFit(j) = fabs( sqrt(stmp)/d );
-   }
+//   //  ---------------------------------------------------------------- //
+//   // --- fit chi2-parabola
+//   //  ---------------------------------------------------------------- //
+//   // (note: not tested for multi-dimensional fits!)
+//   Eigen::MatrixXd M2tmp(chisq_y.rows(), 1+nPar*2); // quadratic regression
+//   for ( int i = 0 ; i<chisq_y.rows() ;i++ ) {
+//      M2tmp(i,0) = 1.;
+//      for ( int j = 0 ; j<nPar ;j++ ) {
+//         M2tmp(i,1+j*2) = M(i,1+j);
+//         M2tmp(i,2+j*2) = M(i,1+j)*M(i,1+j);
+//      }
+//   }
+//
+//   // ChiSq quadratic fit with linear regression (does not take uncertainties on ChiSq into account)
+//   auto MT = M2tmp.transpose();
+//   Eigen::MatrixXd Mc2 = (MT*M2tmp).inverse()*MT;
+//   Eigen::VectorXd abc = Mc2 * chisq_y; // do regression !
+//   // collect results...
+//   achk          = Eigen::VectorXd::Zero(nPar); // initialize result
+//   achk_errorFit = Eigen::VectorXd::Zero(nPar); // initialize
+//   achk_chisq    = abc(0);
+//   for ( int j = 0 ; j<nPar ;j++ ) {
+//      double d    = -2.*abc(2+2*j);
+//      achk(j)     = abc(1+2*j) / d;
+//      achk_chisq += abc(1+2*j) * achk(j) + abc(2+2*j) * achk(j)*achk(j);
+//   }
+//   const double delta_chi2 = 1.; // get uncertainty from delta-chi2 criterion
+//   for ( int j = 0 ; j<nPar ;j++ ) {
+//      double d    = -2.*abc(2+2*j);
+//      double stmp = abc(1+2*j)*abc(1+2*j) - 4.*abc(2+2*j) * ( abc(0) - (achk_chisq+delta_chi2) ) ;
+//      // double Dachk2 = (-abc(1+2*j) - sqrt(stmp) ) / (2.*abc(2+2*j))  -  achk(j);
+//      //achk_errorFit(j) = fabs(  (-abc(1+2*j) + sqrt(stmp) ) / (2.*abc(2+2*j))  - achk(j) );
+//      if ( stmp>0) achk_errorFit(j) = fabs( sqrt(stmp)/d );
+//   }
 
 
    
