@@ -358,6 +358,36 @@ LTF::Calc_dY(std::map<std::string,std::map<vector<double>,Eigen::VectorXd> >& In
    return retSysY;
 }
 
+// -------------------------------------------------------------------- //
+Eigen::VectorXd LTF::polyfitWeighted(const Eigen::VectorXd& x,
+				     const Eigen::VectorXd& y,
+				     const Eigen::VectorXd& sigma,
+				     int degree)
+{
+    assert(x.size() == y.size());
+    assert(y.size() == sigma.size());
+
+    int N = x.size();
+    Eigen::MatrixXd V(N, degree + 1);
+
+    // Vandermonde matrix
+    for (int i = 0; i < N; ++i) {
+        double xi = 1.0;
+        for (int j = 0; j <= degree; ++j) {
+            V(i, j) = xi;
+            xi *= x(i);
+        }
+    }
+
+    // Apply weights: W = diag(1/sigma) for uncorrelated uncertainties
+    Eigen::VectorXd w = sigma.cwiseInverse();
+    Eigen::MatrixXd VW = V.array().colwise() * w.array();
+    Eigen::VectorXd yW = y.array() * w.array();
+
+    // Solve weighted least squares
+    return VW.colPivHouseholderQr().solve(yW);
+}
+
 
 // -------------------------------------------------------------------- //
 //!  \brief Run the linear template fit and return the LiTeFit object with 
@@ -1573,6 +1603,34 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
       for ( const auto& [n,s] : this->Sys )   chisq_y_error(k) += pow((dChidd.transpose()*s)(0,0),2) ;
       chisq_y_error(k) = sqrt(chisq_y_error(k));
    }
+
+   {
+     Eigen::VectorXd template_values(8);
+     template_values << 162.5, 165, 167.5, 170, 172.5, 175, 180, 182.5;
+     //Eigen::VectorXd template_values(10);
+     //template_values << 150, 162.5, 165, 167.5, 170, 172.5, 175, 180, 182.5, 200;
+
+     Eigen::VectorXd fit_results = polyfitWeighted(template_values,chisq_y, chisq_y_error, 2);
+     cout<<"\n Fit results : a = "<<fit_results[2]<<", b = "<<fit_results[1]<<", c = "<<fit_results[0]<<"\n"; //johannes remove this line later again
+     // Calculate position of minimum
+     achk          = Eigen::VectorXd::Zero(nPar); // initialize result
+     achk_errorFit = Eigen::VectorXd::Zero(nPar);
+     double a = fit_results[2];
+     double b = fit_results[1];
+     double c = fit_results[0];
+     double d = 9; //JOhannes get d.o.f.!!
+     const double delta_chi2 = 1.;
+     double x_min = -b/(2*a);
+     double y_min = a*pow(x_min,2)+b*x_min+c;
+     double x3 = x_min+1/sqrt(a);
+     double x4 = x_min-1/sqrt(a);
+     cout<<"x_min :"<<x_min<<" y_min: "<<y_min<<endl;
+     cout<<"x3: "<<x3<<" x4: "<<x4<<endl;
+     achk(0)     = x_min;
+     achk_chisq  = y_min / d;
+     achk_errorFit(0) = fabs( x_min - x3 ) / d;
+   }
+
    
    //  ---------------------------------------------------------------- //
    // --- fit chi2-parabola
@@ -1586,6 +1644,8 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
          M2tmp(i,2+j*2) = M(i,1+j)*M(i,1+j);
       }
    }
+
+   // Johannes: Linear regression needs to be replaced when errors are considered
    auto MT = M2tmp.transpose();
    Eigen::MatrixXd Mc2 = (MT*M2tmp).inverse()*MT;
    Eigen::VectorXd abc = Mc2 * chisq_y; // do regression !
@@ -1607,6 +1667,8 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
       if ( stmp>0) achk_errorFit(j) = fabs( sqrt(stmp)/d );
    }
 
+
+   
    //  ---------------------------------------------------------------- //
    // --- non-linear approximations
    //  ---------------------------------------------------------------- //
@@ -1745,7 +1807,7 @@ Eigen::MatrixXd LTF::VSum( const std::vector<std::pair<std::string,Eigen::Matrix
 
 
 // -------------------------------------------------------------------- //
-//! \brief Calculate correlation matrix from given covariacne matrix V
+//! \brief Calculate correlation matrix from given covariance matrix V
 //static 
 Eigen::MatrixXd LTF::Cov_to_Cor(const Eigen::MatrixXd& V) {
    if ( V.rows() != V.cols() ) {

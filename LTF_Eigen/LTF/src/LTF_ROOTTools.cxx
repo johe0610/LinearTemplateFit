@@ -1095,9 +1095,9 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       latex.SetNDC();
       text.SetTextAlign(11);
       latex.DrawLatex(0.4, 0.750, "Quadratic fit p_{0}+p_{1}*x+p_{2}*x^{2}");
-      latex.DrawLatex(0.4, 0.725, Form("p_{0} = %.2f +/- %.2f", fit->GetParameter(0), fit->GetParError(0)));
-      latex.DrawLatex(0.4, 0.700, Form("p_{1} = %.2f +/- %.2f", fit->GetParameter(1), fit->GetParError(1)));
-      latex.DrawLatex(0.4, 0.675, Form("p_{2} = %.2f +/- %.2f", fit->GetParameter(2), fit->GetParError(2)));
+      latex.DrawLatex(0.4, 0.725, Form("p_{0} = %.3f +/- %.3f", fit->GetParameter(0), fit->GetParError(0)));
+      latex.DrawLatex(0.4, 0.700, Form("p_{1} = %.3f +/- %.3f", fit->GetParameter(1), fit->GetParError(1)));
+      latex.DrawLatex(0.4, 0.675, Form("p_{2} = %.3f +/- %.3f", fit->GetParameter(2), fit->GetParError(2)));
     }
     c1.Print(ps_name);
     //c1.Print( "plots/LTF_chi2.pdf");

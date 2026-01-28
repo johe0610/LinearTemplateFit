@@ -265,7 +265,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        }
        bin_offset += h_tmp_165->GetNbinsX() - iRemoveBins;
      }
-     templates[150] = combined_template_150;
+     //templates[150] = combined_template_150;
      templates[162.5] = combined_template_162_5;
      templates[165] = combined_template_165;
      templates[167.5] = combined_template_167_5;
@@ -275,7 +275,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      //templates[177.5] = combined_template_177_5;
      templates[180] = combined_template_180;
      templates[182.5] = combined_template_182_5;
-     templates[200] = combined_template_200;
+     //templates[200] = combined_template_200;
 
    }
 

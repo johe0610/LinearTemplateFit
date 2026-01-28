@@ -575,7 +575,7 @@ protected:
       std::map<std::string,std::map<vector<double>,Eigen::VectorXd> >& fSysY) const; //!< \brief Calculate template uncertainties dY
    void SetLiTeFitInput();                                                    //!< \brief Set the input to LiTeFit
    void SetCorrSys(const std::string& name, double c);                        //!< \brief set correlation coefficient for syst. uncertainties
-   
+
 
 // ------------------------------------------- //
 // ---- static helper functions
@@ -620,7 +620,9 @@ public:
 
    //! \brief Calculate an Eigen-matrix from std::vector<std::vector<>>. T=double
    static Eigen::MatrixXd Std_to_Mat(const std::vector<std::vector<double> >& A);
-   
+
+   //! \brief Function to fit polynomial to data with errors
+   static Eigen::VectorXd polyfitWeighted(const Eigen::VectorXd& x, const Eigen::VectorXd& y, const Eigen::VectorXd& sigma, int degree);
 };
 
 #endif
