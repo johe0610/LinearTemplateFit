@@ -23,6 +23,7 @@
 #include <TRandom3.h>
 #include <TGraph2DErrors.h>
 #include <TGraph2D.h>
+#include "TColor.h"
 #include <set>
 
 using namespace std;
@@ -547,7 +548,8 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
   c1.SetLogy(0);
   c1.SetLeftMargin(0.2);
 
-
+  bool doJesStressTest = false;
+  
   vector<string> lepton_uncertainties = {"EG_RESOLUTION_ALL",
                                          "EG_SCALE_ALL",
                                          "EL_EFF_ID_TOTAL_1NPCOR_PLUS_UNCOR",
@@ -595,8 +597,8 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
                                       "JET_Pileup_PtTerm",
                                       "JET_Pileup_RhoTopology",
                                       "JET_PunchThrough_MC16"};
-
-
+  if (doJesStressTest) jes_uncertainties.push_back("myJESUncertainty");
+  
   vector<string> jer_uncertainties = {"JET_JER_DataVsMC_MC16_PseudoData",
                                       "JET_JER_EffectiveNP_1_PseudoData",
                                       "JET_JER_EffectiveNP_2_PseudoData",
@@ -775,6 +777,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    data->SetMarkerStyle(20);
    data->SetMarkerSize(1.4);
    data->SetLineColor(kBlack);
+   vector<Color_t> colors = {kCyan-9, kGray+1, kYellow-6, kOrange+7, kOrange-7, kViolet+1, kGray, kRed+1, kOrange-3, kBlue+7};
    for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
       c1.cd(1);
       templates[iref]->SetLineWidth(2);
@@ -800,7 +803,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
          templates[iref]->Draw("histsame E");
       }
       else {
-         templates[iref]->SetLineColor(iref+2);
+	 templates[iref]->SetLineColor(colors[iref-1]);
          templates[iref]->SetLineWidth(2);
          templates[iref]->Draw("histsame E");
       }
@@ -857,7 +860,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    TLatex text;
    text.SetNDC();
    text.SetTextAlign(13);
-   text.DrawLatex(0.8,0.6,Form("m_{fit} =  %.2f +/- %.2f GeV",fit.ahat(0),fit.ahat_errorFit(0)));
+   text.DrawLatex(0.75,0.6,Form("m_{fit} =  %.2f +/- %.2f GeV",fit.ahat(0),fit.ahat_errorFit(0)));
 
    c1.Print(ps_name);
    c1.Clear();
@@ -1039,11 +1042,13 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
     gChi2->SetMarkerStyle(20);
     gChi2->SetMarkerSize(1);
 
-    TGraph* gChi2LTF = new TGraph();
+    TGraphErrors* gChi2LTF = new TGraphErrors();
     gChi2LTF->SetPoint(0, fit.ahat(0), fit.chisq/ndf);
+    gChi2LTF->SetPointError(0, 0, fit.chisq_error/ndf);
     gChi2LTF->SetMarkerStyle(29);
     gChi2LTF->SetMarkerSize(2.5);
     gChi2LTF->SetMarkerColor(kViolet+2);
+    gChi2LTF->SetLineColor(kViolet+2);
 
     TGraph* gChi2chk = new TGraph();
     gChi2chk->SetPoint(0, fit.achk(0), fit.achk_chisq/ndf);
@@ -1056,7 +1061,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
     //gChi2->SetTitle(";#alpha_{0} [unit];#chi^{2}/ndf");
     gChi2->SetTitle((";"+referencename+";#chi^{2}/ndf").c_str());
     gChi2->SetMinimum(-1.0);
-    gChi2->SetMaximum(3.0); //johannes set these values again once the fit is stable 
+    gChi2->SetMaximum(5.0); //johannes set these values again once the fit is stable 
 
     gChi2->Draw("ape");
     if ( reference_values.size()+1<= 8 ) 
@@ -1076,7 +1081,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
        fit.achk_chisq/ndf+1,1.);
 
     gChi2chk->Draw("Psame");
-    gChi2LTF->Draw("Psame");
+    gChi2LTF->Draw("PEsame");
 
     {
        TLegend legend(0.4,0.80,0.8,0.97,"","NDC");
@@ -1163,6 +1168,9 @@ void LTF_ROOTTools::plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double>
    // ---------------------------------------------- //
    // main plot
    // ---------------------------------------------- //
+   vector<Color_t> colors = {kCyan-9, kGray+1, kYellow-6, kOrange+7, kOrange-7, kViolet+1, kGray, kRed+1, kOrange-3, kBlue+7};
+   //int colors = {kP10Blue, kP10Red, kP10Yellow, kP10Gray, kP10Violet, kP10Brown, kP10Orange, kP10Green, kP10Ash, kP10Cyan};
+   cout<<colors[0]<<endl;
    for ( int iref = 0 ; iref<reference_values1.size() ; iref++ ) {
       templates[iref]->SetLineWidth(2);
       if ( iref == 0 ) {
@@ -1180,10 +1188,10 @@ void LTF_ROOTTools::plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double>
          templates[iref]->Draw("histsame");
       }
       else {
-         int color = iref+1;
-         if (color >= 10 ) color=(color-10)*2+28;
-         templates[iref]->SetLineColor(color);
-         //templates[iref]->SetFillColorAlpha(color,0.08);
+         //int color = iref+1;
+	 //if (color >= 10 ) color=(color-10)*2+28;
+	 templates[iref]->SetLineColor(colors[iref-1]);
+	 //templates[iref]->SetFillColorAlpha(color,0.08);
          templates[iref]->Draw("histsame");
       }
    }   

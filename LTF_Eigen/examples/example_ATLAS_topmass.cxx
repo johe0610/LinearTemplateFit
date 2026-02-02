@@ -52,15 +52,15 @@ vector<vector<double > > TH2D_to_vecvec(TH2D* hist2D) {
 int example_ATLAS_topmass() {
 
   if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
 //  if (fitMultipleObservables("plots/fit_drbl.ps", {"dRbl_selected"},    {"dr_bl"}) > 0) return 1;
 //  if (fitMultipleObservables("plots/fit_drbw.ps", {"dRbwhad_selected"},    {"dr_bw"}) > 0) return 1;
 //  //if (fitMultipleObservables("plots/fit_etal1.ps", {"etal1"},    {"eta_lep1"}) > 0) return 1;
 //  //if (fitMultipleObservables("plots/fit_mtlepmet.ps", {"mtlepmet"},    {"mT_lep1met"}) > 0) return 1;
 //  if (fitMultipleObservables("plots/fit_minimax.ps", {"minimax_whadbbl"},    {"m_minimax"}) > 0) return 1;
 //  if (fitMultipleObservables("plots/fit_mwbbl.ps", {"mwhadbbl"},    {"m_wbbl"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_ptb1.ps", {"ptb1"},    {"pT_bjet1"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptb1.ps", {"ptb1"},    {"pT_bjet1"}) > 0) return 1;
 //  if (fitMultipleObservables("plots/fit_ptb2.ps", {"ptb2"},    {"pT_bjet2"}) > 0) return 1;
 //  if (fitMultipleObservables("plots/fit_ptbl.ps", {"ptbl_selected"},    {"pT_bl"}) > 0) return 1;
 //  if (fitMultipleObservables("plots/fit_ptbw.ps", {"ptbwhad_selected"},    {"pT_bw"}) > 0) return 1;
@@ -106,12 +106,19 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    TH1::SetDefaultSumw2(true);
 
    map<double,TH1D*> templates;
-   double doPseudo = true;
+   bool doPseudo = true;
+   bool doJesStressTest = false;
+
    const int     iRebin       = 1;
    const int     iRebinData   = 1;
    const int     iRemoveBins  = 0;
    const TString datafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative.root";
-   const TString pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171.root";
+   TString pseudodatafile;
+   if ( doJesStressTest ) {
+     pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171_JES_095.root";
+   } else {
+     pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171.root";
+   }
    //const TString pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171_JES_095.root";
    //const TString covariancefile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1258_matrices.root";
    const TString covariancefile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171.root";
@@ -266,13 +273,13 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        bin_offset += h_tmp_165->GetNbinsX() - iRemoveBins;
      }
      //templates[150] = combined_template_150;
-     templates[162.5] = combined_template_162_5;
+     //templates[162.5] = combined_template_162_5;
      templates[165] = combined_template_165;
      templates[167.5] = combined_template_167_5;
      templates[170] = combined_template_170;
      templates[172.5] = combined_template_172_5;
      templates[175] = combined_template_175;
-     //templates[177.5] = combined_template_177_5;
+     templates[177.5] = combined_template_177_5;
      templates[180] = combined_template_180;
      templates[182.5] = combined_template_182_5;
      //templates[200] = combined_template_200;
@@ -365,7 +372,9 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      "THEORY_CROSS_SECTION_other_top_noWt", "FAKES_Electron", "FAKES_Muon", // bkgd uncertainties
      "LUMINOSITY" // lumi uncertainty
    };
-
+   if ( doJesStressTest ) uncertainties.push_back("myJESUncertainty");
+   
+   
    vector<string> statistical_uncertainties = {"STAT_MC"};
    
    vector<string> external_uncertainties = {"FULL_SYS_SUM", "FULL_SYS_SUM_DETECTOR", "FULL_SYS_SUM_THEORY",
@@ -378,7 +387,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    LTF ltf;
    ltf.SetGamma(vector<double>{1});
    ltf.UseNuisanceParameters(true);
-   ltf.UseLogNormalUncertainties(false);
+   ltf.UseLogNormalUncertainties(false);// Johannes: Effect on fit is small for true or false
 
    // --- initialize templates
    for ( auto [MM,hist] : templates ) {
@@ -529,26 +538,47 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 
    TH1D* total_error = new TH1D("total_error", "total_error", bins_number, 0, bins_number);
 
-   
    // Systematical uncertainties
    for ( auto& uncertainty: uncertainties ) {
      vector<double> combined_error;
-     for ( auto& fit_variable: fit_vars ) {
-       TH1D* hist_up   = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up");
-       TH1D* hist_down = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1down");
-       for (int i=1; i< hist_up->GetNbinsX() - iRemoveBins; i++) {
-	 combined_error.push_back(std::max(abs(hist_up->GetBinContent(i)), abs(hist_down->GetBinContent(i))));
-	 total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(std::max(abs(hist_up->GetBinContent(i)),abs(hist_down->GetBinContent(i))),2)));
-	 //combined_error.push_back(hist_up->GetBinContent(i));
-         //total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(hist_up->GetBinContent(i),2))); // Use up variation
-	 //combined_error.push_back(hist_down->GetBinContent(i));
-         //total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(hist_down->GetBinContent(i),2))); // Use down variation
+
+     if ( doJesStressTest && uncertainty == "myJESUncertainty" ) {
+       cout<<"Now adding new uncertainty"<<endl;
+       const TString datafile_nominal = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171.root";
+       for ( auto& tmp: fit_vars_short ) {
+	 TH1D* tmp_data = TFile::Open(datafile_nominal)->Get<TH1D>(tmp);
+	 cout<<"Retrieved the file"<<endl;
+	 tmp_data->Print("All");
+	 for ( int i = 1; i <= tmp_data->GetNbinsX() - iRemoveBins; i++ ) {
+	   double error = (tmp_data->GetBinContent(i)-combined_data->GetBinContent(i))/combined_data->GetBinContent(i);
+	   cout<<"Adding err "<<error<<" = "<<tmp_data->GetBinContent(i)<<" / "<<combined_data->GetBinContent(i)<<endl;
+	   combined_error.push_back(error);
+	   total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(error,2)));
+	 }
+       }
+       cout<<"Added new uncertainty"<<endl;
+     }
+     else {
+       for ( auto& fit_variable: fit_vars ) {
+	 TH1D* hist_up   = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up");
+	 //TH1D* hist_down = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1down");
+	 for (int i=1; i< hist_up->GetNbinsX() - iRemoveBins; i++) {
+	   //combined_error.push_back(std::max(abs(hist_up->GetBinContent(i)), abs(hist_down->GetBinContent(i))));
+	   //total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(std::max(abs(hist_up->GetBinContent(i)),abs(hist_down->GetBinContent(i))),2)));
+	   combined_error.push_back(hist_up->GetBinContent(i));
+	   total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(hist_up->GetBinContent(i),2))); // Use up variation
+	   //combined_error.push_back(hist_down->GetBinContent(i));
+	   //total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(hist_down->GetBinContent(i),2))); // Use down variation
+	 }
        }
      }
      double corr = 1.0;
      if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::Constrained);
      combined_error.clear();
    }
+   total_error->Print("All");
+   
+   // Johannes added this unconstrained error to correct for offset in normalization 
    {
      vector<double> combined_error;
      for ( auto& fit_variable: fit_vars ) {
@@ -558,32 +588,29 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        }
      }
      if ( combined_error.size() > 0 ) ltf.AddErrorRelative("UnconstrainedError", combined_error, 1.0, LTF::Uncertainty::Unconstrained);
-   } // Johannes added this unconstrained error for testing purposes
+   }
    
    total_error->Print("All");
    
-   // --- Add one systematical uncertainty of 10% in every bin.
-   //vector<double> my_error = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
-   //ltf.AddErrorRelative("MyUncertainty10", my_error, 1.0, LTF::Uncertainty::Constrained);
-   //vector<double> my_error1 = {0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01};
-   //ltf.AddErrorRelative("MyUncertainty1", my_error1, 1.0, LTF::Uncertainty::Constrained);
-   
    // Stat uncertainties
-   for ( auto& uncertainty: statistical_uncertainties ) {
+   for ( auto& uncertainty: statistical_uncertainties ) { // Only stat. unc. is MC stat. 
      vector<double> combined_error;
      for ( auto& fit_variable: fit_vars ) {
        TH1D* hist_up = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up");
-       TH1D* hist_down = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1down");
+       //TH1D* hist_down = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1down");
        for (int i=1; i< hist_up->GetNbinsX() - iRemoveBins; i++) {
-         combined_error.push_back(std::max(hist_up->GetBinContent(i), hist_down->GetBinContent(i)));
-	 total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(std::max(hist_up->GetBinContent(i),hist_down->GetBinContent(i)),2)));
+	 combined_error.push_back(hist_up->GetBinContent(i));
+         total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(hist_up->GetBinContent(i),2)));
+	 //combined_error.push_back(std::max(hist_up->GetBinContent(i), hist_down->GetBinContent(i)));
+	 //total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(std::max(hist_up->GetBinContent(i),hist_down->GetBinContent(i)),2)));
        }
      }
-     double corr = 0.0;
+     double corr = 0.0; // Stat. unc. are uncorrelated
      if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::Constrained);
      combined_error.clear();
    }
 
+   // When using pseudo-data, add the stat. uncertainties of the pseudo data as an additional uncertainty
    if ( doPseudo ) {
      vector<double> combined_error;
      for (int i=1; i<= combined_data->GetNbinsX(); i++ ) {
@@ -591,9 +618,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      }
      ltf.AddErrorRelative("pseudoDataStat", combined_error, 0.0, LTF::Uncertainty::Constrained);
    }
-     
-   total_error->Print("All");
-   
+   //total_error->Print("All");
    
    // External uncertainties
    for ( auto& uncertainty: external_uncertainties ) {
@@ -642,7 +667,7 @@ void PrintAsciiTable(const map<double,TH1D*>& templates, TH1D* data){
    for ( int i=1; i<=data->GetNbinsX() ;i++ ) {
       printf(" %11.4f %11.4f",data->GetBinContent(i),data->GetBinError(i));
    for ( auto [mean,hist] : templates ) 
-         printf(" %11.4f %11.4f",hist->GetBinContent(i),hist->GetBinError(i));
+     printf(" %11.6f %11.6f",hist->GetBinContent(i),hist->GetBinError(i));// johannes this was 11.4
       cout<<endl;
    }
    cout<<endl;
