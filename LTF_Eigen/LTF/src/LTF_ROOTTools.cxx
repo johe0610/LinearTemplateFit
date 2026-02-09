@@ -1025,22 +1025,29 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       //else
       //   c1.Print( Form("plots/LTF_bin_%02d.pdf",ibin));
       
-   }
+    }
    
 
-   // ---------------------------------------------- //
-   //   chisq plot
-   // ---------------------------------------------- //
-   c1.SetLogy(false);
-   TGraphErrors* gChi2 = new TGraphErrors();
+    // ---------------------------------------------- //
+    //   chisq plot
+    // ---------------------------------------------- //
+    c1.SetLogy(false);
+    TGraphErrors* gChi2 = new TGraphErrors();
+    TGraphErrors* gChi2_fit = new TGraphErrors();
     int ndf = (fit.Dt.rows()-(fit.M.cols()-1));
     for ( int itmpl = 0 ; itmpl<fit.chisq_y.size() ; itmpl++ )  {
-       gChi2->SetPoint(itmpl, reference_values[itmpl], fit.chisq_y(itmpl)/ndf);
-       gChi2->SetPointError(itmpl, 0, fit.chisq_y_error(itmpl)/ndf);
+      gChi2->SetPoint(itmpl, reference_values[itmpl], fit.chisq_y(itmpl)/ndf);
+      gChi2->SetPointError(itmpl, 0, fit.chisq_y_error(itmpl)/ndf);
+      gChi2_fit->SetPoint(itmpl, reference_values[itmpl], fit.chisq_fit(itmpl)/ndf);
+      gChi2_fit->SetPointError(itmpl, 0, fit.chisq_y_error(itmpl)/ndf);
     }
     gChi2->Fit("pol2","Q");
     gChi2->SetMarkerStyle(20);
     gChi2->SetMarkerSize(1);
+    gChi2_fit->SetMarkerStyle(20);
+    gChi2_fit->SetMarkerSize(1);
+    gChi2_fit->SetMarkerColor(kCyan-7);
+    gChi2_fit->SetLineColor(kCyan-7);
 
     TGraphErrors* gChi2LTF = new TGraphErrors();
     gChi2LTF->SetPoint(0, fit.ahat(0), fit.chisq/ndf);
@@ -1073,16 +1080,15 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
     line.SetLineColor(920);
     line.SetLineStyle(3);
     line.DrawLine( 
-       gChi2->GetHistogram()->GetXaxis()->GetXmin(),1.,
-       gChi2->GetHistogram()->GetXaxis()->GetXmax(), 1);
+	 gChi2->GetHistogram()->GetXaxis()->GetXmin(),(fit.chisq+1.)/ndf,
+	 gChi2->GetHistogram()->GetXaxis()->GetXmax(),(fit.chisq+1)/ndf);
 
-    line.DrawLine( 
-       fit.achk_chisq/ndf+1,1.,
-       fit.achk_chisq/ndf+1,1.);
-
+    //line.DrawLine( 
+    //   fit.achk_chisq/ndf+1,1.,
+    //   fit.achk_chisq/ndf+1,1.);
     gChi2chk->Draw("Psame");
     gChi2LTF->Draw("PEsame");
-
+    gChi2_fit->Draw("PEsame");
     {
        TLegend legend(0.4,0.80,0.8,0.97,"","NDC");
        //legend.SetNColumns(3);

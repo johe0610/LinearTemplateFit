@@ -613,7 +613,8 @@ void LTF::LiTeFit::PrintFull() const {
    std::cout<<"  Chi^2 for each template              ";
    for ( long int i = 0 ; i<chisq_y.size() ; i++ )  std::cout<<chisq_y[i]<<" +/- "<<chisq_y_error[i]<<"\t";
    std::cout<<std::endl;
-   
+   std::cout<<"  Chi^2 for each template w.r.t. fit   ";
+   for ( long int i = 0 ; i<chisq_y.size() ; i++ )  std::cout<<chisq_fit[i]<<" +/- "<<chisq_y_error[i]<<"\t";
    //std::cout<<"  Partial Chi^2:                  ";
    int kk=0;
    for ( auto [name,c] : chisq_part ) {
@@ -1265,9 +1266,13 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
    Eigen::MatrixXd YtSTW        = YtS.transpose()*W;
    this->Hesse = YtSTW*YtS + E;   // 'discriminant' matrix D, the Hesse matrix (formerly called 'D')
    if ( Hesse.determinant() < 1.e-8 ) {
-      cout<<"Warning! Determinant of Hesse matrix D is very small! "<<endl;
+      cout<<"Warning! Determinant of Hesse matrix D is very small! ("<<Hesse.determinant()<<")"<<endl;
       cout<<"Printing Hesse matrix D"<<endl<<Hesse<<endl<<endl;
       cout<<"Printing matrix M^T    "<<endl<<Mc<<endl<<endl;
+
+      //cout<<"Johannes check if inversion is stable"<<endl;
+      //Eigen::MatrixXd test = Hesse*Hesse.inverse();
+      //cout<<test<<endl;
    }
    this->InvHesse    = Hesse.inverse(); // the inverse Hesse matrix
    this->F           = InvHesse * (YtSTW); // the LTF-master-matrix
@@ -1545,7 +1550,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
       sumeps2 += ahat(i) * ahat(i); // ahat(1) is the nuisance parameter epsilon
       resid = (resid - YtS.col(i)*ahat(i)).eval(); // it is minus s*epsilon here!
    }
-     
+   
    this->chisq = resid.transpose() * W * resid + sumeps2; // Gamma ?
    // --- uncertainty of chi2
    Eigen::VectorXd dChidd = Eigen::VectorXd(Dt.size()); //uncertainty propagation to chi2 
@@ -1584,20 +1589,30 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
    //  ---------------------------------------------------------------- //
    //  --- chi^2 for each template
    //  ---------------------------------------------------------------- //
+
+   // chi^2 w.r.t the data
    this->chisq_y = Eigen::VectorXd::Zero(Y.cols());
    this->chisq_y_error = Eigen::VectorXd::Zero(Y.cols());
+   // chi^2 w.r.t the best fit
+   this->chisq_fit = Eigen::VectorXd::Zero(Y.cols());
+   
    Eigen::MatrixXd Fc2s = (S.transpose() * W * S + Es).inverse() * S.transpose() * W;
-
    for ( int k=0 ; k<Y.cols(); k++ ) {
       Eigen::VectorXd eps = Fc2s * (Dt - Y.col(k));
       Eigen::VectorXd rr = Dt - Y.col(k);
+      Eigen::VectorXd eps_fit = Fc2s * (Y.col(k)-ybar - Ytil * aGamma);
+      Eigen::VectorXd rr_fit = Y.col(k) - ybar - Ytil * aGamma;
       Eigen::VectorXd dChidd = Eigen::VectorXd(Dt.size());
       const auto& dYtmp = SysY.begin()->second; // Matrix of absolute template stat uncertainties
       for ( int is=0 ; is<S.cols(); is++ ) {
          rr = (rr - S.col(is) * eps(is) ).eval();
-         chisq_y(k) += eps(is)*eps(is);
+	 rr_fit = (rr_fit - S.col(is) * eps_fit(is) ).eval();
+	 chisq_fit(k) += eps_fit(is)*eps_fit(is);
+	 chisq_y(k) += eps(is)*eps(is);
       }
-      chisq_y(k) = (rr.transpose() * W * rr)(0);
+      chisq_y(k) += (rr.transpose() * W * rr)(0);
+      chisq_fit(k) += (rr_fit.transpose() * W * rr_fit)(0);
+
       // Get absolute error for template k in bin i: dYtmp(i,k)
       for ( int i=0 ; i<dChidd.rows() ;i++ ) dChidd(i) = 2.*(W.row(i) * rr)(0,0); // = (W.row(i) * resid + (resid).transpose() * W.col(i))(0,0);
       for ( int i = 0 ; i<dYtmp.rows() ; i++ ) {
@@ -1607,7 +1622,8 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
       //for ( const auto& [n,s] : this->Sys )   chisq_y_error(k) += pow((dChidd.transpose()*s)(0,0),2) ; // Sys. uncertainties are fully correlated and do not need to be considered here
       chisq_y_error(k) = sqrt(chisq_y_error(k));
    }
-
+   cout<<"Johannes Inverse matrix of W"<<endl;
+   cout<<W.inverse()<<endl;
 //   //  ---------------------------------------------------------------- //
 //   // --- fit chi2-parabola
 //   //  ---------------------------------------------------------------- //
