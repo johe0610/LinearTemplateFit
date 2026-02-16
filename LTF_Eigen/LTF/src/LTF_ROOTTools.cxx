@@ -24,6 +24,9 @@
 #include <TGraph2DErrors.h>
 #include <TGraph2D.h>
 #include "TColor.h"
+#include <TFitResult.h>
+#include <TMatrixDSym.h>
+#include <TMatrixDSymEigen.h>
 #include <set>
 
 using namespace std;
@@ -81,7 +84,8 @@ TGraphErrors* LTF_ROOTTools::MakeTGraph(const Eigen::VectorXd& xvalues, int ibin
       graph->SetPoint(i,xvalues(i),yvalue);
       double ey2 = 0;
       for ( auto [name,Vy] : VSysY ) {
-         ey2 += pow(Vy(ibin,i),2);
+	//ey2 += pow(Vy(ibin,i),2); // johannes change this back!!
+	 ey2 += pow(Vy(ibin,0),2);
       }
       graph->SetPointError(i,0,sqrt(ey2));
    }
@@ -133,7 +137,10 @@ TH1D* LTF_ROOTTools::MakeHistogram(int nEvents, int seed, double mean, double si
    return hist;
 }
 
-
+double linTransform(double x)
+{
+  return (x-172.5)/10;
+}
 
 
 // __________________________________________________________________________________ //
@@ -885,65 +892,122 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    c1.SetTopMargin(0.02);
    c1.SetLeftMargin(0.16);
    c1.SetBottomMargin(0.16);
-   c1.SetLogy();
+   c1.SetLogy(false);
 
    gPad->SetTicky(1);
 
    //gStyle->SetLabelSize(0.05,"XYZ");
    //gStyle->SetTitleSize(0.05,"XYZ");
-   gStyle->SetTitleOffset(1.1,"X");
-   gStyle->SetTitleOffset(1.6,"Y");
-   gStyle->SetMarkerSize(2);
+   gStyle->SetTitleOffset(1.4,"X");
+   gStyle->SetTitleOffset(2.3,"Y");
+   gStyle->SetMarkerSize(1.5);
 
    //map < string, vector<double> > input_table = read_input_table2("data/CMS_data.txt",32);
-
+   bool doLinTransform = true;
+   
    for ( int ibin = 0 ; ibin<fit.Dt.size() ; ibin++ ) {
    //for ( int ibin = 0 ; ibin<0 ; ibin++ ) {
    //for ( int ibin = 0 ; ibin<6 ; ibin++ ) {
       //TGraphErrors* data  = MakeTGraph(fit.ahat.row(0),fit.Dt.row(ibin));
       TGraphErrors* gdata = new TGraphErrors();
-      gdata->SetPoint(0,fit.ahat(0),fit.Dt(ibin));
+      if ( doLinTransform ) gdata->SetPoint(0,linTransform(fit.ahat(0)),fit.Dt(ibin));
+      else gdata->SetPoint(0,linTransform(fit.ahat(0)),fit.Dt(ibin));
       gdata->SetPointError(0,0,data->GetBinError(ibin+1));
       gdata->SetMarkerStyle(20);
 
-      TGraphErrors* graph = MakeTGraph(fit.M.col(1),ibin,fit.Y,fit.SysY);
-
-      graph->Fit("pol1","Q");
-      TF1* pol1w = (TF1*)graph->GetFunction("pol1")->Clone("pol1w");
-      pol1w->SetLineColor(922);
-      pol1w->SetLineStyle(3);
-      pol1w->SetLineWidth(2);
-
-      TF1* f2= new TF1("f2","[0]+[1]*pow(x,2)", -FLT_MIN,FLT_MAX );
-      graph->Fit(f2,"QW");
-      TF1* f1= new TF1("f1","[0]+[1]*pow(x,[2])", -FLT_MIN,FLT_MAX );
-
-      graph->Fit("pol1","QW"); // "W": Ignore all point errors when fitting a TGraphErrors 
-      bool UseLTFOutput = true;
-      if ( UseLTFOutput ) {
-         Eigen::VectorXd ltfpol1param =(fit.Y*fit.Mc().transpose()).row(ibin);
-         //cout<<"M+*Y:"<<endl<< ltfpol1param <<endl;
-         graph->GetFunction("pol1")->SetParameter(0,ltfpol1param(0));
-         graph->GetFunction("pol1")->SetParameter(1,ltfpol1param(1));
-         f1->SetParameter(0,ltfpol1param(0));
-         f1->SetParameter(1,ltfpol1param(1));
-         f1->SetParameter(2,fit.Gamma[0]);
+      TGraphErrors* graph;
+      if (doLinTransform) {
+	Eigen::VectorXd xvalues(fit.M.col(1).size());
+	for( int i = 0; i < fit.M.col(1).size(); i++ ) {
+	  xvalues(i) = linTransform(fit.M.col(1)(i));
+	}
+	graph = MakeTGraph(xvalues,ibin,fit.Y,fit.SysY);
       }
-      if ( fit.Gamma[0]!=1 )   cout<<"Warning! Plotting with gamma factor !=1 not correctly implmeneted!"<<endl;
-
-      graph->GetFunction("pol1")->SetLineWidth(3);
+      else {
+	graph = MakeTGraph(fit.M.col(1),ibin,fit.Y,fit.SysY);
+      }
       
-      graph->Fit("pol2","QW");
-      graph->GetFunction("pol2")->SetLineWidth(3);
+      TFitResultPtr resPol1 = graph->Fit("pol1","SQ0"); // weighted fit takes uncertainties into account
+      TMatrixDSym covPol1 = resPol1->GetCovarianceMatrix();
+      TF1* pol1 = (TF1*)graph->GetFunction("pol1")->Clone("pol1");
+      pol1->SetLineColor(kBlue+3);
+      pol1->SetLineStyle(1);
+      pol1->SetLineWidth(2);
+
+      // Matrix for conversion to Chebyshev (orthogonal) polynomials
+      //double matrixval[3][3] = {{1, 0, 0.5},{0, 1, 0}, {0, 0, 0.5}};
+      //TMatrixD convToCheb(3,3,&matrixval[0][0]);
+      //double matrixvalT[3][3] = {{1, 0, 0},{0, 1, 0}, {0.5, 0, 0.5}};
+      //TMatrixD convToChebTrans(3,3,&matrixvalT[0][0]);
+
+      TFitResultPtr resPol2 = graph->Fit("pol2","SQ0");
+      TMatrixDSym covPol2 = resPol2->GetCovarianceMatrix();
+      cout<<"Covariancematrix"<<endl;
+      covPol2.Print();
+      TMatrixDSymEigen eig(covPol2);
+      TMatrixD V = eig.GetEigenVectors();
+      TMatrixD D = V.Invert()*covPol2*V;
+      TVectorD eigenvalues =eig.GetEigenValues();
+      cout<<"Matrix of Eigenvectors V"<<endl;
+      V.Print();
+      cout<<"Eigenvalues"<<endl;
+      eigenvalues.Print();
+      cout<<"Diagonal matrix with eigen values D"<<endl;
+      D.Print();
+      cout<<"V^-1*V should be unity"<<endl;
+      TMatrixD temp1 = V.Invert()*V;
+      temp1.Print();
+      cout<<"V*D*V^-1 should give A"<<endl;
+      TMatrixD temp2 = V * D * V.Invert();
+      temp2.Print();
+      TMatrixD temp3 = covPol2*V-D*V;
+      cout<<"Norm AV-VD "<<temp3.NormInf()<<" (should be zero)"<<endl;
+      //eig.GetEigenValues().Print();
+      //
+      //cout<<"err0 "<<resPol2->ParError(0)<<" err1 "<<resPol2->ParError(1)<<" err2 "<<resPol2->ParError(2)<<endl;
+      //cout<<"err02 "<<pow(resPol2->ParError(0),2)<<" err12 "<<pow(resPol2->ParError(1),2)<<" err22 "<<pow(resPol2->ParError(2),2)<<endl;
+
+      //convToCheb.Print();
+      //covPol2.Print();
+      //convToChebTrans.Print();
+      //
+      //TMatrixD tmp =covPol2 * convToChebTrans;
+      //tmp.Print();
+      //
+      //TMatrixD covCheb = convToCheb * covPol2 * convToChebTrans;
+      //covCheb.Print();
+
+      TF1* pol2 = (TF1*)graph->GetFunction("pol2")->Clone("pol2");
+      pol2->SetLineColor(kOrange-3);
+      pol2->SetLineStyle(1);
+      pol2->SetLineWidth(2);
+      
+
+      //TF1* f2= new TF1("f2","[0]+[1]*pow(x,2)", -FLT_MIN,FLT_MAX );
+      //graph->Fit(f2,"QW");
+//      TF1* f1= new TF1("f1","[0]+[1]*pow(x,[2])", -FLT_MIN,FLT_MAX );
+//      bool UseLTFOutput = true;
+//      if ( UseLTFOutput ) {
+//         Eigen::VectorXd ltfpol1param =(fit.Y*fit.Mc().transpose()).row(ibin);
+//         //cout<<"M+*Y:"<<endl<< ltfpol1param <<endl;
+//         pol1->SetParameter(0,ltfpol1param(0));
+//         pol1->SetParameter(1,ltfpol1param(1));
+//
+//	 //graph->GetFunction("pol1")->SetParameter(0,ltfpol1param(0));
+//         //graph->GetFunction("pol1")->SetParameter(1,ltfpol1param(1));
+//	 //f1->SetParameter(0,ltfpol1param(0));
+//         //f1->SetParameter(1,ltfpol1param(1));
+//         //f1->SetParameter(2,fit.Gamma[0]);
+//      }
+//      if ( fit.Gamma[0]!=1 )   cout<<"Warning! Plotting with gamma factor !=1 not correctly implmeneted!"<<endl;
 
       graph->SetMarkerStyle(47);
-      graph->SetMarkerColor(kRed+2);
-      graph->SetLineColor(kRed+2);
+      graph->SetMarkerColor(kRed+3);
+      graph->SetLineColor(kRed+3);
       if ( fit.GetLogNormal() ) 
          graph->SetTitle((";"+referencename+";log("+yaxistitle+")").c_str()); // log(value/unit)
       else
          graph->SetTitle((";"+referencename+";"+yaxistitle).c_str());
-
 
       TF1* f1log = NULL;
       if ( fit.GetLogNormal() ) {
@@ -970,44 +1034,57 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
          f1log->SetLineWidth(2);
       }
 
-
       if ( gdata->GetY()[0] > 0 )
          graph->SetMinimum(0);
 
       graph->SetMaximum( max(gdata->GetY()[0],max(graph->GetY()[0],graph->GetY()[graph->GetN()-1]))*1.2);
-      graph->GetYaxis()->SetRangeUser(0.00001, 0.3); //johannes
-      //graph->SetMinimum( -20 );
+      graph->GetYaxis()->SetRangeUser(min(gdata->GetY()[0],max(graph->GetY()[0],graph->GetY()[graph->GetN()-1]))*0.6,
+				      max(gdata->GetY()[0],max(graph->GetY()[0],graph->GetY()[graph->GetN()-1]))*1.2);
       graph->Draw("APE0");
       if ( fit.GetLogNormal() )
          f1log->Draw("Lsame");
-      else
-         pol1w->Draw("Lsame");
-      //graph->GetFunction("pol1")->Draw("Lsame");
-    if ( reference_values.size()+1<= 6 ) 
-      graph->GetHistogram()->GetXaxis()->SetNdivisions(graph->GetN()+1);
-    else
-       graph->GetHistogram()->GetXaxis()->SetNdivisions(int(graph->GetN()/2)+1+200);
-      //f2->Draw("same");
-
-      gdata->Draw("PE0");
-      
-      if ( ibin==0 ) {
-         double xmin = fit.GetLogNormal() ? 0.36 : 0.45;
-         TLegend legend(xmin,0.19,0.96,0.47,"","NDC");
-         legend.SetFillStyle(0);
-         legend.SetBorderSize(0);
-         legend.AddEntry(data,"Data","E0P");
-         legend.AddEntry(graph,"Templates","PE0");
-         if ( fit.GetLogNormal() ) {
-            legend.AddEntry(graph->GetFunction("pol1"),"Linear log(model)","L");
-            legend.AddEntry(f1log,"#scale[0.9]{Linearized model #scale[0.7]{(unused)}}","L");
-         }
-         else {
-            legend.AddEntry(graph->GetFunction("pol1"),"Linearized model","L");
-            legend.AddEntry(pol1w,"Weighted fit #scale[0.7]{(unused)}","L");
-         }
-         legend.DrawClone();
+      else {
+	//f1->Draw("Lsame");
+	 pol1->Draw("Lsame");
+	 pol2->Draw("Lsame");
       }
+      //graph->GetFunction("pol1")->Draw("Lsame");
+      if ( reference_values.size()+1<= 6 ) 
+	graph->GetHistogram()->GetXaxis()->SetNdivisions(graph->GetN()+1);
+      else
+	graph->GetHistogram()->GetXaxis()->SetNdivisions(int(graph->GetN())+1+200);
+      //f2->Draw("same");
+      graph->Draw("PE0 same");
+      gdata->Draw("PE0 same");
+      
+      //if ( ibin==0 ) {
+      //double xmin = fit.GetLogNormal() ? 0.36 : 0.45;
+      TLegend legend(0.55,0.8,0.96,0.94,"","NDC");
+      legend.SetFillStyle(0);
+      legend.SetBorderSize(0);
+      legend.AddEntry(data,"Data","E0P");
+      legend.AddEntry(graph,"Templates","PE0");
+      if ( fit.GetLogNormal() ) {
+	legend.AddEntry(graph->GetFunction("pol1"),"Linear log(model)","L");
+	legend.AddEntry(f1log,"#scale[0.9]{Linearized model #scale[0.7]{(unused)}}","L");
+      }
+      else {
+	legend.AddEntry(pol1,Form("Linearized model ( #chi^{2} / ndf = %.3f / %d)", pol1->GetChisquare(),graph->GetN()-2),"L");
+	legend.AddEntry(pol2,Form("Quadratic model, ( #chi^{2} / ndf = %.3f / %d)", pol2->GetChisquare(),graph->GetN()-3),"L");
+	legend.AddEntry(pol2,Form("p0 = %.3f +/- %.3f)", pol2->GetParameter(0), pol2->GetParError(0)),"");
+	legend.AddEntry(pol2,Form("p1 = %.3f +/- %.3f)", pol2->GetParameter(1), pol2->GetParError(1)),"");
+        legend.AddEntry(pol2,Form("p2 = %.3f +/- %.3f)", pol2->GetParameter(2), pol2->GetParError(2)),"");
+
+	legend.AddEntry(pol2,Form(" (#chi^{2}_{quad}*ndf_{lin}) / (#chi^{2}_{lin}*ndf_{quad})  = %.3f )",
+				  (pol2->GetChisquare()*(graph->GetN()-2))/(pol1->GetChisquare()*(graph->GetN()-3))),"");
+	// johannes also calculate the chisq probabilities and divide them
+
+	//legend.AddEntry(graph->GetFunction("pol1"),"Linearized model","L");
+	//legend.AddEntry(pol1,"Weighted fit #scale[0.7]{(unused)}","L");
+	//legend.AddEntry(pol2,"Weighted fit #scale[0.7]{(unused)}","L");
+      }
+      legend.DrawClone();
+      //}
 
       TLatex text;
       text.SetNDC();
@@ -1020,11 +1097,6 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       text.DrawLatex(0.20,0.93, infotext);
 
       c1.Print(ps_name);
-      //if ( fit.GetLogNormal() )
-      //   c1.Print( Form("plots/LTFlog_bin_%02d.pdf",ibin));
-      //else
-      //   c1.Print( Form("plots/LTF_bin_%02d.pdf",ibin));
-      
     }
    
 
@@ -1277,8 +1349,8 @@ void LTF_ROOTTools::plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double>
 
       graph->SetMarkerStyle(25);
       //graph->SetMarkerSize(2);
-      graph->SetMarkerColor(kRed+2);
-      graph->SetLineColor(kRed+2);
+      graph->SetMarkerColor(kRed+3);
+      graph->SetLineColor(kRed+3);
       graph->SetTitle(";Reference value (#alpha) [unit];Value [unit]");
 
       //graph->SetMinimum(0);
@@ -1488,8 +1560,8 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
       graph->GetFunction("pol2")->SetLineWidth(83);
 
       graph->SetMarkerStyle(47);
-      graph->SetMarkerColor(kRed+2);
-      graph->SetLineColor(kRed+2);
+      graph->SetMarkerColor(kRed+3);
+      graph->SetLineColor(kRed+3);
       if ( fit.GetLogNormal() ) 
          graph->SetTitle((";"+referencename+";log("+yaxistitle+")").c_str()); // log(value/unit)
       else
