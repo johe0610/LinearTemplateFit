@@ -63,33 +63,49 @@ vector<vector<double > > TH2D_to_vecvec(TH2D* hist2D) {
 
 int example_ATLAS_topmass() {
 
+  TFile *file = new TFile("fit_quality.root", "RECREATE");
+  TH1D *h_chisq_prob_linear = new TH1D("h_chisq_prob_linear", "h_chisq_prob_linear", 10, 0.0, 1.0);
+  TH1D *h_chisq_prob_quadratic = new TH1D("h_chisq_prob_quadratic", "h_chisq_prob_quadratic", 10, 0.0, 1.0);
+  TH1D *h_chisq_prob_ratio = new TH1D("h_chisq_prob_ratio", "h_chisq_prob_ratio", 15, 0.0, 1.5);
+  TH1D *h_chisq_prob_ratio_rel = new TH1D("h_chisq_prob_ratio_rel", "h_chisq_prob_ratio_rel", 25, -1.05, 1.45);
+  TH1D *h_chisq_ratio = new TH1D("h_chisq_ratio", "h_chisq_ratio", 15, 0.0, 1.5);
+
+  h_chisq_prob_linear->Write();
+  h_chisq_prob_quadratic->Write();
+  h_chisq_prob_ratio->Write();
+  h_chisq_prob_ratio_rel->Write();
+  h_chisq_ratio->Write();
+  file->Close();
+  
   if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_drbl.ps", {"dRbl_selected"},    {"dr_bl"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_drbw.ps", {"dRbwhad_selected"},    {"dr_bw"}) > 0) return 1;
-//  //if (fitMultipleObservables("plots/fit_etal1.ps", {"etal1"},    {"eta_lep1"}) > 0) return 1;
-//  //if (fitMultipleObservables("plots/fit_mtlepmet.ps", {"mtlepmet"},    {"mT_lep1met"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_minimax.ps", {"minimax_whadbbl"},    {"m_minimax"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_mwbbl.ps", {"mwhadbbl"},    {"m_wbbl"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_ptb1.ps", {"ptb1"},    {"pT_bjet1"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_ptb2.ps", {"ptb2"},    {"pT_bjet2"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_ptbl.ps", {"ptbl_selected"},    {"pT_bl"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_ptbw.ps", {"ptbwhad_selected"},    {"pT_bw"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_ptj1.ps", {"ptj1"},    {"pT_jet1"}) > 0) return 1;
-//  //if (fitMultipleObservables("plots/fit_ptj2.ps", {"ptj2"},    {"pT_jet2"}) > 0) return 1;
-//  //if (fitMultipleObservables("plots/fit_ptmet.ps", {"met"},    {"pT_met"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_ptowj1.ps", {"ptOWj1"},    {"pT_owj1"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_ptowj2.ps", {"ptOWj2"},    {"pT_owj2"}) > 0) return 1;
-//  //ptwhadbbl
-//  if (fitMultipleObservables("plots/fit_ywhad.ps", {"rapiditywhad"},    {"y_whad"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_ptwhad.ps", {"ptwhad"},    {"pT_whad"}) > 0) return 1;
-//
-//  if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_mbl_ptl1.ps", {"mbl_selected", "ptl1"}, {"m_bl", "pT_lep1"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_mbw_ptl1.ps", {"mbwhad_selected", "ptl1"}, {"m_bw", "pT_lep1"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_mbl_mbw_ptl1.ps", {"mbl_selected", "mbwhad_selected", "ptl1"}, {"m_bl", "m_bw", "pT_lep1"}) > 0) return 1;
-//  //  if (fitMultipleObservables("plots/fit_mbl_mbw_ptl1_ptw.ps", {"mbl_selected", "mbwhad_selected", "ptl1", "ptwhad"}, {"m_bl", "m_bw", "pT_lep1", "pT_whad"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_drbl.ps", {"dRbl_selected"},    {"dr_bl"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_drbw.ps", {"dRbwhad_selected"},    {"dr_bw"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_etal1.ps", {"etal1"},    {"eta_lep1"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mtlepmet.ps", {"mtlepmet"},    {"mT_lep1met"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_minimax.ps", {"minimax_whadbbl"},    {"m_minimax"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mwbbl.ps", {"mwhadbbl"},    {"m_wbbl"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptb1.ps", {"ptb1"},    {"pT_bjet1"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptb2.ps", {"ptb2"},    {"pT_bjet2"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptbl.ps", {"ptbl_selected"},    {"pT_bl"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptbw.ps", {"ptbwhad_selected"},    {"pT_bw"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptj1.ps", {"ptj1"},    {"pT_jet1"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_ptj2.ps", {"ptj2"},    {"pT_jet2"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_ptmet.ps", {"met"},    {"pT_met"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptowj1.ps", {"ptOWj1"},    {"pT_owj1"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptowj2.ps", {"ptOWj2"},    {"pT_owj2"}) > 0) return 1;
+  //ptwhadbbl
+  if (fitMultipleObservables("plots/fit_ywhad.ps", {"rapiditywhad"},    {"y_whad"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptwhad.ps", {"ptwhad"},    {"pT_whad"}) > 0) return 1;
+
+  //if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbl_ptl1.ps", {"mbl_selected", "ptl1"}, {"m_bl", "pT_lep1"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbw_ptl1.ps", {"mbwhad_selected", "ptl1"}, {"m_bw", "pT_lep1"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbl_mbw_ptl1.ps", {"mbl_selected", "mbwhad_selected", "ptl1"}, {"m_bl", "m_bw", "pT_lep1"}) > 0) return 1;
+  //  if (fitMultipleObservables("plots/fit_mbl_mbw_ptl1_ptw.ps", {"mbl_selected", "mbwhad_selected", "ptl1", "ptwhad"}, {"m_bl", "m_bw", "pT_lep1", "pT_whad"}) > 0) return 1;
+
+  LTF_ROOTTools::plotFitComparison();
   
   return 0;
 }
@@ -680,4 +696,3 @@ void PrintAsciiTable(const map<double,TH1D*>& templates, TH1D* data){
    }
    cout<<endl;
 }
-

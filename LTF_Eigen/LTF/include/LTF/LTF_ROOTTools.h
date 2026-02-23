@@ -96,7 +96,7 @@ void makeErrorPlotSingle(TCanvas&, const char*, const LTF::LiTeFit&);
 //!  since this is not included in LTF::LiTeFit
 //! 
 static
-void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins, 
+void plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins, 
 		 const char* ps_name         = "plots/test.ps",
 		 const string& yaxistitle    = "value [unit]",
 		 const string& xaxistitle    = "value [unit]",
@@ -129,4 +129,15 @@ void plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins,
                  const string& yaxistitle    = "value [unit]",
                  const string& referencename = "Reference value (#alpha) [unit]",
                  const string& observablename = "Observable [unit]");
+  
+
+// __________________________________________________________________________________ //
+//!
+//!
+//!  Plot ChiSquare probabilities of single bin extrapolations
+//!
+static
+void plotFitComparison();
+
+
 };

@@ -84,8 +84,8 @@ TGraphErrors* LTF_ROOTTools::MakeTGraph(const Eigen::VectorXd& xvalues, int ibin
       graph->SetPoint(i,xvalues(i),yvalue);
       double ey2 = 0;
       for ( auto [name,Vy] : VSysY ) {
-	//ey2 += pow(Vy(ibin,i),2); // johannes change this back!!
-	 ey2 += pow(Vy(ibin,0),2);
+	ey2 += pow(Vy(ibin,i),2); // johannes change this back!!
+	//ey2 += pow(Vy(ibin,1),2);
       }
       graph->SetPointError(i,0,sqrt(ey2));
    }
@@ -726,7 +726,7 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
 //!  The binning needs to be provided to the plotting function,
 //!  since this is not included in LTF::LiTeFit
 //! 
-void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins, 
+void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins, 
 				const char*   ps_name,
 				const string& yaxistitle,
 				const string& xaxistitle,
@@ -902,13 +902,21 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    gStyle->SetTitleOffset(2.3,"Y");
    gStyle->SetMarkerSize(1.5);
 
-   //map < string, vector<double> > input_table = read_input_table2("data/CMS_data.txt",32);
-   bool doLinTransform = true;
+   // Save ChiSq probabilities in separate file
+   TFile* file = new TFile("fit_quality.root", "UPDATE");
+   if (file->IsZombie()) {
+        return;
+    }
+
+   TH1D* h_prob_linear = file->Get<TH1D>("h_chisq_prob_linear");
+   TH1D* h_prob_quadratic = file->Get<TH1D>("h_chisq_prob_quadratic");
+   TH1D* h_prob_ratio = file->Get<TH1D>("h_chisq_prob_ratio");
+   TH1D* h_prob_ratio_rel = file->Get<TH1D>("h_chisq_prob_ratio_rel");
+   TH1D* h_ratio = file->Get<TH1D>("h_chisq_ratio");
+
    
+   bool doLinTransform = true;
    for ( int ibin = 0 ; ibin<fit.Dt.size() ; ibin++ ) {
-   //for ( int ibin = 0 ; ibin<0 ; ibin++ ) {
-   //for ( int ibin = 0 ; ibin<6 ; ibin++ ) {
-      //TGraphErrors* data  = MakeTGraph(fit.ahat.row(0),fit.Dt.row(ibin));
       TGraphErrors* gdata = new TGraphErrors();
       if ( doLinTransform ) gdata->SetPoint(0,linTransform(fit.ahat(0)),fit.Dt(ibin));
       else gdata->SetPoint(0,linTransform(fit.ahat(0)),fit.Dt(ibin));
@@ -927,7 +935,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
 	graph = MakeTGraph(fit.M.col(1),ibin,fit.Y,fit.SysY);
       }
       
-      TFitResultPtr resPol1 = graph->Fit("pol1","SQ0"); // weighted fit takes uncertainties into account
+      TFitResultPtr resPol1 = graph->Fit("pol1","SQ0"); // weighted fit takes uncertainties into account, to neglect weights (set all weights to 1) use option "W"
       TMatrixDSym covPol1 = resPol1->GetCovarianceMatrix();
       TF1* pol1 = (TF1*)graph->GetFunction("pol1")->Clone("pol1");
       pol1->SetLineColor(kBlue+3);
@@ -944,24 +952,25 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       TMatrixDSym covPol2 = resPol2->GetCovarianceMatrix();
       cout<<"Covariancematrix"<<endl;
       covPol2.Print();
-      TMatrixDSymEigen eig(covPol2);
-      TMatrixD V = eig.GetEigenVectors();
-      TMatrixD D = V.Invert()*covPol2*V;
-      TVectorD eigenvalues =eig.GetEigenValues();
-      cout<<"Matrix of Eigenvectors V"<<endl;
-      V.Print();
-      cout<<"Eigenvalues"<<endl;
-      eigenvalues.Print();
-      cout<<"Diagonal matrix with eigen values D"<<endl;
-      D.Print();
-      cout<<"V^-1*V should be unity"<<endl;
-      TMatrixD temp1 = V.Invert()*V;
-      temp1.Print();
-      cout<<"V*D*V^-1 should give A"<<endl;
-      TMatrixD temp2 = V * D * V.Invert();
-      temp2.Print();
-      TMatrixD temp3 = covPol2*V-D*V;
-      cout<<"Norm AV-VD "<<temp3.NormInf()<<" (should be zero)"<<endl;
+      //TMatrixDSymEigen eig(covPol2);
+      //TMatrixD V = eig.GetEigenVectors();
+      //TMatrixD D = V.Invert()*covPol2*V;
+      //TVectorD eigenvalues =eig.GetEigenValues();
+      //cout<<"Matrix of Eigenvectors V"<<endl;
+      //V.Print();
+      //cout<<"Eigenvalues"<<endl;
+      //eigenvalues.Print();
+      //cout<<"Diagonal matrix with eigen values D"<<endl;
+      //D.Print();
+      //cout<<"V^-1*V should be unity"<<endl;
+      //TMatrixD temp1 = V.Invert()*V;
+      //temp1.Print();
+      //cout<<"V*D*V^-1 should give A"<<endl;
+      //TMatrixD temp2 = V * D * V.Invert();
+      //temp2.Print();
+      //TMatrixD temp3 = covPol2*V-D*V;
+      //cout<<"Norm AV-VD "<<temp3.NormInf()<<" (should be zero)"<<endl;
+      
       //eig.GetEigenValues().Print();
       //
       //cout<<"err0 "<<resPol2->ParError(0)<<" err1 "<<resPol2->ParError(1)<<" err2 "<<resPol2->ParError(2)<<endl;
@@ -1084,8 +1093,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
 	//legend.AddEntry(pol2,"Weighted fit #scale[0.7]{(unused)}","L");
       }
       legend.DrawClone();
-      //}
-
+      
       TLatex text;
       text.SetNDC();
       text.SetTextAlign(11);
@@ -1096,10 +1104,21 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       infotext.Append("_{}");
       text.DrawLatex(0.20,0.93, infotext);
 
+
+      h_prob_linear->Fill(resPol1->Prob());
+      h_prob_quadratic->Fill(resPol2->Prob());
+      h_prob_ratio->Fill(resPol1->Prob()/resPol2->Prob());
+      h_prob_ratio_rel->Fill((resPol2->Prob()-resPol1->Prob())/resPol2->Prob());
+      h_ratio->Fill((pol2->GetChisquare()*(graph->GetN()-2))/(pol1->GetChisquare()*(graph->GetN()-3)));
+      
       c1.Print(ps_name);
     }
-   
-
+    h_prob_linear->Write("", TObject::kOverwrite);
+    h_prob_quadratic->Write("", TObject::kOverwrite);
+    h_prob_ratio->Write("", TObject::kOverwrite);
+    h_prob_ratio_rel->Write("", TObject::kOverwrite);
+    h_ratio->Write("", TObject::kOverwrite);
+    file->Close();
     // ---------------------------------------------- //
     //   chisq plot
     // ---------------------------------------------- //
@@ -1743,4 +1762,99 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
 
     c1.Print( (string(ps_name)+"]").c_str() );
    
+}
+
+void LTF_ROOTTools::plotFitComparison(){
+   TFile* file = new TFile("fit_quality.root", "READ");
+   if (file->IsZombie()) {
+        return;
+    }
+
+   TH1D* h_prob_linear = file->Get<TH1D>("h_chisq_prob_linear");
+   TH1D* h_prob_quadratic = file->Get<TH1D>("h_chisq_prob_quadratic");
+   TH1D* h_prob_ratio = file->Get<TH1D>("h_chisq_prob_ratio");
+   TH1D* h_prob_ratio_rel = file->Get<TH1D>("h_chisq_prob_ratio_rel");
+   TH1D* h_ratio = file->Get<TH1D>("h_chisq_ratio");
+
+   TCanvas c1("c1","c1",800,800);
+   c1.SetRightMargin(0.05);
+   c1.SetLeftMargin(0.15);
+   c1.SetTopMargin(0.08);
+
+   c1.Print("plots/fit_quality.ps[");
+	     
+   {
+     h_prob_linear->GetYaxis()->CenterTitle();
+     h_prob_linear->GetYaxis()->SetTitle("Counts [a.u.]");
+     h_prob_linear->GetXaxis()->SetTitle("p-value ( #chi^{2} probability)");
+     h_prob_linear->SetLineColor(kBlack);
+     h_prob_linear->SetLineWidth(2);
+     h_prob_linear->Draw("hist");
+
+     TLatex text;
+     text.SetNDC();
+     text.SetTextAlign(31);
+     text.DrawLatex(0.80,0.80,"Linear fit");
+     c1.Print("plots/fit_quality.ps");
+   }
+   {
+     h_prob_quadratic->GetYaxis()->CenterTitle();
+     h_prob_quadratic->GetYaxis()->SetTitle("Counts [a.u.]");
+     h_prob_quadratic->GetXaxis()->SetTitle("p-value ( #chi^{2} probability)");
+     h_prob_quadratic->SetLineColor(kBlack);
+     h_prob_quadratic->SetLineWidth(2);
+     h_prob_quadratic->Draw("hist");
+
+     TLatex text;
+     text.SetNDC();
+     text.SetTextAlign(31);
+     text.DrawLatex(0.80,0.80,"Quadratic fit");
+     c1.Print("plots/fit_quality.ps");
+   }
+   {
+     h_prob_ratio->GetYaxis()->CenterTitle();
+     h_prob_ratio->GetYaxis()->SetTitle("Counts [a.u.]");
+     h_prob_ratio->GetXaxis()->SetTitle("p-value (quad.) / p-value(lin) ");
+     h_prob_ratio->SetLineColor(kBlack);
+     h_prob_ratio->SetLineWidth(2);
+     h_prob_ratio->Draw("hist");
+
+     TLatex text;
+     text.SetNDC();
+     text.SetTextAlign(31);
+     text.DrawLatex(0.80,0.80,"Ratio of probabilities");
+     c1.Print("plots/fit_quality.ps");
+   }
+   {
+     h_prob_ratio_rel->GetYaxis()->CenterTitle();
+     h_prob_ratio_rel->GetYaxis()->SetTitle("Counts [a.u.]");
+     h_prob_ratio_rel->GetXaxis()->SetTitle("(p-value (quad.) - p-value(lin)) / p-value (quad.) ");
+     h_prob_ratio_rel->SetLineColor(kBlack);
+     h_prob_ratio_rel->SetLineWidth(2);
+     h_prob_ratio_rel->Draw("hist");
+
+     TLatex text;
+     text.SetNDC();
+     text.SetTextAlign(31);
+     text.DrawLatex(0.80,0.80,"Relative ratio");
+     text.DrawLatex(0.80,0.76,"of probabilities");
+     c1.Print("plots/fit_quality.ps");
+   }
+   {
+     h_ratio->GetYaxis()->CenterTitle();
+     h_ratio->GetYaxis()->SetTitle("Counts [a.u.]");
+     h_ratio->GetXaxis()->SetTitle("(#chi^{2}_{quad} / ndf_{quad}) / (#chi^{2}_{linear} / ndf_{linear})");
+     h_ratio->SetLineColor(kBlack);
+     h_ratio->SetLineWidth(2);
+     h_ratio->Draw("hist");
+
+     TLatex text;
+     text.SetNDC();
+     text.SetTextAlign(31);
+     text.DrawLatex(0.80,0.80,"Ratio of #chi^{2} values");
+     c1.Print("plots/fit_quality.ps");
+   }
+   c1.Print("plots/fit_quality.ps]");
+   
+   file->Close();
 }
