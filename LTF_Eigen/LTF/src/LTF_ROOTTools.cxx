@@ -10,6 +10,7 @@
 #include <TMatrixTSym.h>
 #include <TCanvas.h>
 #include <TH1D.h>
+#include <TH2D.h>
 #include <TSystem.h>
 #include <TFile.h>
 #include <string>
@@ -912,9 +913,10 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
    TH1D* h_prob_quadratic = file->Get<TH1D>("h_chisq_prob_quadratic");
    TH1D* h_prob_ratio = file->Get<TH1D>("h_chisq_prob_ratio");
    TH1D* h_prob_ratio_rel = file->Get<TH1D>("h_chisq_prob_ratio_rel");
-   TH1D* h_ratio = file->Get<TH1D>("h_chisq_ratio");
+   TH1D* h_chisq_ratio = file->Get<TH1D>("h_chisq_ratio");
+   TH1D* h_cheb_sign= file->Get<TH1D>("h_cheb_sign");
+   TH2D* h_chisq_ratio_cheb_sign= file->Get<TH2D>("h_chisq_ratio_cheb_sign");
 
-   
    bool doLinTransform = true;
    for ( int ibin = 0 ; ibin<fit.Dt.size() ; ibin++ ) {
       TGraphErrors* gdata = new TGraphErrors();
@@ -947,11 +949,12 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
       //TMatrixD convToCheb(3,3,&matrixval[0][0]);
       //double matrixvalT[3][3] = {{1, 0, 0},{0, 1, 0}, {0.5, 0, 0.5}};
       //TMatrixD convToChebTrans(3,3,&matrixvalT[0][0]);
-
+      //
       TFitResultPtr resPol2 = graph->Fit("pol2","SQ0");
-      TMatrixDSym covPol2 = resPol2->GetCovarianceMatrix();
-      cout<<"Covariancematrix"<<endl;
-      covPol2.Print();
+      //TMatrixDSym covPol2 = resPol2->GetCovarianceMatrix();
+      //cout<<"Covariancematrix"<<endl;
+      //covPol2.Print();
+     
       //TMatrixDSymEigen eig(covPol2);
       //TMatrixD V = eig.GetEigenVectors();
       //TMatrixD D = V.Invert()*covPol2*V;
@@ -1068,7 +1071,7 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
       
       //if ( ibin==0 ) {
       //double xmin = fit.GetLogNormal() ? 0.36 : 0.45;
-      TLegend legend(0.55,0.8,0.96,0.94,"","NDC");
+      TLegend legend(0.55,0.68,0.96,0.94,"","NDC");
       legend.SetFillStyle(0);
       legend.SetBorderSize(0);
       legend.AddEntry(data,"Data","E0P");
@@ -1086,8 +1089,8 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
 
 	legend.AddEntry(pol2,Form(" (#chi^{2}_{quad}*ndf_{lin}) / (#chi^{2}_{lin}*ndf_{quad})  = %.3f )",
 				  (pol2->GetChisquare()*(graph->GetN()-2))/(pol1->GetChisquare()*(graph->GetN()-3))),"");
-	// johannes also calculate the chisq probabilities and divide them
-
+	legend.AddEntry(pol2,Form("p2err/p2 = %.3f", resPol2->ParError(2)/resPol2->Parameter(2)),"");
+	
 	//legend.AddEntry(graph->GetFunction("pol1"),"Linearized model","L");
 	//legend.AddEntry(pol1,"Weighted fit #scale[0.7]{(unused)}","L");
 	//legend.AddEntry(pol2,"Weighted fit #scale[0.7]{(unused)}","L");
@@ -1103,21 +1106,26 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
       infotext.Append(Form("%3.0f", bins[ibin+1]));
       infotext.Append("_{}");
       text.DrawLatex(0.20,0.93, infotext);
-
+      
 
       h_prob_linear->Fill(resPol1->Prob());
       h_prob_quadratic->Fill(resPol2->Prob());
       h_prob_ratio->Fill(resPol1->Prob()/resPol2->Prob());
       h_prob_ratio_rel->Fill((resPol2->Prob()-resPol1->Prob())/resPol2->Prob());
-      h_ratio->Fill((pol2->GetChisquare()*(graph->GetN()-2))/(pol1->GetChisquare()*(graph->GetN()-3)));
-      
+      h_chisq_ratio->Fill((pol2->GetChisquare()*(graph->GetN()-2))/(pol1->GetChisquare()*(graph->GetN()-3)));
+      double cheb_sign = abs(resPol2->ParError(2)/resPol2->Parameter(2));
+      if ( cheb_sign > 2.9 ) cheb_sign = 2.9;
+      h_cheb_sign->Fill(cheb_sign);
+      h_chisq_ratio_cheb_sign->Fill((pol2->GetChisquare()*(graph->GetN()-2))/(pol1->GetChisquare()*(graph->GetN()-3)), cheb_sign);
       c1.Print(ps_name);
     }
     h_prob_linear->Write("", TObject::kOverwrite);
     h_prob_quadratic->Write("", TObject::kOverwrite);
     h_prob_ratio->Write("", TObject::kOverwrite);
     h_prob_ratio_rel->Write("", TObject::kOverwrite);
-    h_ratio->Write("", TObject::kOverwrite);
+    h_chisq_ratio->Write("", TObject::kOverwrite);
+    h_cheb_sign->Write("", TObject::kOverwrite);
+    h_chisq_ratio_cheb_sign->Write("", TObject::kOverwrite);
     file->Close();
     // ---------------------------------------------- //
     //   chisq plot
@@ -1774,8 +1782,9 @@ void LTF_ROOTTools::plotFitComparison(){
    TH1D* h_prob_quadratic = file->Get<TH1D>("h_chisq_prob_quadratic");
    TH1D* h_prob_ratio = file->Get<TH1D>("h_chisq_prob_ratio");
    TH1D* h_prob_ratio_rel = file->Get<TH1D>("h_chisq_prob_ratio_rel");
-   TH1D* h_ratio = file->Get<TH1D>("h_chisq_ratio");
-
+   TH1D* h_chisq_ratio = file->Get<TH1D>("h_chisq_ratio");
+   TH1D* h_cheb_sign = file->Get<TH1D>("h_cheb_sign");
+   TH2D* h_chisq_ratio_cheb_sign = file->Get<TH2D>("h_chisq_ratio_cheb_sign");
    TCanvas c1("c1","c1",800,800);
    c1.SetRightMargin(0.05);
    c1.SetLeftMargin(0.15);
@@ -1841,17 +1850,39 @@ void LTF_ROOTTools::plotFitComparison(){
      c1.Print("plots/fit_quality.ps");
    }
    {
-     h_ratio->GetYaxis()->CenterTitle();
-     h_ratio->GetYaxis()->SetTitle("Counts [a.u.]");
-     h_ratio->GetXaxis()->SetTitle("(#chi^{2}_{quad} / ndf_{quad}) / (#chi^{2}_{linear} / ndf_{linear})");
-     h_ratio->SetLineColor(kBlack);
-     h_ratio->SetLineWidth(2);
-     h_ratio->Draw("hist");
+     h_chisq_ratio->GetYaxis()->CenterTitle();
+     h_chisq_ratio->GetYaxis()->SetTitle("Counts [a.u.]");
+     h_chisq_ratio->GetXaxis()->SetTitle("(#chi^{2}_{quad} / ndf_{quad}) / (#chi^{2}_{linear} / ndf_{linear})");
+     h_chisq_ratio->SetLineColor(kBlack);
+     h_chisq_ratio->SetLineWidth(2);
+     h_chisq_ratio->Draw("hist");
 
      TLatex text;
      text.SetNDC();
      text.SetTextAlign(31);
      text.DrawLatex(0.80,0.80,"Ratio of #chi^{2} values");
+     c1.Print("plots/fit_quality.ps");
+   }
+   {
+     h_cheb_sign->GetYaxis()->CenterTitle();
+     h_cheb_sign->GetYaxis()->SetTitle("Counts [a.u.]");
+     h_cheb_sign->GetXaxis()->SetTitle("Chebyshev #sima(p2)/p2");
+     h_cheb_sign->Draw("hist");
+     //TLatex text;
+     //text.SetNDC();
+     //text.SetTextAlign(31);
+     //text.DrawLatex(0.80,0.80,"");
+     c1.Print("plots/fit_quality.ps");
+   }
+   {
+     //h_chisq_ratio_cheb_sign->GetYaxis()->CenterTitle();
+     h_chisq_ratio_cheb_sign->GetYaxis()->SetTitle("Chebyshev #sima(p2)/p2");
+     h_chisq_ratio_cheb_sign->GetXaxis()->SetTitle("(#chi^{2}_{quad} / ndf_{quad}) / (#chi^{2}_{linear} / ndf_{linear})");
+     h_chisq_ratio_cheb_sign->Draw("colz");
+     //TLatex text;
+     //text.SetNDC();
+     //text.SetTextAlign(31);
+     //text.DrawLatex(0.80,0.80,"Ratio of #chi^{2} values");
      c1.Print("plots/fit_quality.ps");
    }
    c1.Print("plots/fit_quality.ps]");

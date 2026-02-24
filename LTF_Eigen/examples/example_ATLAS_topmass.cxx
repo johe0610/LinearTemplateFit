@@ -69,12 +69,16 @@ int example_ATLAS_topmass() {
   TH1D *h_chisq_prob_ratio = new TH1D("h_chisq_prob_ratio", "h_chisq_prob_ratio", 15, 0.0, 1.5);
   TH1D *h_chisq_prob_ratio_rel = new TH1D("h_chisq_prob_ratio_rel", "h_chisq_prob_ratio_rel", 25, -1.05, 1.45);
   TH1D *h_chisq_ratio = new TH1D("h_chisq_ratio", "h_chisq_ratio", 15, 0.0, 1.5);
-
+  TH1D *h_cheb_sign = new TH1D("h_cheb_sign", "h_cheb_sign", 15, 0.0, 3);
+  TH2D *h_chisq_ratio_cheb_sign = new TH2D("h_chisq_ratio_cheb_sign", "h_chisq_ratio_cheb_sign", 15, 0.0, 1.5, 15, 0.0, 3);
+  
   h_chisq_prob_linear->Write();
   h_chisq_prob_quadratic->Write();
   h_chisq_prob_ratio->Write();
   h_chisq_prob_ratio_rel->Write();
   h_chisq_ratio->Write();
+  h_cheb_sign->Write();
+  h_chisq_ratio_cheb_sign->Write();
   file->Close();
   
   if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
