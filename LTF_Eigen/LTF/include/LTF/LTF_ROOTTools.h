@@ -76,6 +76,14 @@ TH1D* MakeHistogram(const Eigen::VectorXd& values, vector<double> bins = {}, con
 static
 TH1D* MakeHistogram(const Eigen::VectorXd& values, const Eigen::VectorXd& errors = {}, vector<double> bins = {});
 
+static
+double GetSigCheb2(const vector<double>& xvals, const vector<double>& yvals, vector<double> yerr);
+
+static
+double GetSigCheb3(const vector<double>& xvals, const vector<double>& yvals, vector<double> yerr);
+
+
+  
 // __________________________________________________________________________________ //
 static
 double makeErrorPlot(TCanvas&, const char*, const char*, const LTF::LiTeFit&, const vector<string>&);

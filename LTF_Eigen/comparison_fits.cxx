@@ -39,10 +39,11 @@ void comparison_fits() {
     //"gaus", "expo", "[0]*TMath::Gaus(x, [1], [2], true) + [3]*TMath::Landau(x, [4], [5], true)"};
     std::vector<std::string> functions = {//"pol6", "pol7", "pol8", "pol9",
 					  //"gaus",
-					  "[0]*TMath::Gaus(x, [1], [2], true) + [3]*TMath::Gaus(x, [4], [5], true)",
-					  "[0]*TMath::Gaus(x, [1], [2], true) + [3]*TMath::Gaus(x, [4], [5], true) + [6]*TMath::Gaus(x, [7], [8], true)",
-					  "[0]*TMath::Landau(x, [1], [2], true)",
-					  "[0]*TMath::Gaus(x, [1], [2], true) + [3]*TMath::Landau(x, [4], [5], true)"};
+      "cheb7", "cheb8", "cheb9"};
+//      "[0]*TMath::Gaus(x, [1], [2], true) + [3]*TMath::Gaus(x, [4], [5], true)",
+//					  "[0]*TMath::Gaus(x, [1], [2], true) + [3]*TMath::Gaus(x, [4], [5], true) + [6]*TMath::Gaus(x, [7], [8], true)",
+//					  "[0]*TMath::Landau(x, [1], [2], true)",
+//					  "[0]*TMath::Gaus(x, [1], [2], true) + [3]*TMath::Landau(x, [4], [5], true)"};
 
     std::string histName = "m_bl_fine";   // same histogram name in all files
 
@@ -52,21 +53,21 @@ void comparison_fits() {
     
     TCanvas* c1 = new TCanvas("c1", "Overlayed Histograms", 800, 600);
     c1->Print("test.ps[");
-    c1->SetLogy();
+    c1->SetLogy(false);
 
 
     TLegend* leg = new TLegend(0.7, 0.7, 0.88, 0.88);
     leg->SetBorderSize(0);
 
     std::vector<TFile*> files;
-    std::vector<TH1*> hists;
+    std::vector<TGraphErrors*> graphs;
     std::map<string, std::map<double, vector<double>>> fitParams;
     std::map<string, std::map<double, vector<double>>> fitParamErrors;
     
     int icolor = 0;
     int iParamMax = -1;
-    double xmin = 0;
-    double xmax = 350;
+    double xmin = 50;
+    double xmax = 300;
     // -----------------------------
     // Loop over files
     // -----------------------------
@@ -91,33 +92,58 @@ void comparison_fits() {
         // Clone so histogram survives file closure
         TH1* hclone = dynamic_cast<TH1*>(h->Clone());
         hclone->SetDirectory(nullptr);
-        hclone->SetLineColor(kBlack);
-        hclone->SetLineWidth(2);
-	hclone->SetStats(0);
-	hclone->Draw("hist");
-	l->AddEntry(hclone, Form("Template m_{t}=%.1f",mass_points[fname]), "l");
+	TGraphErrors* g = new TGraphErrors();
+	bool scaleX = false;
+        for (int i = 1; i <= hclone->GetNbinsX(); i++) {
+	  double xnew;
+	  if (scaleX ) xnew = (2*hclone->GetBinCenter(i) - (hclone->GetXaxis()->GetXmax() + hclone->GetXaxis()->GetXmin())) /
+			 (hclone->GetXaxis()->GetXmax() + hclone->GetXaxis()->GetXmin());
+          else xnew = hclone->GetBinCenter(i);
+	    g->SetPoint(i-1, xnew, hclone->GetBinContent(i));
+          g->SetPointError(i-1, 0, hclone->GetBinError(i));
+	  cout<<"Set point "<<xnew<<"\t"<<hclone->GetBinError(i)<<endl;
+        }
+	g->GetYaxis()->SetRangeUser(0.4*hclone->GetMinimum(), 3*hclone->GetMaximum());
+	g->SetLineColor(kBlack);
+        g->SetLineWidth(2);
+	g->SetMarkerColor(kBlack);
+	g->SetMarkerStyle(20);
+	g->SetMarkerSize(0.5);
+	g->SetStats(0);
+	g->Draw("PAE0");
+	g->SetTitle(Form("Template m_{t}=%.1f",mass_points[fname]));
+	l->AddEntry(g, Form("Template m_{t}=%.1f",mass_points[fname]), "P");
 	icolor = 0;
 	for (const auto& function: functions) {
 	  TF1* f = new TF1("f", function.c_str(), xmin, xmax);
 	  if ( function == "[0]*TMath::Gaus(x, [1], [2], true) + [3]*TMath::Landau(x, [4], [5], true)" ) {
-	    f->SetParameters(1,  // Gauss amplitude
-			     100.0,  // Gauss mean
-			     30.0,  // Gauss sigma
-			     1,   // Landau amplitude
-			     80,  // Landau MPV
-			     20   // Landau width
+	    f->SetParameters(1,    // Gauss amplitude
+			     -0.8, // Gauss mean
+			     0.2,  // Gauss sigma
+			     1,    // Landau amplitude
+			     -0.6, // Landau MPV
+			     0.4   // Landau width
 			     );
 	  }
 	  else if ( function == "[0]*TMath::Landau(x, [1], [2], true)" ) {
-            f->SetParameters(9, 90, 20);
+            f->SetParameters(1, -0.7, 0.2);
           }
 	  else if ( function == "[0]*TMath::Gaus(x, [1], [2], true) + [3]*TMath::Gaus(x, [4], [5], true)" ) {
-	    f->SetParameters(6, 90, 40, 1.0, 120, 80);
+	    f->SetParameters(1, -0.7, 0.2, 1, -0.7, 0.2);
 	  }
 	  else if ( function == "[0]*TMath::Gaus(x, [1], [2], true) + [3]*TMath::Gaus(x, [4], [5], true) + [6]*TMath::Gaus(x, [7], [8], true)" ) {
-	    f->SetParameters(0.5, 70, 30, 2, 100, 20, 0.5, 160, 40);
+	    f->SetParameters(1, -0.9, 0.2, 1, -0.7, 0.2, 0.1, 0, 0.5);
 	  }
-	  TFitResultPtr fitRes = hclone->Fit(f, "SQ0RW", "", xmin, xmax);
+	  else if ( function == "cheb7" ) {
+	    f->SetParameters(0.018, -0.021, -0.0017, 0.0196, -0.0018, 0.011, -0.002);
+	  }
+	  else if ( function == "cheb8" ) {
+            f->SetParameters(0.013, -0.039, -0.0125, 0.004, -0.026, -0.004, -0.002, -0.001);
+          }
+	  else if ( function == "cheb9" ) {
+            f->SetParameters(0.034, -0.01, 0.025, 0.03, 0.006, 0.012, 0.02, -0.0045, 0.011);
+          }
+	  TFitResultPtr fitRes = g->Fit(f, "SQ0RW", "", xmin, xmax);
 	  if ( f->GetNpar() > iParamMax ) iParamMax = f->GetNpar();
 	  for(int i=0; i<f->GetNpar(); i++) {
 	    fitParams[function.c_str()][mass_points[fname]].push_back(f->GetParameter(i));
@@ -136,10 +162,11 @@ void comparison_fits() {
 	  l->AddEntry(f, oss.str().c_str()  , "l");
 	  icolor++;
 	}
-	hclone->Draw("histsame E0");
+	g->Draw("same PE0");
 	l->DrawClone();
 	c1->Print("test.ps");
-        hists.push_back(hclone);
+	c1->Clear();
+        graphs.push_back(g);
         files.push_back(f);
     }
 
@@ -147,13 +174,17 @@ void comparison_fits() {
     // Draw histograms
     // -----------------------------
     icolor=0;
-    for (auto* h : hists) {
-      h->SetLineColor(colors[icolor]);
+    for (auto* g : graphs) {
+      g->SetLineColor(colors[icolor]);
+      g->SetMarkerColor(colors[icolor]);
       if (icolor == 0) {
-            h->Draw("HIST");
+	g->SetMarkerStyle(1);
+	g->Draw("AP E0");
       } else {
-            h->Draw("HIST SAME");
-        }
+	g->Draw("E0 SAME");
+      }
+      leg->AddEntry(g, g->GetTitle(), "l");
+
       icolor++;
     }
 

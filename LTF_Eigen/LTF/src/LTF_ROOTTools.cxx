@@ -189,6 +189,174 @@ TH1D* LTF_ROOTTools::MakeHistogram(const Eigen::VectorXd& values, const Eigen::V
    return hist;
 }
 
+
+// __________________________________________________________________________________ //
+//!
+//!  GetSigCheb2
+//!
+double LTF_ROOTTools::GetSigCheb2(const vector<double>& xvals, const vector<double>& yvals, vector<double> yerr) {
+   //! Calculate the significance of the 2nd parameter
+   //! of a fitted Chebychev polynomial of 2nd order
+   //! to a set of data points with/without uncertainties
+   //!
+   //! Input
+   //!    xvals:  x-values of the graph
+   //!    yvals:  y-values of the graph
+   //!    yerr:   uncertainties of the values (optional)
+   //!            All values are considered to uncorrelated
+   //!
+   //! return
+   //!    significance of 2nd Chebyshev parameter 
+
+   const bool ErrorIsCorrelated = false ;
+   
+   // ---------------------------------------------- //
+   // convert monomial to Chebyshev base
+   static const TMatrixD MtoC(3,3, &vector<double>{
+      1. , 0., 0.5, 
+      0. , 1., 0. , 
+      0. , 0., 0.5, 
+      }[0]);
+   static const TMatrixD MtoCT(TMatrixD::kTransposed,MtoC);
+
+   // ---------------------------------------------- //
+   // check input
+   const int npar = int(xvals.size());
+   if ( int(yvals.size()) != npar ) { cout<<"ERROR in GetSigCheb2()! Number of x and y values is not identical. Exiting..."<<endl; exit(1); }
+   if ( int(yerr.size()) && ( int(yerr.size()) != npar ) ) { cout<<"ERROR in GetSigCheb2()! Number of y-errors and y-values is not identical. Exiting..."<<endl; exit(1); }
+
+   
+   // ---------------------------------------------- //
+   // construct fit matrix
+   TMatrixD M2(npar,3);
+   for ( int i = 0 ; i<npar ; i ++ ) {
+      M2(i,0) = 1.;
+      M2(i,1) = xvals[i];
+      M2(i,2) = xvals[i]*xvals[i];
+   }
+   
+   TMatrixD M2T(TMatrixD::kTransposed,M2);
+
+
+   TMatrixD yval(npar, 1, &yvals[0]);
+		 
+   // ---------------------------------------------- //
+   // construct covariance matrix
+   TMatrixD V(npar,npar);
+   for ( int i = 0 ; i<npar ; i++ ) {
+      if ( yerr.size() ) {
+	 if ( !ErrorIsCorrelated )
+	    V(i,i) = yerr[i]*yerr[i];
+	 else {
+	    cout<<"Error in GetSigCheb2()! Fit is undefined, when the errors are fully correlated."<<endl; exit(1);
+	    for ( int j = 0 ; i<npar ; i++ )
+	       V(j,i) = yerr[i]*yerr[j];
+	 }
+      }
+      else
+	 V(i,i) = 1.;
+   }
+
+   TMatrixD Vinv(V); Vinv.Invert();
+
+   // ---------------------------------------------- //
+   // fit matrix
+   TMatrixD M2x = (M2T*Vinv*M2).Invert() * M2T*Vinv;
+   TMatrixD M2xT (TMatrixD::kTransposed,M2x);
+
+   // ---------------------------------------------- //
+   // fit results
+   TMatrixD VV(M2x * V * M2xT );
+   TMatrixD chat(M2x * yval);
+   //cout<<"Before transform p2 = "<<chat(2,0)<<" +/- "<<sqrt(VV(2,2))<<" ratio "<<chat(2,0)/sqrt(VV(2,2))<<endl;
+   // ---------------------------------------------- //
+   // fit results in Chebyshev base
+   TMatrixD VVC(MtoC * VV * MtoCT ); // or is it (MtoCT * VV * MtoC )  ??
+   TMatrixD cHatC(MtoC * chat);
+         
+   // ---------------------------------------------- //
+   // significance of 2nd Chebyshev parameter
+   double c2    = cHatC(2,0);
+   double c2err = sqrt(VVC(2,2));
+   //cout<<"After transform: p2 = "<<c2<<" / "<<c2err<<" ratio "<<c2/c2err<<endl;
+   // ---------------------------------------------- //
+   // return significance
+   return c2/c2err;
+}
+
+// __________________________________________________________________________________ //
+//!
+//! GetSigCheb3
+//!
+double LTF_ROOTTools::GetSigCheb3(const vector<double>& xvals, const vector<double>& yvals, vector<double> yerr = vector<double>()) {
+   //! Calculate the significance of the 3rd parameter
+   //! of a fitted Chebychev polynomial of 2nd order
+   //! to a set of data points with/without uncertainties
+   //!
+   //! Input
+   //!    xvals:  x-values of the graph
+   //!    yvals:  y-values of the graph
+   //!    yerr:   uncertainties of the values (optional)
+   //!            All values are considered to uncorrelated
+   //!
+   //! return
+   //!    significance of 2nd Chebyshev parameter
+
+
+   const bool ErrorIsCorrelated = false ;
+
+   // ---------------------------------------------- //
+   // check input
+   const int npar = int(xvals.size());
+   if ( int(yvals.size()) != npar ) { cout<<"ERROR in GetSigCheb3()! Number of x and y values is not identical. Exiting..."<<endl; exit(1); }
+   if ( int(yerr.size()) && ( int(yerr.size()) != npar ) ) { cout<<"ERROR in GetSigCheb3()! Number of y-errors and y-values is not identical. Exiting..."<<endl; exit(1); }
+   if ( int(yerr.size()) < 3 ) { cout<<"ERROR in GetSigCheb3()! Too few input values for a third order fit.. Exiting..."<<endl; exit(1); }
+
+   TMatrixD yval(npar, 1, &yvals[0]);
+   
+   // ---------------------------------------------- //
+   // construct fit matrix
+   TMatrixD CM3(npar,4);
+   for ( int i = 0 ; i<npar ; i ++ ) {
+      CM3(i,0) = 1.; // T0
+      CM3(i,1) = xvals[i]; // T1
+      CM3(i,2) = 2*xvals[i]*xvals[i] - 1; //T2
+      CM3(i,3) = 4*xvals[i]*xvals[i]*xvals[i] - 3*xvals[i]; //T3
+   }
+   TMatrixD CM3T(TMatrixD::kTransposed,CM3);
+
+
+   // ---------------------------------------------- //
+   // construct covariance matrix
+   TMatrixD V(npar,npar);
+   for ( int i = 0 ; i<npar ; i++ ) {
+      V(i,i) = yerr[i]*yerr[i];
+   }
+   TMatrixD Vinv(V); Vinv.Invert();
+
+   // ---------------------------------------------- //
+   // fit in Cheb space
+   TMatrixD CM3x = (CM3T*Vinv*CM3).Invert() * CM3T*Vinv;
+   TMatrixD CM3xT (TMatrixD::kTransposed,CM3x);  
+   
+   TMatrixD C3VVC( CM3x * V * CM3xT );
+   TMatrixD C3chat( CM3x * yval);
+   
+   // ---------------------------------------------- //
+   // significance of 2nd Chebyshev parameter
+   double c3    = C3chat(3,0);
+   double c3err = sqrt(C3VVC(3,3));
+   return c3/c3err;
+}
+
+
+
+// __________________________________________________________________________________ // 
+//!
+//!  makeErrorPlot
+//!
+//!  Add one line 
+//!
 double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char* title, const LTF::LiTeFit& fit, const vector<string> &uncertainties) {
    bool useNuisanceParameter = true;
    int nPar = 1; //M.cols()-1;
@@ -914,8 +1082,11 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
    TH1D* h_prob_ratio = file->Get<TH1D>("h_chisq_prob_ratio");
    TH1D* h_prob_ratio_rel = file->Get<TH1D>("h_chisq_prob_ratio_rel");
    TH1D* h_chisq_ratio = file->Get<TH1D>("h_chisq_ratio");
-   TH1D* h_cheb_sign= file->Get<TH1D>("h_cheb_sign");
-   TH2D* h_chisq_ratio_cheb_sign= file->Get<TH2D>("h_chisq_ratio_cheb_sign");
+   TH1D* h_cheb2_sign= file->Get<TH1D>("h_cheb2_sign");
+   TH1D* h_cheb3_sign= file->Get<TH1D>("h_cheb3_sign");
+   TH1D* h_cheb_sign_ratio= file->Get<TH1D>("h_cheb_sign_ratio");
+   TH2D* h_cheb2_sign_cheb3_sign= file->Get<TH2D>("h_cheb2_sign_cheb3_sign");
+   TH2D* h_chisq_ratio_cheb2_sign= file->Get<TH2D>("h_chisq_ratio_cheb2_sign");
 
    bool doLinTransform = true;
    for ( int ibin = 0 ; ibin<fit.Dt.size() ; ibin++ ) {
@@ -1068,6 +1239,24 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
       //f2->Draw("same");
       graph->Draw("PE0 same");
       gdata->Draw("PE0 same");
+
+      double cheb2_sign = 0;
+      double cheb3_sign = 0;
+      {
+        vector<double> xvals, yvals, yerr;
+        for( int i = 0; i < fit.M.col(1).size(); i++ ) {
+          xvals.push_back(linTransform(fit.M.col(1)(i)));
+          yvals.push_back(fit.Y(ibin,i));
+          double err = 0;
+          for ( auto [name,Vy] : fit.SysY ) {
+            err += pow(Vy(ibin,i),2);
+	  }
+          yerr.push_back(sqrt(err));
+	}
+        cheb2_sign = GetSigCheb2(xvals, yvals, yerr);
+        cheb3_sign = GetSigCheb3(xvals, yvals, yerr);
+      }
+
       
       //if ( ibin==0 ) {
       //double xmin = fit.GetLogNormal() ? 0.36 : 0.45;
@@ -1089,8 +1278,9 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
 
 	legend.AddEntry(pol2,Form(" (#chi^{2}_{quad}*ndf_{lin}) / (#chi^{2}_{lin}*ndf_{quad})  = %.3f )",
 				  (pol2->GetChisquare()*(graph->GetN()-2))/(pol1->GetChisquare()*(graph->GetN()-3))),"");
-	legend.AddEntry(pol2,Form("p2err/p2 = %.3f", resPol2->ParError(2)/resPol2->Parameter(2)),"");
-	
+	legend.AddEntry(pol2,Form("Cheb. 2: p2err/p2 = %.3f", cheb2_sign),"");
+        legend.AddEntry(pol2,Form("Cheb. 3: p3err/p3 = %.3f", cheb3_sign),"");
+
 	//legend.AddEntry(graph->GetFunction("pol1"),"Linearized model","L");
 	//legend.AddEntry(pol1,"Weighted fit #scale[0.7]{(unused)}","L");
 	//legend.AddEntry(pol2,"Weighted fit #scale[0.7]{(unused)}","L");
@@ -1106,26 +1296,35 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
       infotext.Append(Form("%3.0f", bins[ibin+1]));
       infotext.Append("_{}");
       text.DrawLatex(0.20,0.93, infotext);
-      
+
+      c1.Print(ps_name);
+
 
       h_prob_linear->Fill(resPol1->Prob());
       h_prob_quadratic->Fill(resPol2->Prob());
       h_prob_ratio->Fill(resPol1->Prob()/resPol2->Prob());
       h_prob_ratio_rel->Fill((resPol2->Prob()-resPol1->Prob())/resPol2->Prob());
       h_chisq_ratio->Fill((pol2->GetChisquare()*(graph->GetN()-2))/(pol1->GetChisquare()*(graph->GetN()-3)));
-      double cheb_sign = abs(resPol2->ParError(2)/resPol2->Parameter(2));
-      if ( cheb_sign > 2.9 ) cheb_sign = 2.9;
-      h_cheb_sign->Fill(cheb_sign);
-      h_chisq_ratio_cheb_sign->Fill((pol2->GetChisquare()*(graph->GetN()-2))/(pol1->GetChisquare()*(graph->GetN()-3)), cheb_sign);
-      c1.Print(ps_name);
+      if ( abs(cheb3_sign / cheb2_sign) > 1.5 ) h_cheb_sign_ratio->Fill(1.45);
+      else h_cheb_sign_ratio->Fill(abs(cheb3_sign / cheb2_sign));
+      if ( abs(cheb2_sign) > 2.9 ) cheb2_sign = 2.9;
+      if ( abs(cheb3_sign) > 2.9 ) cheb3_sign = 2.9;
+      h_cheb2_sign->Fill(cheb2_sign);
+      h_cheb3_sign->Fill(cheb3_sign);
+      h_cheb2_sign_cheb3_sign->Fill(cheb2_sign, cheb3_sign);
+      h_chisq_ratio_cheb2_sign->Fill((pol2->GetChisquare()*(graph->GetN()-2))/(pol1->GetChisquare()*(graph->GetN()-3)), cheb2_sign);
+     
     }
     h_prob_linear->Write("", TObject::kOverwrite);
     h_prob_quadratic->Write("", TObject::kOverwrite);
     h_prob_ratio->Write("", TObject::kOverwrite);
     h_prob_ratio_rel->Write("", TObject::kOverwrite);
     h_chisq_ratio->Write("", TObject::kOverwrite);
-    h_cheb_sign->Write("", TObject::kOverwrite);
-    h_chisq_ratio_cheb_sign->Write("", TObject::kOverwrite);
+    h_cheb2_sign->Write("", TObject::kOverwrite);
+    h_cheb3_sign->Write("", TObject::kOverwrite);
+    h_cheb_sign_ratio->Write("", TObject::kOverwrite);
+    h_cheb2_sign_cheb3_sign->Write("", TObject::kOverwrite);
+    h_chisq_ratio_cheb2_sign->Write("", TObject::kOverwrite);
     file->Close();
     // ---------------------------------------------- //
     //   chisq plot
@@ -1783,8 +1982,11 @@ void LTF_ROOTTools::plotFitComparison(){
    TH1D* h_prob_ratio = file->Get<TH1D>("h_chisq_prob_ratio");
    TH1D* h_prob_ratio_rel = file->Get<TH1D>("h_chisq_prob_ratio_rel");
    TH1D* h_chisq_ratio = file->Get<TH1D>("h_chisq_ratio");
-   TH1D* h_cheb_sign = file->Get<TH1D>("h_cheb_sign");
-   TH2D* h_chisq_ratio_cheb_sign = file->Get<TH2D>("h_chisq_ratio_cheb_sign");
+   TH1D* h_cheb2_sign = file->Get<TH1D>("h_cheb2_sign");
+   TH1D* h_cheb3_sign = file->Get<TH1D>("h_cheb3_sign");
+   TH1D* h_cheb_sign_ratio = file->Get<TH1D>("h_cheb_sign_ratio");
+   TH2D* h_cheb2_sign_cheb3_sign = file->Get<TH2D>("h_cheb2_sign_cheb3_sign");
+   TH2D* h_chisq_ratio_cheb2_sign = file->Get<TH2D>("h_chisq_ratio_cheb2_sign");
    TCanvas c1("c1","c1",800,800);
    c1.SetRightMargin(0.05);
    c1.SetLeftMargin(0.15);
@@ -1864,25 +2066,44 @@ void LTF_ROOTTools::plotFitComparison(){
      c1.Print("plots/fit_quality.ps");
    }
    {
-     h_cheb_sign->GetYaxis()->CenterTitle();
-     h_cheb_sign->GetYaxis()->SetTitle("Counts [a.u.]");
-     h_cheb_sign->GetXaxis()->SetTitle("Chebyshev #sima(p2)/p2");
-     h_cheb_sign->Draw("hist");
-     //TLatex text;
-     //text.SetNDC();
-     //text.SetTextAlign(31);
-     //text.DrawLatex(0.80,0.80,"");
+     h_cheb2_sign->GetYaxis()->CenterTitle();
+     h_cheb2_sign->GetYaxis()->SetTitle("Counts [a.u.]");
+     h_cheb2_sign->GetXaxis()->SetTitle("Chebyshev: abs(p2/p2err)");
+     h_cheb2_sign->SetLineColor(kBlack);
+     h_cheb2_sign->SetLineWidth(2);
+     h_cheb2_sign->Draw("hist");
      c1.Print("plots/fit_quality.ps");
    }
    {
-     //h_chisq_ratio_cheb_sign->GetYaxis()->CenterTitle();
-     h_chisq_ratio_cheb_sign->GetYaxis()->SetTitle("Chebyshev #sima(p2)/p2");
-     h_chisq_ratio_cheb_sign->GetXaxis()->SetTitle("(#chi^{2}_{quad} / ndf_{quad}) / (#chi^{2}_{linear} / ndf_{linear})");
-     h_chisq_ratio_cheb_sign->Draw("colz");
-     //TLatex text;
-     //text.SetNDC();
-     //text.SetTextAlign(31);
-     //text.DrawLatex(0.80,0.80,"Ratio of #chi^{2} values");
+     h_cheb3_sign->GetYaxis()->CenterTitle();
+     h_cheb3_sign->GetYaxis()->SetTitle("Counts [a.u.]");
+     h_cheb3_sign->GetXaxis()->SetTitle("Chebyshev: abs(p3/p3err)");
+     h_cheb3_sign->SetLineColor(kBlack);
+     h_cheb3_sign->SetLineWidth(2);
+     h_cheb3_sign->Draw("hist");
+     c1.Print("plots/fit_quality.ps");
+   }
+   {
+     h_cheb_sign_ratio->GetYaxis()->CenterTitle();
+     h_cheb_sign_ratio->GetYaxis()->SetTitle("Counts [a.u.]");
+     h_cheb_sign_ratio->GetXaxis()->SetTitle("abs(p3/p3err) / abs(p2/p2err)");
+     h_cheb_sign_ratio->SetLineColor(kBlack);
+     h_cheb_sign_ratio->SetLineWidth(2);
+     h_cheb_sign_ratio->Draw("hist");
+     c1.Print("plots/fit_quality.ps");
+   }
+   {
+     c1.SetRightMargin(0.1);
+     h_cheb2_sign_cheb3_sign->GetXaxis()->SetTitle("Chebyshev significance p2/p2err");
+     h_cheb2_sign_cheb3_sign->GetYaxis()->SetTitle("Chebyshev significance p3/p3err");
+     h_cheb2_sign_cheb3_sign->Draw("colz");
+     c1.Print("plots/fit_quality.ps");
+   }
+   {
+     c1.SetRightMargin(0.1);
+     h_chisq_ratio_cheb2_sign->GetYaxis()->SetTitle("Chebyshev significance p2/p2err");
+     h_chisq_ratio_cheb2_sign->GetXaxis()->SetTitle("(#chi^{2}_{quad} / ndf_{quad}) / (#chi^{2}_{linear} / ndf_{linear})");
+     h_chisq_ratio_cheb2_sign->Draw("colz");
      c1.Print("plots/fit_quality.ps");
    }
    c1.Print("plots/fit_quality.ps]");
