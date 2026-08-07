@@ -308,6 +308,15 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 
      int bin_offset = 0;
      for ( auto& tmp: fit_vars_short ) {
+       TH1D* h_tmp_172_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.410470.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_172_5_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.410472.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+
+       TH1D* h_tmp_171 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.411045.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+
+       TH1D* h_tmp_174 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.411050.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+
+
+
        TH1D* h_tmp_150   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_150.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_162_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_162_5.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_165   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_165.root")->Get<TH1D>(tmp);
@@ -320,17 +329,6 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        TH1D* h_tmp_182_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_182_5_new.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_200   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_200.root")->Get<TH1D>(tmp);
 
-       //TH1D* h_tmp_150   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_150.root")->Get<TH1D>(tmp); //not used in fit
-       //TH1D* h_tmp_162_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/subsamples/subsamples_162/WbWb_Slurm_Template_162_5_5.root")->Get<TH1D>(tmp);
-       //TH1D* h_tmp_165   = TFile::Open(  "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/subsamples/subsamples_165/WbWb_Slurm_Template_165_5.root")->Get<TH1D>(tmp);
-       //TH1D* h_tmp_167_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/subsamples/subsamples_167/WbWb_Slurm_Template_167_5_5.root")->Get<TH1D>(tmp);
-       //TH1D* h_tmp_170   = TFile::Open(  "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/subsamples/subsamples_170/WbWb_Slurm_Template_170_5.root")->Get<TH1D>(tmp);
-       //TH1D* h_tmp_172_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/subsamples/subsamples_172/WbWb_Slurm_Template_172_5_5.root")->Get<TH1D>(tmp);
-       //TH1D* h_tmp_175   = TFile::Open(  "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/subsamples/subsamples_175/WbWb_Slurm_Template_175_5.root")->Get<TH1D>(tmp);
-       //TH1D* h_tmp_177_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/subsamples/subsamples_177/WbWb_Slurm_Template_177_5_5.root")->Get<TH1D>(tmp);
-       //TH1D* h_tmp_180   = TFile::Open(  "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/subsamples/subsamples_180/WbWb_Slurm_Template_180_5.root")->Get<TH1D>(tmp);
-       //TH1D* h_tmp_182_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/subsamples/subsamples_182/WbWb_Slurm_Template_182_5_5.root")->Get<TH1D>(tmp);
-       //TH1D* h_tmp_200   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_200.root")->Get<TH1D>(tmp); // not used in fit
        
        double kFactor =  1.0; // Define k-factor when comparing templates to data
        for ( int i = 1; i<= h_tmp_165->GetNbinsX() - iRemoveBins; i++ ) {
