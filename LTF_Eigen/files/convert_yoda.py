@@ -15,7 +15,6 @@
 from array import array
 import ROOT as rt
 import yoda, sys
-import math as m
 
 fName = str(sys.argv[1])
 yodaAOs = yoda.read(fName) # creates dictionary holding all the hists
@@ -73,6 +72,6 @@ for name in yodaAOs:
       rtAO.SetPointError(i, xLo, xHi, yLo, yHi)
   else:
     continue
-  rtAO.Write(str(name.replace("/RAW/WbWb_singlelepton/","")))
-  print("Write out histogram " + name.replace("/RAW/WbWb_singlelepton/",""))
+  rtAO.Write(str(name.replace("/WbWb_singlelepton/","")))
+  print("Write out histogram " + name.replace("/WbWb_singlelepton/",""))
 rtFile.Close()
