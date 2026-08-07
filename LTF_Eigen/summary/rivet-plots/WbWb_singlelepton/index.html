@@ -1,0 +1,329 @@
+<html>
+<head>
+<title>Plots from Rivet analyses &ndash; WbWb_singlelepton</title>
+<style>
+          html { font-family: arial black, sans-serif; color: #333333; }
+          img { border: 0; }
+          a { text-decoration: none; font-weight: bold; }
+          footer { clear:both; margin-top:2em; margin-bottom:2em; padding-top:2em; color: #999999; }
+
+          .anasumm, .indexanasumm { margin-bottom: 2.5em; line-height: 1.4; font-size: 120%; font-family: georgia, palatino, serif; }
+          .back, .back a { font-weight: bold; color: gray; font-variant: small-caps; text-transform: uppercase; margin-bottom: 2em; }
+
+          .filterform { position: fixed; top: 1em; right: 1em; background: white; opacity: 0.2; }
+          .filterform { padding: 1em; padding-bottom: 0.1em; border: 2px solid gray; border-radius: 0.7em; }
+          .filterform:hover, .filterform:focus-within { opacity: 1.0; -webkit-transition: opacity 1s; transition: opacity 1s; drop-shadow(gray 0.5em 0.5em 10px); }
+          .filterpatt { padding: 0.3em; font-size: 100%; border: 1px solid #85C1E9; border-radius: 0.1em; }
+          .filterbutton { padding: 0.3em; font-size: 100%; border: 2px solid #85C1E9; background:#D6EAF8; border-radius: 0.3em; }
+        </style>
+                    <script type="text/javascript">
+              window.MathJax = { tex: { inlineMath: [['$','$']] },
+                                 options: { menuOptions: { settings: { inTabOrder: false } } } };
+            </script>
+            <script type="text/javascript" id="MathJax-script" async
+                src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml-full.min.js">
+            </script>
+            
+
+            <script type="text/javascript">
+                function filterPlots(ana, patt) {
+                    var regex = new RegExp(patt);
+                    var sec = document.getElementById('ana_'+ana);
+                    var plots = sec.getElementsByClassName('plot');
+                    var i; for (i = 0; i < plots.length; ++i) {
+                        // var viz = (regex.test(plots[i].id)) ? 'visible' : 'hidden';
+                        // plots[i].style.visibility = viz;
+                        var dis = (regex.test(plots[i].id)) ? 'block' : 'none';
+                        plots[i].style.display = dis;
+                    }
+                    return false;
+               }
+            </script>
+            </head>
+<body>
+<section id="ana_WbWb_singlelepton">
+<p class="back"><a href="../index.html" title="Return to index page">&larrhk; Index</a></p>
+<h2>WbWb_singlelepton</h2>
+<div class="filterform"><form onsubmit="var patt = document.getElementById('patt_WbWb_singlelepton').value; filterPlots('WbWb_singlelepton', patt); return false;">
+<span><b>Filter plots:</b>&emsp;</span><input class="filterpatt" id="patt_WbWb_singlelepton" type="search" accesskey="s" title="Filter: Alt+s">
+<input class="filterbutton" type="submit" value="Filter">
+</form></div>
+
+  <div class="plot" id="plot_cutflow" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-cutflow">&#9875;</a><a href="cutflow.py">&#8984;</a><a href="cutflow__data.py">&#128202;</a> cutflow:<br/>
+    <a name="WbWb_singlelepton-cutflow"><a href="cutflow.pdf">
+      <img src="cutflow.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_dr_bl" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-dr_bl">&#9875;</a><a href="dr_bl.py">&#8984;</a><a href="dr_bl__data.py">&#128202;</a> dr_bl:<br/>
+    <a name="WbWb_singlelepton-dr_bl"><a href="dr_bl.pdf">
+      <img src="dr_bl.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_dr_bl_dr_bw" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-dr_bl_dr_bw">&#9875;</a><a href="dr_bl_dr_bw.py">&#8984;</a><a href="dr_bl_dr_bw__data.py">&#128202;</a> dr_bl_dr_bw:<br/>
+    <a name="WbWb_singlelepton-dr_bl_dr_bw"><a href="dr_bl_dr_bw.pdf">
+      <img src="dr_bl_dr_bw.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_dr_bl_pT_lep1" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-dr_bl_pT_lep1">&#9875;</a><a href="dr_bl_pT_lep1.py">&#8984;</a><a href="dr_bl_pT_lep1__data.py">&#128202;</a> dr_bl_pT_lep1:<br/>
+    <a name="WbWb_singlelepton-dr_bl_pT_lep1"><a href="dr_bl_pT_lep1.pdf">
+      <img src="dr_bl_pT_lep1.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_dr_bl_pT_whad" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-dr_bl_pT_whad">&#9875;</a><a href="dr_bl_pT_whad.py">&#8984;</a><a href="dr_bl_pT_whad__data.py">&#128202;</a> dr_bl_pT_whad:<br/>
+    <a name="WbWb_singlelepton-dr_bl_pT_whad"><a href="dr_bl_pT_whad.pdf">
+      <img src="dr_bl_pT_whad.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_dr_bw" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-dr_bw">&#9875;</a><a href="dr_bw.py">&#8984;</a><a href="dr_bw__data.py">&#128202;</a> dr_bw:<br/>
+    <a name="WbWb_singlelepton-dr_bw"><a href="dr_bw.pdf">
+      <img src="dr_bw.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_dr_bw_pT_lep1" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-dr_bw_pT_lep1">&#9875;</a><a href="dr_bw_pT_lep1.py">&#8984;</a><a href="dr_bw_pT_lep1__data.py">&#128202;</a> dr_bw_pT_lep1:<br/>
+    <a name="WbWb_singlelepton-dr_bw_pT_lep1"><a href="dr_bw_pT_lep1.pdf">
+      <img src="dr_bw_pT_lep1.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_dr_bw_pT_whad" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-dr_bw_pT_whad">&#9875;</a><a href="dr_bw_pT_whad.py">&#8984;</a><a href="dr_bw_pT_whad__data.py">&#128202;</a> dr_bw_pT_whad:<br/>
+    <a name="WbWb_singlelepton-dr_bw_pT_whad"><a href="dr_bw_pT_whad.pdf">
+      <img src="dr_bw_pT_whad.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_dr_bw_r_bw" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-dr_bw_r_bw">&#9875;</a><a href="dr_bw_r_bw.py">&#8984;</a><a href="dr_bw_r_bw__data.py">&#128202;</a> dr_bw_r_bw:<br/>
+    <a name="WbWb_singlelepton-dr_bw_r_bw"><a href="dr_bw_r_bw.pdf">
+      <img src="dr_bw_r_bw.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_eta_lep1" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-eta_lep1">&#9875;</a><a href="eta_lep1.py">&#8984;</a><a href="eta_lep1__data.py">&#128202;</a> eta_lep1:<br/>
+    <a name="WbWb_singlelepton-eta_lep1"><a href="eta_lep1.pdf">
+      <img src="eta_lep1.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_mT_lep1met" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-mT_lep1met">&#9875;</a><a href="mT_lep1met.py">&#8984;</a><a href="mT_lep1met__data.py">&#128202;</a> mT_lep1met:<br/>
+    <a name="WbWb_singlelepton-mT_lep1met"><a href="mT_lep1met.pdf">
+      <img src="mT_lep1met.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bl" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bl">&#9875;</a><a href="m_bl.py">&#8984;</a><a href="m_bl__data.py">&#128202;</a> m_bl:<br/>
+    <a name="WbWb_singlelepton-m_bl"><a href="m_bl.pdf">
+      <img src="m_bl.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bl_dr_bl" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bl_dr_bl">&#9875;</a><a href="m_bl_dr_bl.py">&#8984;</a><a href="m_bl_dr_bl__data.py">&#128202;</a> m_bl_dr_bl:<br/>
+    <a name="WbWb_singlelepton-m_bl_dr_bl"><a href="m_bl_dr_bl.pdf">
+      <img src="m_bl_dr_bl.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bl_dr_bw" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bl_dr_bw">&#9875;</a><a href="m_bl_dr_bw.py">&#8984;</a><a href="m_bl_dr_bw__data.py">&#128202;</a> m_bl_dr_bw:<br/>
+    <a name="WbWb_singlelepton-m_bl_dr_bw"><a href="m_bl_dr_bw.pdf">
+      <img src="m_bl_dr_bw.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bl_fine" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bl_fine">&#9875;</a><a href="m_bl_fine.py">&#8984;</a><a href="m_bl_fine__data.py">&#128202;</a> m_bl_fine:<br/>
+    <a name="WbWb_singlelepton-m_bl_fine"><a href="m_bl_fine.pdf">
+      <img src="m_bl_fine.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bl_log_fine" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bl_log_fine">&#9875;</a><a href="m_bl_log_fine.py">&#8984;</a><a href="m_bl_log_fine__data.py">&#128202;</a> m_bl_log_fine:<br/>
+    <a name="WbWb_singlelepton-m_bl_log_fine"><a href="m_bl_log_fine.pdf">
+      <img src="m_bl_log_fine.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bl_m_bw" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bl_m_bw">&#9875;</a><a href="m_bl_m_bw.py">&#8984;</a><a href="m_bl_m_bw__data.py">&#128202;</a> m_bl_m_bw:<br/>
+    <a name="WbWb_singlelepton-m_bl_m_bw"><a href="m_bl_m_bw.pdf">
+      <img src="m_bl_m_bw.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bl_pT_lep1" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bl_pT_lep1">&#9875;</a><a href="m_bl_pT_lep1.py">&#8984;</a><a href="m_bl_pT_lep1__data.py">&#128202;</a> m_bl_pT_lep1:<br/>
+    <a name="WbWb_singlelepton-m_bl_pT_lep1"><a href="m_bl_pT_lep1.pdf">
+      <img src="m_bl_pT_lep1.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bl_pT_whad" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bl_pT_whad">&#9875;</a><a href="m_bl_pT_whad.py">&#8984;</a><a href="m_bl_pT_whad__data.py">&#128202;</a> m_bl_pT_whad:<br/>
+    <a name="WbWb_singlelepton-m_bl_pT_whad"><a href="m_bl_pT_whad.pdf">
+      <img src="m_bl_pT_whad.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bl_r_bw" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bl_r_bw">&#9875;</a><a href="m_bl_r_bw.py">&#8984;</a><a href="m_bl_r_bw__data.py">&#128202;</a> m_bl_r_bw:<br/>
+    <a name="WbWb_singlelepton-m_bl_r_bw"><a href="m_bl_r_bw.pdf">
+      <img src="m_bl_r_bw.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bw" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bw">&#9875;</a><a href="m_bw.py">&#8984;</a><a href="m_bw__data.py">&#128202;</a> m_bw:<br/>
+    <a name="WbWb_singlelepton-m_bw"><a href="m_bw.pdf">
+      <img src="m_bw.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bw_dr_bl" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bw_dr_bl">&#9875;</a><a href="m_bw_dr_bl.py">&#8984;</a><a href="m_bw_dr_bl__data.py">&#128202;</a> m_bw_dr_bl:<br/>
+    <a name="WbWb_singlelepton-m_bw_dr_bl"><a href="m_bw_dr_bl.pdf">
+      <img src="m_bw_dr_bl.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bw_dr_bw" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bw_dr_bw">&#9875;</a><a href="m_bw_dr_bw.py">&#8984;</a><a href="m_bw_dr_bw__data.py">&#128202;</a> m_bw_dr_bw:<br/>
+    <a name="WbWb_singlelepton-m_bw_dr_bw"><a href="m_bw_dr_bw.pdf">
+      <img src="m_bw_dr_bw.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bw_fine" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bw_fine">&#9875;</a><a href="m_bw_fine.py">&#8984;</a><a href="m_bw_fine__data.py">&#128202;</a> m_bw_fine:<br/>
+    <a name="WbWb_singlelepton-m_bw_fine"><a href="m_bw_fine.pdf">
+      <img src="m_bw_fine.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bw_pT_lep1" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bw_pT_lep1">&#9875;</a><a href="m_bw_pT_lep1.py">&#8984;</a><a href="m_bw_pT_lep1__data.py">&#128202;</a> m_bw_pT_lep1:<br/>
+    <a name="WbWb_singlelepton-m_bw_pT_lep1"><a href="m_bw_pT_lep1.pdf">
+      <img src="m_bw_pT_lep1.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bw_pT_whad" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bw_pT_whad">&#9875;</a><a href="m_bw_pT_whad.py">&#8984;</a><a href="m_bw_pT_whad__data.py">&#128202;</a> m_bw_pT_whad:<br/>
+    <a name="WbWb_singlelepton-m_bw_pT_whad"><a href="m_bw_pT_whad.pdf">
+      <img src="m_bw_pT_whad.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_bw_r_bw" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_bw_r_bw">&#9875;</a><a href="m_bw_r_bw.py">&#8984;</a><a href="m_bw_r_bw__data.py">&#128202;</a> m_bw_r_bw:<br/>
+    <a name="WbWb_singlelepton-m_bw_r_bw"><a href="m_bw_r_bw.pdf">
+      <img src="m_bw_r_bw.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_minimax" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_minimax">&#9875;</a><a href="m_minimax.py">&#8984;</a><a href="m_minimax__data.py">&#128202;</a> m_minimax:<br/>
+    <a name="WbWb_singlelepton-m_minimax"><a href="m_minimax.pdf">
+      <img src="m_minimax.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_minimax_fine" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_minimax_fine">&#9875;</a><a href="m_minimax_fine.py">&#8984;</a><a href="m_minimax_fine__data.py">&#128202;</a> m_minimax_fine:<br/>
+    <a name="WbWb_singlelepton-m_minimax_fine"><a href="m_minimax_fine.pdf">
+      <img src="m_minimax_fine.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_wbbl" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_wbbl">&#9875;</a><a href="m_wbbl.py">&#8984;</a><a href="m_wbbl__data.py">&#128202;</a> m_wbbl:<br/>
+    <a name="WbWb_singlelepton-m_wbbl"><a href="m_wbbl.pdf">
+      <img src="m_wbbl.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_m_wbbl_fine" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-m_wbbl_fine">&#9875;</a><a href="m_wbbl_fine.py">&#8984;</a><a href="m_wbbl_fine__data.py">&#128202;</a> m_wbbl_fine:<br/>
+    <a name="WbWb_singlelepton-m_wbbl_fine"><a href="m_wbbl_fine.pdf">
+      <img src="m_wbbl_fine.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_njets" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-njets">&#9875;</a><a href="njets.py">&#8984;</a><a href="njets__data.py">&#128202;</a> njets:<br/>
+    <a name="WbWb_singlelepton-njets"><a href="njets.pdf">
+      <img src="njets.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_pT_bjet1" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-pT_bjet1">&#9875;</a><a href="pT_bjet1.py">&#8984;</a><a href="pT_bjet1__data.py">&#128202;</a> pT_bjet1:<br/>
+    <a name="WbWb_singlelepton-pT_bjet1"><a href="pT_bjet1.pdf">
+      <img src="pT_bjet1.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_pT_bjet2" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-pT_bjet2">&#9875;</a><a href="pT_bjet2.py">&#8984;</a><a href="pT_bjet2__data.py">&#128202;</a> pT_bjet2:<br/>
+    <a name="WbWb_singlelepton-pT_bjet2"><a href="pT_bjet2.pdf">
+      <img src="pT_bjet2.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_pT_bl" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-pT_bl">&#9875;</a><a href="pT_bl.py">&#8984;</a><a href="pT_bl__data.py">&#128202;</a> pT_bl:<br/>
+    <a name="WbWb_singlelepton-pT_bl"><a href="pT_bl.pdf">
+      <img src="pT_bl.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_pT_bw" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-pT_bw">&#9875;</a><a href="pT_bw.py">&#8984;</a><a href="pT_bw__data.py">&#128202;</a> pT_bw:<br/>
+    <a name="WbWb_singlelepton-pT_bw"><a href="pT_bw.pdf">
+      <img src="pT_bw.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_pT_jet1" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-pT_jet1">&#9875;</a><a href="pT_jet1.py">&#8984;</a><a href="pT_jet1__data.py">&#128202;</a> pT_jet1:<br/>
+    <a name="WbWb_singlelepton-pT_jet1"><a href="pT_jet1.pdf">
+      <img src="pT_jet1.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_pT_jet2" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-pT_jet2">&#9875;</a><a href="pT_jet2.py">&#8984;</a><a href="pT_jet2__data.py">&#128202;</a> pT_jet2:<br/>
+    <a name="WbWb_singlelepton-pT_jet2"><a href="pT_jet2.pdf">
+      <img src="pT_jet2.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_pT_lep1" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-pT_lep1">&#9875;</a><a href="pT_lep1.py">&#8984;</a><a href="pT_lep1__data.py">&#128202;</a> pT_lep1:<br/>
+    <a name="WbWb_singlelepton-pT_lep1"><a href="pT_lep1.pdf">
+      <img src="pT_lep1.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_pT_lep1_pT_whad" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-pT_lep1_pT_whad">&#9875;</a><a href="pT_lep1_pT_whad.py">&#8984;</a><a href="pT_lep1_pT_whad__data.py">&#128202;</a> pT_lep1_pT_whad:<br/>
+    <a name="WbWb_singlelepton-pT_lep1_pT_whad"><a href="pT_lep1_pT_whad.pdf">
+      <img src="pT_lep1_pT_whad.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_pT_met" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-pT_met">&#9875;</a><a href="pT_met.py">&#8984;</a><a href="pT_met__data.py">&#128202;</a> pT_met:<br/>
+    <a name="WbWb_singlelepton-pT_met"><a href="pT_met.pdf">
+      <img src="pT_met.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_pT_owj1" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-pT_owj1">&#9875;</a><a href="pT_owj1.py">&#8984;</a><a href="pT_owj1__data.py">&#128202;</a> pT_owj1:<br/>
+    <a name="WbWb_singlelepton-pT_owj1"><a href="pT_owj1.pdf">
+      <img src="pT_owj1.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_pT_owj2" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-pT_owj2">&#9875;</a><a href="pT_owj2.py">&#8984;</a><a href="pT_owj2__data.py">&#128202;</a> pT_owj2:<br/>
+    <a name="WbWb_singlelepton-pT_owj2"><a href="pT_owj2.pdf">
+      <img src="pT_owj2.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_pT_whad" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-pT_whad">&#9875;</a><a href="pT_whad.py">&#8984;</a><a href="pT_whad__data.py">&#128202;</a> pT_whad:<br/>
+    <a name="WbWb_singlelepton-pT_whad"><a href="pT_whad.pdf">
+      <img src="pT_whad.png">
+    </a></a>
+  </div>
+  <div class="plot" id="plot_y_whad" style="float:left; font-size:smaller; font-weight:bold;">
+    <a href="#WbWb_singlelepton-y_whad">&#9875;</a><a href="y_whad.py">&#8984;</a><a href="y_whad__data.py">&#128202;</a> y_whad:<br/>
+    <a name="WbWb_singlelepton-y_whad"><a href="y_whad.pdf">
+      <img src="y_whad.png">
+    </a></a>
+  </div>
+</section>
+
+<footer>
+<p id="timestamp">Generated at Monday, 12. January 2026 12:51PM</p>
+</footer>
+
+</body>
+</html>

@@ -1622,8 +1622,8 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
       //for ( const auto& [n,s] : this->Sys )   chisq_y_error(k) += pow((dChidd.transpose()*s)(0,0),2) ; // Sys. uncertainties are fully correlated and do not need to be considered here
       chisq_y_error(k) = sqrt(chisq_y_error(k));
    }
-   cout<<"Johannes Inverse matrix of W"<<endl;
-   cout<<W.inverse()<<endl;
+   
+   
 //   //  ---------------------------------------------------------------- //
 //   // --- fit chi2-parabola
 //   //  ---------------------------------------------------------------- //

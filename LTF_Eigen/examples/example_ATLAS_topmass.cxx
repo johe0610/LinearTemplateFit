@@ -88,9 +88,9 @@ int example_ATLAS_topmass() {
   h_chisq_ratio_cheb2_sign->Write();
   file->Close();
   
-  //  if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
-  //  if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
-  //  if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
+    if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
+    if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
+//    if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
 //  if (fitMultipleObservables("plots/fit_drbl.ps", {"dRbl_selected"},    {"dr_bl"}) > 0) return 1;
 //  if (fitMultipleObservables("plots/fit_drbw.ps", {"dRbwhad_selected"},    {"dr_bw"}) > 0) return 1;
 //  //if (fitMultipleObservables("plots/fit_etal1.ps", {"etal1"},    {"eta_lep1"}) > 0) return 1;
@@ -115,18 +115,38 @@ int example_ATLAS_topmass() {
   
   //if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_mbl_ptl1.ps", {"mbl_selected", "ptl1"}, {"m_bl", "pT_lep1"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_drbl.ps", {"mbl_selected", "deltaR_blselected"}, {"m_bl", "dr_bl"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbl_drbl.ps", {"mbl_selected", "deltaRbl_selected"}, {"m_bl", "dr_bl"}) > 0) return 1;
 
   //if (fitMultipleObservables("plots/fit_mbl_mbw.ps",  {"mbl_selected", "mbwhad_selected"},     {"m_bl", "m_bw"})  > 0) return 1;
   //if (fitMultipleObservables("plots/fit_mbl_drbl.ps", {"mbl_selected", "dRbl_selected"},       {"m_bl", "dr_bl"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_mbw_drbw.ps", {"mbwhad_selected", "dRbwhad_selected"}, {"m_bw", "dr_bw"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_mbl_ptw.ps", {"mbl_selected", "ptwhad"}, {"m_bl", "pT_whad"}) > 0) return 1;
-  if (fitMultipleObservables("plots/fit_mbl_minimax.ps",    {"mbl_selected", "minimax_whadbbl"}, {"m_bl", "m_minimax"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbw_mwbbl.ps", {"mbwhad_selected", "mwhadbbl"}, {"m_bw", "m_wbbl"}) > 0) return 1;
-  if (fitMultipleObservables("plots/fit_mbl_mwbbl.ps", {"mbl_selected", "mwhadbbl"}, {"m_bl", "m_wbbl"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbl_minimax.ps",    {"mbl_selected", "minimax_whadbbl"}, {"m_bl", "m_minimax"}) > 0) return 1;
+  ////if (fitMultipleObservables("plots/fit_mbw_mwbbl.ps", {"mbwhad_selected", "mwhadbbl"}, {"m_bw", "m_wbbl"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbl_mwbbl.ps", {"mbl_selected", "mwhadbbl"}, {"m_bl", "m_wbbl"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_mbl_ptj1.ps", {"mbl_selected", "ptj1"}, {"m_bl", "pT_jet1"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_mbl_ptb1.ps", {"mbl_selected", "ptb1"}, {"m_bl", "pT_bjet1"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl.ps", {"mbl_selected", "mbwhad_selected", "dRbl_selected"}, {"m_bl", "m_bw", "dr_bl"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl.ps", {"mbl_selected", "mbwhad_selected", "dRbl_selected"}, {"m_bl", "m_bw", "dr_bl"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl_drbw_ptl1.ps",
+  //                           {"mbl_selected", "mbwhad_selected", "dRbl_selected", "dRbwhad_selected", "ptl1"},
+  //                           {"m_bl", "m_bw", "dr_bl", "dr_bw", "pT_lep1"}) > 0) return 1;
+
+  //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl_drbw_ptl1_ptw.ps",
+  //                           {"mbl_selected", "mbwhad_selected", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptwhad"},
+  //                           {"m_bl", "m_bw", "dr_bl", "dr_bw", "pT_lep1", "pT_whad"}) > 0) return 1;
+  //
+  //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl_drbw_ptl1_ptw_mwbbl_minimax.ps",
+  //                           {"mbl_selected", "mbwhad_selected", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptwhad", "minimax_whadbbl"},
+  //                           {"m_bl", "m_bw", "dr_bl", "dr_bw", "pT_lep1", "pT_whad", "m_minimax"}) > 0) return 1;
+  //
+  //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl_drbw_ptl1_ptw_mwbbl_minimax_ptj1.ps",
+  //                           {"mbl_selected", "mbwhad_selected", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptwhad", "minimax_whadbbl", "ptj1"},
+  //                           {"m_bl", "m_bw", "dr_bl", "dr_bw", "pT_lep1", "pT_whad", "m_minimax", "pT_jet1"}) > 0) return 1;
+  //
+  //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl_drbw_ptl1_ptw_mwbbl_minimax_ptj1_ptb1.ps",
+  //  {"mbl_selected", "mbwhad_selected", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptwhad", "minimax_whadbbl", "ptj1", "ptb1"},
+  //  {"m_bl", "m_bw", "dr_bl", "dr_bw", "pT_lep1", "pT_whad", "m_minimax", "pT_jet1", "pT_bjet1"}) > 0) return 1;
 
   //if (fitMultipleObservables("plots/fit_mbw_ptl1.ps", {"mbwhad_selected", "ptl1"}, {"m_bw", "pT_lep1"}) > 0) return 1;
   //if (fitMultipleObservables("plots/fit_mbl_mbw_ptl1.ps", {"mbl_selected", "mbwhad_selected", "ptl1"}, {"m_bl", "m_bw", "pT_lep1"}) > 0) return 1;
@@ -173,7 +193,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171_JES_095.root";
    } else {
      pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171.root";
-     //pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_180.root";
+     //pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_165.root"; // For stress tests
    }
    //const TString pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171_JES_095.root";
    //const TString covariancefile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1258_matrices.root";
@@ -583,7 +603,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        }
      }
    }
-   const bool writeCovarianceMatrix = false;
+   const bool writeCovarianceMatrix = true;
    if ( writeCovarianceMatrix ) {
      TString name_outfile = "correlation";
      for ( auto tmp: fit_vars_short ) name_outfile += tmp;
@@ -594,24 +614,26 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      outfile->Delete();
    }
 
-   cout<<"Johannes print final covariance matrix"<<endl;
+   //cout<<"Johannes print final covariance matrix"<<endl;
    vector<vector<double > > vecCov2 = TH2D_to_vecvec(combined_covariance);
-   for ( auto& tmp_vec: vecCov2 ){
-     for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
-     cout<<endl;
-   }
+   //for ( auto& tmp_vec: vecCov2 ){
+   //  for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
+   //  cout<<endl;
+   //}
    ltf.AddError("STAT_DATA", vecCov2, LTF::Uncertainty::Constrained);
 
-//   int rows = vecCov2.size();
-//   int cols = vecCov2[0].size();
-//   TMatrixD m(rows, cols);
-//   for (int i = 0; i < rows; ++i) {
-//    for (int j = 0; j < cols; ++j) {
-//        m(i, j) = vecCov2[i][j];
-//    }
-//   }
-//   cout<<"Determinant "<<m.Determinant()<<endl;
-//   return 9;
+   int rows = vecCov2.size();
+   int cols = vecCov2[0].size();
+   TMatrixD m(rows, cols);
+   for (int i = 0; i < rows; ++i) {
+    for (int j = 0; j < cols; ++j) {
+        m(i, j) = vecCov2[i][j];
+    }
+   }
+   //if ( abs(m.Determinant()) < 0.0001 ) {
+   //  cout<<"Warning in example_ATLAS_topmass! Determinant of covariance matrix is very small: "<<m.Determinant()<<endl;
+   //}
+   cout<<"Determinant of covariance matrix "<<m.Determinant()<<endl;
     
    cout<<"Johannes print final correltaion matrix"<<endl;
    vector<vector<double > > vecCor2 = TH2D_to_vecvec(combined_correlation);
@@ -720,8 +742,8 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    }
    PrintAsciiTable(templates,combined_data);
    
-   //LTF::LiTeFit fit = ltf.DoLiTeFit();
-   LTF::LiTeFit fit = ltf.DoQuadraticTemplateFit(3);
+   LTF::LiTeFit fit = ltf.DoLiTeFit();
+   //LTF::LiTeFit fit = ltf.DoQuadraticTemplateFit(3);
    fit.PrintFull();
 
    //fit.DoIterativeFitNewton(6,0.6,2,1);
