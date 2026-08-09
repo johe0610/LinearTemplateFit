@@ -181,19 +181,18 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    TH1::SetDefaultSumw2(true);
 
    map<double,TH1D*> templates;
-   bool doPseudo = true;
+   bool doPseudo = false;
    bool doJesStressTest = false;
 
    const int     iRebin       = 1;
    const int     iRebinData   = 1;
    const int     iRemoveBins  = 0;
-   const TString datafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative.root";
+   const TString datafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative_paper.root";
    TString pseudodatafile;
    if ( doJesStressTest ) {
      pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171_JES_095.root";
    } else {
      pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171.root";
-     //pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_165.root"; // For stress tests
    }
    //const TString pseudodatafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171_JES_095.root";
    //const TString covariancefile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1258_matrices.root";
@@ -229,7 +228,8 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        TH1D* tmp_data = TFile::Open(datafile)->Get<TH1D>(name);
        // Loop only to NbinsX-1, because last bin is overflow bin
        for ( int i = 1; i <= tmp_data->GetNbinsX()-1 - iRemoveBins; i++ ) {
-	 combined_data->SetBinContent(i+bin_offset, tmp_data->GetBinContent(i)/tmp_data->GetXaxis()->GetBinWidth(i));
+	 combined_data->SetBinContent(i+bin_offset, tmp_data->GetBinContent(i)); ///tmp_data->GetXaxis()->GetBinWidth(i));
+	 combined_data->SetBinError(i+bin_offset, tmp_data->GetBinContent(i)*0.05); //johannes pass correct errors!
 	 cout<<"For bin "<<i<<" add content "<<tmp_data->GetBinContent(i)<<" (data)"<<endl;
        }
        bin_offset += tmp_data->GetNbinsX()-1 - iRemoveBins;
@@ -238,138 +238,73 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    combined_data->Rebin(iRebinData);
    combined_data->SetLineColor(kBlack);
    combined_data->SetMarkerSize(1.8);
-   /*   
-   TH1D* data = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data, use Sherpa 3 with m_t = 170 GeV for now
-   double binning[9] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0};
-   //TH1D* data_tmp      = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data, use Sherpa 3 with m_t = 170 GeV for now
-   //TH1D* data      = new TH1D("data", "data", 8, binning);
-   //for ( int i =1; i <= data->GetNbinsX(); i++) {
-   //   data->SetBinContent(i, data_tmp->GetBinContent(i));
-   //   data->SetBinError(i, data_tmp->GetBinError(i));
-   //}
-   data->SetLineColor(kBlack);
-   data->SetMarkerSize(1.8);
 
-   if ( var_name_index == 4 || var_name_index == 5 ) {
-      
-      TH1D* template_1_tmp = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(histname);
-      TH1D* template_2_tmp = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(histname);
-      TH1D* template_3_tmp = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_165_1246.root")->Get<TH1D>(histname);
-      TH1D* template_4_tmp = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root")->Get<TH1D>(histname);
-      TH1D* template_5_tmp = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_175_1250.root")->Get<TH1D>(histname);
-      TH1D* template_6_tmp = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_180_1252.root")->Get<TH1D>(histname);
-      TH1D* template_7_tmp = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_185_1254.root")->Get<TH1D>(histname);
-      
-      TH1D* template_1   = new TH1D("template_155", "template_155", 8, binning);
-      TH1D* template_2   = new TH1D("template_160", "template_160", 8, binning);
-      TH1D* template_3   = new TH1D("template_165", "template_165", 8, binning);
-      TH1D* template_4   = new TH1D("template_170", "template_170", 8, binning);
-      TH1D* template_5   = new TH1D("template_175", "template_175", 8, binning);
-      TH1D* template_6   = new TH1D("template_180", "template_180", 8, binning);
-      TH1D* template_7   = new TH1D("template_185", "template_185", 8, binning);
-      for ( int i =1; i <= data->GetNbinsX(); i++) {
-         template_1->SetBinContent(i, template_1_tmp->GetBinContent(i));
-         template_1->SetBinError(  i, template_1_tmp->GetBinError(i));
-         template_2->SetBinContent(i, template_2_tmp->GetBinContent(i));
-         template_2->SetBinError(  i, template_2_tmp->GetBinError(i));
-         template_3->SetBinContent(i, template_3_tmp->GetBinContent(i));
-         template_3->SetBinError(  i, template_3_tmp->GetBinError(i));
-         template_4->SetBinContent(i, template_4_tmp->GetBinContent(i));
-         template_4->SetBinError(  i, template_4_tmp->GetBinError(i));
-         template_5->SetBinContent(i, template_5_tmp->GetBinContent(i));
-         template_5->SetBinError(  i, template_5_tmp->GetBinError(i));
-         template_6->SetBinContent(i, template_6_tmp->GetBinContent(i));
-         template_6->SetBinError(  i, template_6_tmp->GetBinError(i));
-         template_7->SetBinContent(i, template_7_tmp->GetBinContent(i));
-         template_7->SetBinError(  i, template_7_tmp->GetBinError(i));
-      }
-      
-      templates[155] = template_1;
-      templates[160] = template_2;
-      templates[165] = template_3;
-      templates[170] = template_4;
-      templates[175] = template_5;
-      templates[180] = template_6;
-      templates[185] = template_7;
-   }
-   else */
    {
-     TH1D* combined_template_150   = new TH1D("combined_template_150", "combined_template_150", bins_number, 0, bins_number);
-     TH1D* combined_template_162_5 = new TH1D("combined_template_162_5", "combined_template_162_5", bins_number, 0, bins_number);
-     TH1D* combined_template_165   = new TH1D("combined_template_165", "combined_template_165", bins_number, 0, bins_number);
-     TH1D* combined_template_167_5 = new TH1D("combined_template_167_5", "combined_template_167_5", bins_number, 0, bins_number);
-     TH1D* combined_template_170   = new TH1D("combined_template_170", "combined_template_170", bins_number, 0, bins_number);
+     TH1D* combined_template_171   = new TH1D("combined_template_171",   "combined_template_171",   bins_number, 0, bins_number);
      TH1D* combined_template_172_5 = new TH1D("combined_template_172_5", "combined_template_172_5", bins_number, 0, bins_number);
-     TH1D* combined_template_175   = new TH1D("combined_template_175", "combined_template_175", bins_number, 0, bins_number);
-     TH1D* combined_template_177_5 = new TH1D("combined_template_177_5", "combined_template_177_5", bins_number, 0, bins_number);
-     TH1D* combined_template_180   = new TH1D("combined_template_180", "combined_template_180", bins_number, 0, bins_number);
-     TH1D* combined_template_182_5 = new TH1D("combined_template_182_5", "combined_template_182_5", bins_number, 0, bins_number);
-     TH1D* combined_template_200   = new TH1D("combined_template_200", "combined_template_200", bins_number, 0, bins_number);
+     TH1D* combined_template_174   = new TH1D("combined_template_174",   "combined_template_174",   bins_number, 0, bins_number);
 
      int bin_offset = 0;
      for ( auto& tmp: fit_vars_short ) {
        TH1D* h_tmp_172_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.410470.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_172_5_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.410472.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_172_5_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.410472.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_172_5_tW_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.601352.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_172_5_tW_dil_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.601353.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_172_5_tW_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.601354.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_172_5_tW = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.601355.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
 
        TH1D* h_tmp_171 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.411045.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_171_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.411053.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_171_tW_dil_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602032.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_171_tW_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602033.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_171_tW_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602034.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_171_tW = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602035.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
 
+
+       
        TH1D* h_tmp_174 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.411050.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_174_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.411053.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_174_tW_dil_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602052.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_174_tW_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602053.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_174_tW_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602054.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_174_tW = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602055.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
 
+       
+       h_tmp_172_5->Add(h_tmp_172_5_dil);
+       h_tmp_172_5->Add(h_tmp_172_5_tW_anti);
+       h_tmp_172_5->Add(h_tmp_172_5_tW_dil_anti);
+       h_tmp_172_5->Add(h_tmp_172_5_tW_dil);
+       h_tmp_172_5->Add(h_tmp_172_5_tW);
 
+       h_tmp_171->Add(h_tmp_171_dil);
+       h_tmp_171->Add(h_tmp_171_tW_anti);
+       h_tmp_171->Add(h_tmp_171_tW_dil_anti);
+       h_tmp_171->Add(h_tmp_171_tW_dil);
+       h_tmp_171->Add(h_tmp_171_tW);
 
-       TH1D* h_tmp_150   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_150.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_162_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_162_5.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_165   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_165.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_167_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_167_5.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_170   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_170.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_172_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_172_5.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_175   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_175.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_177_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_177_5.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_180   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_180.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_182_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_182_5_new.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_200   = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_200.root")->Get<TH1D>(tmp);
+       h_tmp_174->Add(h_tmp_174_dil);
+       h_tmp_174->Add(h_tmp_174_tW_anti);
+       h_tmp_174->Add(h_tmp_174_tW_dil_anti);
+       h_tmp_174->Add(h_tmp_174_tW_dil);
+       h_tmp_174->Add(h_tmp_174_tW);
 
        
        double kFactor =  1.0; // Define k-factor when comparing templates to data
-       for ( int i = 1; i<= h_tmp_165->GetNbinsX() - iRemoveBins; i++ ) {
-	 double bin_width_x = h_tmp_165->GetXaxis()->GetBinWidth(i);
-         combined_template_150->SetBinContent(  i+bin_offset, h_tmp_150->GetBinContent(i)  * kFactor*bin_width_x);
-         combined_template_162_5->SetBinContent(i+bin_offset, h_tmp_162_5->GetBinContent(i)* kFactor*bin_width_x);
-	 combined_template_165->SetBinContent(  i+bin_offset, h_tmp_165->GetBinContent(i)  * kFactor*bin_width_x);
-         combined_template_167_5->SetBinContent(i+bin_offset, h_tmp_167_5->GetBinContent(i)* kFactor*bin_width_x);
-	 combined_template_170->SetBinContent(  i+bin_offset, h_tmp_170->GetBinContent(i)  * kFactor*bin_width_x);
+       for ( int i = 1; i<= h_tmp_172_5->GetNbinsX() - iRemoveBins; i++ ) {
+	 double bin_width_x = h_tmp_172_5->GetXaxis()->GetBinWidth(i);
+	 combined_template_171->SetBinContent(  i+bin_offset, h_tmp_171->GetBinContent(i)  * kFactor*bin_width_x);
 	 combined_template_172_5->SetBinContent(i+bin_offset, h_tmp_172_5->GetBinContent(i)* kFactor*bin_width_x);
-	 combined_template_175->SetBinContent(  i+bin_offset, h_tmp_175->GetBinContent(i)  * kFactor*bin_width_x);
-         combined_template_177_5->SetBinContent(i+bin_offset, h_tmp_177_5->GetBinContent(i)* kFactor*bin_width_x);
-         combined_template_180->SetBinContent(  i+bin_offset, h_tmp_180->GetBinContent(i)  * kFactor*bin_width_x);
-         combined_template_182_5->SetBinContent(i+bin_offset, h_tmp_182_5->GetBinContent(i)* kFactor*bin_width_x);
-         combined_template_200->SetBinContent(  i+bin_offset, h_tmp_200->GetBinContent(i)  * kFactor*bin_width_x);
+	 combined_template_174->SetBinContent(  i+bin_offset, h_tmp_174->GetBinContent(i)  * kFactor*bin_width_x);
 
-         combined_template_150->SetBinError(   i+bin_offset, h_tmp_150->GetBinError(i)   * kFactor * bin_width_x);
-	 combined_template_162_5->SetBinError( i+bin_offset, h_tmp_162_5->GetBinError(i) * kFactor * bin_width_x);
-	 combined_template_165->SetBinError(   i+bin_offset, h_tmp_165->GetBinError(i)   * kFactor * bin_width_x);
-         combined_template_167_5->SetBinError( i+bin_offset, h_tmp_167_5->GetBinError(i) * kFactor * bin_width_x);
-	 combined_template_170->SetBinError(   i+bin_offset, h_tmp_170->GetBinError(i)   * kFactor * bin_width_x);
+	 combined_template_171->SetBinError(   i+bin_offset, h_tmp_171->GetBinError(i)   * kFactor * bin_width_x);
 	 combined_template_172_5->SetBinError( i+bin_offset, h_tmp_172_5->GetBinError(i) * kFactor * bin_width_x);
-         combined_template_175->SetBinError(   i+bin_offset, h_tmp_175->GetBinError(i)   * kFactor * bin_width_x);
-	 combined_template_177_5->SetBinError( i+bin_offset, h_tmp_177_5->GetBinError(i) * kFactor * bin_width_x);
-         combined_template_180->SetBinError(   i+bin_offset, h_tmp_180->GetBinError(i)   * kFactor * bin_width_x);
-         combined_template_182_5->SetBinError( i+bin_offset, h_tmp_182_5->GetBinError(i) * kFactor * bin_width_x);
-	 combined_template_200->SetBinError(   i+bin_offset, h_tmp_200->GetBinError(i)   * kFactor * bin_width_x);
+         combined_template_174->SetBinError(   i+bin_offset, h_tmp_174->GetBinError(i)   * kFactor * bin_width_x);
        }
-       bin_offset += h_tmp_165->GetNbinsX() - iRemoveBins;
+       bin_offset += h_tmp_172_5->GetNbinsX() - iRemoveBins;
      }
-     //templates[150] = combined_template_150;
-     templates[162.5] = combined_template_162_5;
-     templates[165] = combined_template_165;
-     templates[167.5] = combined_template_167_5;
-     templates[170] = combined_template_170;
+     templates[171] = combined_template_171;
      templates[172.5] = combined_template_172_5;
-     templates[175] = combined_template_175;
-     templates[177.5] = combined_template_177_5;
-     templates[180] = combined_template_180;
-     templates[182.5] = combined_template_182_5;
-     //templates[200] = combined_template_200;
+     templates[174] = combined_template_174;
 
    }
 
