@@ -75,74 +75,36 @@ int example_ATLAS_topmass() {
   h_cheb2_sign_cheb3_sign->Write();
   h_chisq_ratio_cheb2_sign->Write();
   file->Close();
+
+  if (fitMultipleObservables("plots/fit_all.ps", {"mbl_selected", "mbwhad_selected", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptwhad", "rbq", "rbj"},
+			     {"m_bl", "m_bw", "dr_bl", "dr_bw", "pT_lep1", "pT_whad", "r_bq", "r_bj"}) > 0) return 1;
   
-  if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
-//  //if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
-////    if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
-  if (fitMultipleObservables("plots/fit_etal.ps", {"etal1"},    {"eta_lep1"}) > 0) return 1;
-//
-//  if (fitMultipleObservables("plots/fit_ptwhad.ps", {"ptwhad"},    {"pT_whad"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_rbj.ps", {"rbj"},    {"r_bj"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_drbl.ps", {"dRbl_selected"},    {"dr_bl"}) > 0) return 1;
-////  if (fitMultipleObservables("plots/fit_drbw.ps", {"dRbwhad_selected"},    {"dr_bw"}) > 0) return 1;
-////  //if (fitMultipleObservables("plots/fit_etal1.ps", {"etal1"},    {"eta_lep1"}) > 0) return 1;
-////  //if (fitMultipleObservables("plots/fit_mtlepmet.ps", {"mtlepmet"},    {"mT_lep1met"}) > 0) return 1;
-////  if (fitMultipleObservables("plots/fit_minimax.ps", {"minimax_whadbbl"},    {"m_minimax"}) > 0) return 1;
-////  if (fitMultipleObservables("plots/fit_mwbbl.ps", {"mwhadbbl"},    {"m_wbbl"}) > 0) return 1;
-////  if (fitMultipleObservables("plots/fit_ptb1.ps", {"ptb1"},    {"pT_bjet1"}) > 0) return 1;
-////  if (fitMultipleObservables("plots/fit_ptb2.ps", {"ptb2"},    {"pT_bjet2"}) > 0) return 1;
-////  if (fitMultipleObservables("plots/fit_ptbl.ps", {"ptbl_selected"},    {"pT_bl"}) > 0) return 1;
-////  if (fitMultipleObservables("plots/fit_ptbw.ps", {"ptbwhad_selected"},    {"pT_bw"}) > 0) return 1;
-////  if (fitMultipleObservables("plots/fit_ptj1.ps", {"ptj1"},    {"pT_jet1"}) > 0) return 1;
-////  //if (fitMultipleObservables("plots/fit_ptj2.ps", {"ptj2"},    {"pT_jet2"}) > 0) return 1;
-////  //if (fitMultipleObservables("plots/fit_ptmet.ps", {"met"},    {"pT_met"}) > 0) return 1;
-////  if (fitMultipleObservables("plots/fit_ptowj1.ps", {"ptOWj1"},    {"pT_owj1"}) > 0) return 1;
-////  if (fitMultipleObservables("plots/fit_ptowj2.ps", {"ptOWj2"},    {"pT_owj2"}) > 0) return 1;
-////  //ptwhadbbl
-////  if (fitMultipleObservables("plots/fit_ywhad.ps", {"rapiditywhad"},    {"y_whad"}) > 0) return 1;
-////  if (fitMultipleObservables("plots/fit_ptwhad.ps", {"ptwhad"},    {"pT_whad"}) > 0) return 1;
-//
-//  //observable names TNAnalysis: mbl_selected, mbw_selected, dRbl_selected, dRbwhad_selected,  ptl1, ptwhad, mwhadbbl, minimax_whadbbl, ptj1, ptb1
-//  // observable names rivet: m_bl, m_bw, dr_bl,dr_bw, pT_lep1, pT_whad, m_wbbl, m_minimax, pT_jet1, pT_bjet1
-//  
-//  if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
-//  //if (fitMultipleObservables("plots/fit_mbl_ptl1.ps", {"mbl_selected", "ptl1"}, {"m_bl", "pT_lep1"}) > 0) return 1;
-//  //if (fitMultipleObservables("plots/fit_mbl_drbl.ps", {"mbl_selected", "deltaRbl_selected"}, {"m_bl", "dr_bl"}) > 0) return 1;
-//
-  if (fitMultipleObservables("plots/fit_mbl_mbw.ps",  {"mbl_selected", "mbwhad_selected"},     {"m_bl", "m_bw"})  > 0) return 1;
-//  //if (fitMultipleObservables("plots/fit_mbl_drbl.ps", {"mbl_selected", "dRbl_selected"},       {"m_bl", "dr_bl"}) > 0) return 1;
-//  //if (fitMultipleObservables("plots/fit_mbw_drbw.ps", {"mbwhad_selected", "dRbwhad_selected"}, {"m_bw", "dr_bw"}) > 0) return 1;
-  if (fitMultipleObservables("plots/fit_mbl_ptw.ps", {"mbl_selected", "ptwhad"}, {"m_bl", "pT_whad"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_minimax.ps",    {"mbl_selected", "minimax_whadbbl"}, {"m_bl", "m_minimax"}) > 0) return 1;
-  ////if (fitMultipleObservables("plots/fit_mbw_mwbbl.ps", {"mbwhad_selected", "mwhadbbl"}, {"m_bw", "m_wbbl"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_mwbbl.ps", {"mbl_selected", "mwhadbbl"}, {"m_bl", "m_wbbl"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_ptj1.ps", {"mbl_selected", "ptj1"}, {"m_bl", "pT_jet1"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_ptb1.ps", {"mbl_selected", "ptb1"}, {"m_bl", "pT_bjet1"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl.ps", {"mbl_selected", "mbwhad_selected", "dRbl_selected"}, {"m_bl", "m_bw", "dr_bl"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl.ps", {"mbl_selected", "mbwhad_selected", "dRbl_selected"}, {"m_bl", "m_bw", "dr_bl"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl_drbw_ptl1.ps",
-  //                           {"mbl_selected", "mbwhad_selected", "dRbl_selected", "dRbwhad_selected", "ptl1"},
-  //                           {"m_bl", "m_bw", "dr_bl", "dr_bw", "pT_lep1"}) > 0) return 1;
-
-  //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl_drbw_ptl1_ptw.ps",
-  //                           {"mbl_selected", "mbwhad_selected", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptwhad"},
-  //                           {"m_bl", "m_bw", "dr_bl", "dr_bw", "pT_lep1", "pT_whad"}) > 0) return 1;
-  //
-  //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl_drbw_ptl1_ptw_mwbbl_minimax.ps",
-  //                           {"mbl_selected", "mbwhad_selected", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptwhad", "minimax_whadbbl"},
-  //                           {"m_bl", "m_bw", "dr_bl", "dr_bw", "pT_lep1", "pT_whad", "m_minimax"}) > 0) return 1;
-  //
-  //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl_drbw_ptl1_ptw_mwbbl_minimax_ptj1.ps",
-  //                           {"mbl_selected", "mbwhad_selected", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptwhad", "minimax_whadbbl", "ptj1"},
-  //                           {"m_bl", "m_bw", "dr_bl", "dr_bw", "pT_lep1", "pT_whad", "m_minimax", "pT_jet1"}) > 0) return 1;
-  //
-  //if (fitMultipleObservables("plots/fit_mbl_mbw_drbl_drbw_ptl1_ptw_mwbbl_minimax_ptj1_ptb1.ps",
-  //  {"mbl_selected", "mbwhad_selected", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptwhad", "minimax_whadbbl", "ptj1", "ptb1"},
-  //  {"m_bl", "m_bw", "dr_bl", "dr_bw", "pT_lep1", "pT_whad", "m_minimax", "pT_jet1", "pT_bjet1"}) > 0) return 1;
-
-  //if (fitMultipleObservables("plots/fit_mbw_ptl1.ps", {"mbwhad_selected", "ptl1"}, {"m_bw", "pT_lep1"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_mbw_ptl1.ps", {"mbl_selected", "mbwhad_selected", "ptl1"}, {"m_bl", "m_bw", "pT_lep1"}) > 0) return 1;
-  //if (fitMultipleObservables("plots/fit_mbl_mbw_ptl1_ptw.ps", {"mbl_selected", "mbwhad_selected", "ptl1", "ptwhad"}, {"m_bl", "m_bw", "pT_lep1", "pT_whad"}) > 0) return 1;
+  
+  if (fitMultipleObservables("plots/fit_drbl.ps",     {"dRbl_selected"},    {"dr_bl"}) > 0)     return 1;
+  if (fitMultipleObservables("plots/fit_drbw.ps",     {"dRbwhad_selected"}, {"dr_bw"}) > 0)     return 1;
+  if (fitMultipleObservables("plots/fit_etal1.ps",    {"etal1"},            {"eta_lep1"}) > 0)  return 1;
+  if (fitMultipleObservables("plots/fit_mtlep.ps",    {"mtlep"},            {"mT_lep1"}) > 0)   return 1;
+  if (fitMultipleObservables("plots/fit_mbl.ps",      {"mbl_selected"},     {"m_bl"}) > 0)      return 1;
+  if (fitMultipleObservables("plots/fit_mbw.ps",      {"mbwhad_selected"},  {"m_bw"}) > 0)      return 1;
+  if (fitMultipleObservables("plots/fit_minimax.ps",  {"minimax_whadbbl"},  {"m_minimax"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mwbbl.ps",    {"mwhadbbl"},         {"m_wbbl"}) > 0)    return 1;
+  if (fitMultipleObservables("plots/fit_mblmin.ps",   {"mblmin"},           {"mblmin"}) > 0)    return 1;
+  if (fitMultipleObservables("plots/fit_mtblmin.ps",  {"mtblmin"},          {"mtblmin"}) > 0)   return 1;
+  if (fitMultipleObservables("plots/fit_ptwbbl.ps",   {"ptwhadbbl"},        {"pT_Wbbl"}) > 0)   return 1;
+  if (fitMultipleObservables("plots/fit_ptwbblnu.ps", {"ptwhadbblnu"},      {"pT_Wbblnu"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptb1.ps",     {"ptb1"},             {"pT_bjet1"}) > 0)  return 1;
+  if (fitMultipleObservables("plots/fit_ptb2.ps",     {"ptb2"},             {"pT_bjet2"}) > 0)  return 1;
+  if (fitMultipleObservables("plots/fit_ptbl.ps",     {"ptbl_selected"},    {"pT_bl"}) > 0)     return 1;
+  if (fitMultipleObservables("plots/fit_ptblnu.ps",   {"ptblnu"},           {"pT_blnu"}) > 0)   return 1;
+  if (fitMultipleObservables("plots/fit_ptbw.ps",     {"ptbwhad_selected"}, {"pT_bw"}) > 0)     return 1;
+  if (fitMultipleObservables("plots/fit_ptl1.ps",     {"ptl1"},             {"pT_lep1"}) > 0)   return 1;
+  if (fitMultipleObservables("plots/fit_ptmet.ps",    {"met"},              {"pT_met"}) > 0)    return 1;
+  if (fitMultipleObservables("plots/fit_ptowj1.ps",   {"ptOWj1"},           {"pT_owj1"}) > 0)   return 1;
+  if (fitMultipleObservables("plots/fit_ptowj2.ps",   {"ptOWj2"},           {"pT_owj2"}) > 0)   return 1;
+  if (fitMultipleObservables("plots/fit_ptwhad.ps",   {"ptwhad"},           {"pT_whad"}) > 0)   return 1;
+  if (fitMultipleObservables("plots/fit_rbj.ps",      {"rbj"},              {"r_bj"}) > 0)      return 1;
+  if (fitMultipleObservables("plots/fit_rbj.ps",      {"rbq"},              {"r_bq"}) > 0)      return 1;
+  if (fitMultipleObservables("plots/fit_ywhad.ps",    {"rapiditywhad"},     {"y_whad"}) > 0)    return 1;
 
   LTF_ROOTTools::plotFitComparison();
   
@@ -173,7 +135,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    TH1::SetDefaultSumw2(true);
 
    map<double,TH1D*> templates;
-   bool doPseudo = false;
+   bool doPseudo = true;
    bool doJesStressTest = false;
 
    const int     iRebin       = 1;
@@ -182,7 +144,6 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    const TString datafile =     "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative_paper.root";
    const TString datafile_alt = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative_extra.root";
 
-   //const TString covariancefile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/matrices.root";
    const TString covariancefile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/data.Nominal.root";
    int bins_number = 0;
    std::vector<int> matrix_dimension = {0}; // Needed to put covariance matrix together
@@ -197,11 +158,6 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      TH1D* tmp_data = file1->Get<TH1D>(name);
      if ( tmp_data ) {
        nbins = tmp_data->GetNbinsX();
-       //bins_number += tmp_data->GetNbinsX()-1 - iRemoveBins;
-       //matrix_dimension.push_back(tmp_data->GetNbinsX()-1 - iRemoveBins);
-       //tmp_data->Clear();
-       //file1->Close();
-       //delete file1;
      }
      file1->Close();
      delete file1;
@@ -214,77 +170,36 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        cout<<"Test2"<<endl;
        if (tmp_data2) {
 	 nbins = tmp_data2->GetNbinsX();
-	 cout<<"Found the histo"<<endl;
        }
        file2->Close();
        delete file2;
-       cout<<"Closed file"<<endl;
      }
      if (nbins < 0 ) {
-       cerr<<"Could not fine histogram "<<name<<" in either file! Exiting ..."<<endl;
+       cerr<<"Trying to get the number of bins for "<<name<<endl;
+       cerr<<"Could not find the histogram! Exiting ..."<<endl;
        exit(1);
      }
      else {
        bins_number += nbins -1 - iRemoveBins;
        matrix_dimension.push_back(nbins - 1 - iRemoveBins);
      }
-
-// else {
-//       file1->Close();
-//       delete file1;
-//
-//       TFile* file2 = TFile::Open(datafile_alt);
-//       file2->Print("All");
-//       TH1D* tmp_data2 = file2->Get<TH1D>(name);
-//       if ( tmp_data2 ) {
-//	 bins_number += tmp_data2->GetNbinsX()-1 - iRemoveBins;
-//	 matrix_dimension.push_back(tmp_data2->GetNbinsX()-1 - iRemoveBins);
-//	 //tmp_data2->Clear();
-//       }	
-//       else {
-//	 cerr<<"Could not fine histogram "<<name<<" in either file! Exiting ..."<<endl;
-//	 exit(1);
-//       }
-//       file2->Close();
-//       delete file2;
-//     }
-   //  if ( !tmp_data ) {
-   //    cout<<"Could not find data histogram " << name <<" in file "<<datafile<<"\n";
-   //    cout<<"Try alternative file "<<datafile_alt<<endl;
-   //    TFile* file2 = TFile::Open(datafile_alt);
-   //    tmp_data = file2->Get<TH1D>(name);
-   //    file2->Close();
-   //    delete file2;
-   //    if ( !tmp_data ) {cerr<<"Could not find data histogram " << name <<" in nominal or in alternative file"<<endl; exit(1);}
-   //  }
-   //  bins_number += tmp_data->GetNbinsX()-1 - iRemoveBins;
-   //  matrix_dimension.push_back(tmp_data->GetNbinsX()-1 - iRemoveBins);
-   //  tmp_data->Clear();
    }
    
    TH1D* combined_data = new TH1D("combined_data", "combined_data", bins_number, 0, bins_number);
    int bin_offset = 0;
    if ( doPseudo ) {
      for ( auto& tmp: fit_vars_short ) {
-       TH1D* h_pseudo_172_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.410470.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_pseudo_172_5_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.410472.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_pseudo_172_5_tW_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.601352.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_pseudo_172_5_tW_dil_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.601353.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_pseudo_172_5_tW_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.601354.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_pseudo_172_5_tW = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.601355.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TFile* f_172_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/template_172_5.root");
+       TH1D* h_172_5 = f_172_5->Get<TH1D>(tmp);
+       h_172_5->SetDirectory(nullptr);
+       delete f_172_5;
 
-       h_pseudo_172_5->Add(h_pseudo_172_5_dil);
-       h_pseudo_172_5->Add(h_pseudo_172_5_tW_anti);
-       h_pseudo_172_5->Add(h_pseudo_172_5_tW_dil_anti);
-       h_pseudo_172_5->Add(h_pseudo_172_5_tW_dil);
-       h_pseudo_172_5->Add(h_pseudo_172_5_tW);
-
-       for ( int i = 1; i <= h_pseudo_172_5->GetNbinsX() - iRemoveBins; i++ ) {
-	 double bin_width = h_pseudo_172_5->GetXaxis()->GetBinWidth(i);
-	 combined_data->SetBinContent(i+bin_offset, h_pseudo_172_5->GetBinContent(i)*bin_width);
-	 combined_data->SetBinError(i+bin_offset, h_pseudo_172_5->GetBinError(i)*bin_width);
+       for ( int i = 1; i <= h_172_5->GetNbinsX() - iRemoveBins; i++ ) {
+	 double bin_width = h_172_5->GetXaxis()->GetBinWidth(i);
+	 combined_data->SetBinContent(i+bin_offset, h_172_5->GetBinContent(i)*bin_width);
+	 combined_data->SetBinError(i+bin_offset, h_172_5->GetBinError(i)*bin_width);
        }
-       bin_offset += h_pseudo_172_5->GetNbinsX() - iRemoveBins;
+       bin_offset += h_172_5->GetNbinsX() - iRemoveBins;
      }
    }
    else {
@@ -295,7 +210,8 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 	 tmp_data = TFile::Open(datafile_alt)->Get<TH1D>(name);
        }
        if (!tmp_data) {
-	 cerr<<"Could not find data histogram"<<name<<" in either file"<<endl;
+	 cerr<<"Could not find data histogram "<<name<<endl;
+	 cerr<<"Exiting..."<<endl;
 	 exit(1);
        }
        // Loop only to NbinsX-1, because last bin is overflow bin
@@ -316,47 +232,21 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 
      int bin_offset = 0;
      for ( auto& tmp: fit_vars_short ) {
-       TH1D* h_tmp_172_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.410470.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_172_5_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.410472.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_172_5_tW_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.601352.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_172_5_tW_dil_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.601353.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_172_5_tW_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.601354.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_172_5_tW = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.601355.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       
-       TH1D* h_tmp_171 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.411045.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_171_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.411053.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_171_tW_dil_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602032.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_171_tW_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602033.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_171_tW_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602034.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_171_tW = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602035.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       
-       TH1D* h_tmp_174 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.411050.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_174_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.411058.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_174_tW_dil_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602052.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_174_tW_dil = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602053.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_174_tW_anti = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602054.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
-       TH1D* h_tmp_174_tW = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/user.johessle.mc15_13TeV.602055.WbWb_singlelepton.test_topmass_mppui.root")->Get<TH1D>(tmp);
+       TFile* f_172_5 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/template_172_5.root");
+       TH1D* h_tmp_172_5 = f_172_5->Get<TH1D>(tmp);
+       h_tmp_172_5->SetDirectory(nullptr);
+       delete f_172_5;
 
-       
-       h_tmp_172_5->Add(h_tmp_172_5_dil);
-       h_tmp_172_5->Add(h_tmp_172_5_tW_anti);
-       h_tmp_172_5->Add(h_tmp_172_5_tW_dil_anti);
-       h_tmp_172_5->Add(h_tmp_172_5_tW_dil);
-       h_tmp_172_5->Add(h_tmp_172_5_tW);
+       TFile* f_171 =	TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/template_171.root");
+       TH1D* h_tmp_171 = f_171->Get<TH1D>(tmp);
+       h_tmp_171->SetDirectory(nullptr);
+       delete f_171;
 
-       h_tmp_171->Add(h_tmp_171_dil);
-       h_tmp_171->Add(h_tmp_171_tW_anti);
-       h_tmp_171->Add(h_tmp_171_tW_dil_anti);
-       h_tmp_171->Add(h_tmp_171_tW_dil);
-       h_tmp_171->Add(h_tmp_171_tW);
-
-       h_tmp_174->Add(h_tmp_174_dil);
-       h_tmp_174->Add(h_tmp_174_tW_anti);
-       h_tmp_174->Add(h_tmp_174_tW_dil_anti);
-       h_tmp_174->Add(h_tmp_174_tW_dil);
-       h_tmp_174->Add(h_tmp_174_tW);
-
-       
+       TFile* f_174 =   TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/files/template_174.root");
+       TH1D* h_tmp_174 = f_174->Get<TH1D>(tmp);
+       h_tmp_174->SetDirectory(nullptr);
+       delete f_174;
+              
        double kFactor =  1.0; // Define k-factor when comparing templates to data
        for ( int i = 1; i<= h_tmp_172_5->GetNbinsX() - iRemoveBins; i++ ) {
 	 double bin_width_x = h_tmp_172_5->GetXaxis()->GetBinWidth(i);
@@ -503,9 +393,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    bin_offset = 0;
    for ( auto& fit_var: fit_vars ) {
 
-     //std::unique_ptr<TFile> file(TFile::Open(datafile));
      TFile* file = TFile::Open(datafile);
-
      if (!file || file->IsOpen() == kFALSE) {
        std::cerr << "Error: Couldn't open the file "<<datafile<< std::endl;
        return 1;
@@ -539,6 +427,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 	}
       }
       bin_offset += cov_stat_dat->GetNbinsX() - 1 - iRemoveBins;
+      delete file;
    }
    
    // Fill off-diagonal block matrices of the covariance matrix
@@ -546,7 +435,8 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      for ( int v1 = 0; v1 < fit_vars_short.size(); v1++ ) {
        
        TFile* file = TFile::Open(datafile);
-       
+       TFile* file_alt = TFile::Open(datafile_alt);
+       file->cd();
        if (!file || file->IsOpen() == kFALSE) {
 	 std::cerr << "Error: Couldn't open the file "<<datafile<< std::endl;
 	 return 1;
@@ -556,11 +446,10 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        TString histnameCovStatX("unfolding_covariance_matrix_"+fit_vars[v1]+"_covariance_STAT_DATA");
        TH2D* cov_stat_dat_x = file->Get<TH2D>(histnameCovStatX);
        if ( !h_err_v1 || !h_data_var1 ) {
-	 file->Close();
-	 file =TFile::Open(datafile_alt);
-	 h_err_v1 = file->Get<TH1D>("unfolding_error_"+fit_vars[v1]+"_direct_envelope_STAT_DATA__1up");
-	 h_data_var1 = file->Get<TH1D>("unfolding_"+fit_vars[v1]+"_NOSYS");
-	 cov_stat_dat_x = file->Get<TH2D>(histnameCovStatX);
+	 file_alt->cd();
+	 h_err_v1 = file_alt->Get<TH1D>("unfolding_error_"+fit_vars[v1]+"_direct_envelope_STAT_DATA__1up");
+	 h_data_var1 = file_alt->Get<TH1D>("unfolding_"+fit_vars[v1]+"_NOSYS");
+	 cov_stat_dat_x = file_alt->Get<TH2D>(histnameCovStatX);
        }
        if ( !h_err_v1 || !h_data_var1 ) {
 	 cerr<<"Could not find statistical uncertainty for variable " << fit_vars[v1] <<endl; exit(1);
@@ -570,23 +459,22 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        //TH1D* h_data_var1 = file->Get<TH1D>("unfolding_"+fit_vars[v1]+"_NOSYS");
 
        for ( int v2 = v1+1; v2 < fit_vars_short.size(); v2++ ) {
+	 file->cd();
 	 TH1D* h_err_v2 = file->Get<TH1D>("unfolding_error_"+fit_vars[v2]+"_direct_envelope_STAT_DATA__1up"); // get relative error
 	 TH1D* h_data_var2 = file->Get<TH1D>("unfolding_"+fit_vars[v2]+"_NOSYS");
 	 if ( !h_err_v2 || !h_data_var2 ) {
-	   file->Close();
-	   file =TFile::Open(datafile_alt);
-	   h_err_v2 = file->Get<TH1D>("unfolding_error_"+fit_vars[v2]+"_direct_envelope_STAT_DATA__1up");
-	   h_data_var2 = file->Get<TH1D>("unfolding_"+fit_vars[v2]+"_NOSYS");
+	   file_alt->cd();
+	   h_err_v2 = file_alt->Get<TH1D>("unfolding_error_"+fit_vars[v2]+"_direct_envelope_STAT_DATA__1up");
+	   h_data_var2 = file_alt->Get<TH1D>("unfolding_"+fit_vars[v2]+"_NOSYS");
 	 }
 	 
          if ( !h_data_var2 ) {
 	   cerr<<"Could not find data for " << fit_vars[v2] <<endl;
-	   cerr<<"Looking in file "<<file->GetName()<<endl;
 	   exit(1);
 	 }
-	 
+	 TFile* f_cov = TFile::Open(covariancefile);
 	 TString histname = "NOSYS/hist/l_Whad_particle_"+fit_vars[v1]+"_"+fit_vars[v2];
-	 TH2D* cov_orig = TFile::Open(covariancefile)->Get<TH2D>(histname);
+	 TH2D* cov_orig = f_cov->Get<TH2D>(histname);
 	 if ( !cov_orig ) { cerr<<"Could not find correlation matrix " << histname <<endl; exit(1);}
 	 else cout<<"Found covarinace matrix "<<histname<<endl;
 
@@ -611,24 +499,23 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 	 // Projections of correlation matrix
 	 TH1D* projection_var1 = cov->ProjectionX("pro_v1",0,-1,"e");
 	 TH1D* projection_var2 = cov->ProjectionY("pro_v2",0,-1,"e");
-	 //cout<<"Var1 content ";
-	 //for ( int i = 1; i <= h_data_var1->GetNbinsX(); i++ ) cout<<projection_var1->GetBinContent(i) / h_data_var1->GetBinContent(i)<<"\t";
-	 //cout<<endl<<"Var1 error   ";
-	 //for ( int i = 1; i <= h_data_var1->GetNbinsX(); i++ ) cout<<projection_var1->GetBinError(i) / h_data_var1->GetBinError(i)<<"\t";
-	 //cout<<endl<<"Var2 content ";
-	 //for ( int i = 1; i <= h_data_var2->GetNbinsX(); i++ ) cout<<projection_var2->GetBinContent(i) / h_data_var2->GetBinContent(i)<<"\t";
-	 //cout<<endl<<"Var2 error   ";
-	 //for ( int i = 1; i <= h_data_var2->GetNbinsX(); i++ ) cout<<projection_var2->GetBinError(i) / h_data_var2->GetBinError(i)<<"\t";
-	 //cout<<endl;
+
 	 int bin_offset_x = 0;
 	 int bin_offset_y = 0;
 	 for ( int v1_tmp = 0; v1_tmp <= v1; v1_tmp++ ) bin_offset_x += matrix_dimension[v1_tmp];
 	 for ( int v2_tmp = 0; v2_tmp <= v2; v2_tmp++ ) bin_offset_y += matrix_dimension[v2_tmp];
 
-	 //TString histnameCovStatX("unfolding_covariance_matrix_"+fit_vars[v1]+"_covariance_STAT_DATA");
-	 //TH2D* cov_stat_dat_x = file->Get<TH2D>(histnameCovStatX);
 	 TString histnameCovStatY("unfolding_covariance_matrix_"+fit_vars[v2]+"_covariance_STAT_DATA");
-         TH2D* cov_stat_dat_y = file->Get<TH2D>(histnameCovStatY);
+	 file->cd();
+	 TH2D* cov_stat_dat_y = file->Get<TH2D>(histnameCovStatY);
+	 if ( !cov_stat_dat_y ) {
+	   file_alt->cd();
+	   cov_stat_dat_y = file_alt->Get<TH2D>(histnameCovStatY);
+	 }
+	 if ( !cov_stat_dat_y )	{
+	   cerr<<"Could not find the matrix "<<histnameCovStatY<<endl;
+	   exit(1);
+	 }
 	 for ( int i = 1; i < h_err_v1->GetNbinsX() - iRemoveBins; i++ ) {
 	   for ( int j = 1; j < h_err_v2->GetNbinsX() - iRemoveBins; j++ ) {
 	     // Calculate the covariance in the data from the one in Sherpa
@@ -655,6 +542,8 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 	   }
 	 }
        }
+       delete file;
+       delete file_alt;
      }
    }
    const bool writeCovarianceMatrix = true;
@@ -664,8 +553,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      TFile *outfile = new TFile(name_outfile+".root", "RECREATE");
      combined_covariance->Write();
      combined_correlation->Write();
-     outfile->Close();
-     outfile->Delete();
+     delete outfile;
    }
 
    vector<vector<double > > vecCov2 = TH2D_to_vecvec(combined_covariance);
@@ -682,14 +570,13 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    //if ( abs(m.Determinant()) < 0.0001 ) {
    //  cout<<"Warning in example_ATLAS_topmass! Determinant of covariance matrix is very small: "<<m.Determinant()<<endl;
    //}
-   cout<<"Determinant of covariance matrix "<<m.Determinant()<<endl;
-    
-   cout<<"Johannes print final correltaion matrix"<<endl;
-   vector<vector<double > > vecCor2 = TH2D_to_vecvec(combined_correlation);
-   for ( auto& tmp_vec: vecCor2 ){
-     for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
-     cout<<endl;
-   }
+   //cout<<"Determinant of covariance matrix "<<m.Determinant()<<endl;
+   //cout<<"Johannes print final correltaion matrix"<<endl;
+   //vector<vector<double > > vecCor2 = TH2D_to_vecvec(combined_correlation);
+   //for ( auto& tmp_vec: vecCor2 ){
+   //  for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
+   //  cout<<endl;
+   //}
   
    TH1D* total_error = new TH1D("total_error", "total_error", bins_number, 0, bins_number);
 
@@ -702,16 +589,12 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        const TString datafile_nominal = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/summary/WbWb_Slurm_Template_171.root";
        for ( auto& tmp: fit_vars_short ) {
 	 TH1D* tmp_data = TFile::Open(datafile_nominal)->Get<TH1D>(tmp);
-	 cout<<"Retrieved the file"<<endl;
-	 tmp_data->Print("All");
 	 for ( int i = 1; i <= tmp_data->GetNbinsX() - iRemoveBins; i++ ) {
 	   double error = (tmp_data->GetBinContent(i)-combined_data->GetBinContent(i))/combined_data->GetBinContent(i);
-	   cout<<"Adding err "<<error<<" = "<<tmp_data->GetBinContent(i)<<" / "<<combined_data->GetBinContent(i)<<endl;
 	   combined_error.push_back(error);
 	   total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(error,2)));
 	 }
        }
-       cout<<"Added new uncertainty"<<endl;
      }
      else {
        for ( auto& fit_variable: fit_vars ) {
@@ -731,10 +614,6 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 	 if ( !hist_up ) {
 	   cerr<<"Could not find histogram for systematic uncertainty " << uncertainty <<endl; exit(1);
 	 }
-	 else {
-	   cout<<"Found histogram for systematic "<<uncertainty<<endl;
-	   cout<<"in file "<<file->GetName()<<endl;
-	 }
 	 //TH1D* hist_down = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1down");
 	 for (int i=1; i< hist_up->GetNbinsX() - iRemoveBins; i++) {
 	   //combined_error.push_back(std::max(abs(hist_up->GetBinContent(i)), abs(hist_down->GetBinContent(i))));
@@ -744,26 +623,14 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 	   //combined_error.push_back(hist_down->GetBinContent(i));
 	   //total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(hist_down->GetBinContent(i),2))); // Use down variation
 	 }
+	 delete file;
        }
      }
      double corr = 1.0;
      if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::Constrained);
      combined_error.clear();
    }
-   total_error->Print("All");
    
-   // Johannes added this unconstrained error to correct for offset in normalization 
-   //{
-   //  vector<double> combined_error;
-   //  for ( auto& fit_variable: fit_vars ) {
-   //    TH1D* hist_up   = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainties[0]+"__1up");
-   //    for (int i=1; i< hist_up->GetNbinsX() - iRemoveBins; i++) {
-   //	 combined_error.push_back(0.1);
-   //	 //total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(0.1,2)));
-   //    }
-   //  }
-   //  //if ( combined_error.size() > 0 ) ltf.AddErrorRelative("UnconstrainedError", combined_error, 1.0, LTF::Uncertainty::Unconstrained);
-   //}
    // Stat uncertainties
    for ( auto& uncertainty: statistical_uncertainties ) { // Only stat. unc. is MC stat. 
      vector<double> combined_error;
@@ -783,34 +650,18 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        if ( !hist_up ) {
 	 cerr<<"Could not find histogram for systematic uncertainty " << uncertainty <<endl; exit(1);
        }
-       else {
-	 cout<<"Found histogram for systematic "<<uncertainty<<endl;
-	 cout<<"in file "<<file->GetName()<<endl;
-       }
        //TH1D* hist_down = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1down");
        for (int i=1; i< hist_up->GetNbinsX() - iRemoveBins; i++) {
 	 combined_error.push_back(hist_up->GetBinContent(i));
          total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(hist_up->GetBinContent(i),2)));
 	 cout<<uncertainty<<" "<<hist_up->GetBinContent(i)<<endl;
        }
+       delete file;
      }
      double corr = 0.0; // Stat. unc. are uncorrelated
      if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::Constrained);
      combined_error.clear();
    }
-   total_error->Print("All");
-   
-   // When using pseudo-data, add the stat. uncertainties of the pseudo data as an additional uncertainty
-   //if ( doPseudo ) {
-   //  vector<double> combined_error;
-   //  for (int i=1; i<= combined_data->GetNbinsX(); i++ ) {
-   //    combined_error.push_back(combined_data->GetBinError(i)/combined_data->GetBinContent(i));
-   //    total_error->SetBinContent(i, std::sqrt(std::pow(total_error->GetBinContent(i),2)+std::pow(combined_data->GetBinError(i)/combined_data->GetBinContent(i),2)));
-   //
-   //  }
-   //  ltf.AddErrorRelative("pseudoDataStat", combined_error, 0.0, LTF::Uncertainty::Constrained);
-   //}
-   //total_error->Print("All");
    
    // External uncertainties
    for ( auto& uncertainty: external_uncertainties ) {
@@ -839,6 +690,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        for (int i=1; i< hist_up->GetNbinsX() - iRemoveBins; i++) {
          combined_error.push_back(hist_up->GetBinContent(i));
        }
+       delete file;
      }
      double corr = 1;
      if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::External);
