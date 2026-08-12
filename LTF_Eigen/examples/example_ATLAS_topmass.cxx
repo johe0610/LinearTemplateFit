@@ -22,18 +22,6 @@
 */
 // -------------------------------------------------------------------- //
 
-
-
-//Johannes: To do
-//  Update templates, run the fit again for all observables, also combinations
-//  Possibly exclude templates or bins from the fit
-//  Run the LINEAR template fit and check if observables where edm is small are well described by chisq parabola
-
-
-
-
-
-
 #include <iostream>
 
 #include <TROOT.h>
@@ -88,12 +76,12 @@ int example_ATLAS_topmass() {
   h_chisq_ratio_cheb2_sign->Write();
   file->Close();
   
-//  if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
 //  //if (fitMultipleObservables("plots/fit_mbw.ps", {"mbwhad_selected"},    {"m_bw"}) > 0) return 1;
 ////    if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
-//  if (fitMultipleObservables("plots/fit_etal.ps", {"etal1"},    {"eta_lep1"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_etal.ps", {"etal1"},    {"eta_lep1"}) > 0) return 1;
 //
-  if (fitMultipleObservables("plots/fit_ptwhad.ps", {"ptwhad"},    {"pT_whad"}) > 0) return 1;
+//  if (fitMultipleObservables("plots/fit_ptwhad.ps", {"ptwhad"},    {"pT_whad"}) > 0) return 1;
 //  if (fitMultipleObservables("plots/fit_rbj.ps", {"rbj"},    {"r_bj"}) > 0) return 1;
 //  if (fitMultipleObservables("plots/fit_drbl.ps", {"dRbl_selected"},    {"dr_bl"}) > 0) return 1;
 ////  if (fitMultipleObservables("plots/fit_drbw.ps", {"dRbwhad_selected"},    {"dr_bw"}) > 0) return 1;
@@ -565,11 +553,14 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        }
        TH1D* h_err_v1 = file->Get<TH1D>("unfolding_error_"+fit_vars[v1]+"_direct_envelope_STAT_DATA__1up");
        TH1D* h_data_var1 = file->Get<TH1D>("unfolding_"+fit_vars[v1]+"_NOSYS");
+       TString histnameCovStatX("unfolding_covariance_matrix_"+fit_vars[v1]+"_covariance_STAT_DATA");
+       TH2D* cov_stat_dat_x = file->Get<TH2D>(histnameCovStatX);
        if ( !h_err_v1 || !h_data_var1 ) {
 	 file->Close();
 	 file =TFile::Open(datafile_alt);
 	 h_err_v1 = file->Get<TH1D>("unfolding_error_"+fit_vars[v1]+"_direct_envelope_STAT_DATA__1up");
 	 h_data_var1 = file->Get<TH1D>("unfolding_"+fit_vars[v1]+"_NOSYS");
+	 cov_stat_dat_x = file->Get<TH2D>(histnameCovStatX);
        }
        if ( !h_err_v1 || !h_data_var1 ) {
 	 cerr<<"Could not find statistical uncertainty for variable " << fit_vars[v1] <<endl; exit(1);
@@ -581,7 +572,18 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
        for ( int v2 = v1+1; v2 < fit_vars_short.size(); v2++ ) {
 	 TH1D* h_err_v2 = file->Get<TH1D>("unfolding_error_"+fit_vars[v2]+"_direct_envelope_STAT_DATA__1up"); // get relative error
 	 TH1D* h_data_var2 = file->Get<TH1D>("unfolding_"+fit_vars[v2]+"_NOSYS");
-         if ( !h_data_var2 ) { cerr<<"Could not find data for " << fit_vars[v2] <<endl; exit(1);}
+	 if ( !h_err_v2 || !h_data_var2 ) {
+	   file->Close();
+	   file =TFile::Open(datafile_alt);
+	   h_err_v2 = file->Get<TH1D>("unfolding_error_"+fit_vars[v2]+"_direct_envelope_STAT_DATA__1up");
+	   h_data_var2 = file->Get<TH1D>("unfolding_"+fit_vars[v2]+"_NOSYS");
+	 }
+	 
+         if ( !h_data_var2 ) {
+	   cerr<<"Could not find data for " << fit_vars[v2] <<endl;
+	   cerr<<"Looking in file "<<file->GetName()<<endl;
+	   exit(1);
+	 }
 	 
 	 TString histname = "NOSYS/hist/l_Whad_particle_"+fit_vars[v1]+"_"+fit_vars[v2];
 	 TH2D* cov_orig = TFile::Open(covariancefile)->Get<TH2D>(histname);
@@ -623,8 +625,8 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 	 for ( int v1_tmp = 0; v1_tmp <= v1; v1_tmp++ ) bin_offset_x += matrix_dimension[v1_tmp];
 	 for ( int v2_tmp = 0; v2_tmp <= v2; v2_tmp++ ) bin_offset_y += matrix_dimension[v2_tmp];
 
-	 TString histnameCovStatX("unfolding_covariance_matrix_"+fit_vars[v1]+"_covariance_STAT_DATA");
-	 TH2D* cov_stat_dat_x = file->Get<TH2D>(histnameCovStatX);
+	 //TString histnameCovStatX("unfolding_covariance_matrix_"+fit_vars[v1]+"_covariance_STAT_DATA");
+	 //TH2D* cov_stat_dat_x = file->Get<TH2D>(histnameCovStatX);
 	 TString histnameCovStatY("unfolding_covariance_matrix_"+fit_vars[v2]+"_covariance_STAT_DATA");
          TH2D* cov_stat_dat_y = file->Get<TH2D>(histnameCovStatY);
 	 for ( int i = 1; i < h_err_v1->GetNbinsX() - iRemoveBins; i++ ) {
