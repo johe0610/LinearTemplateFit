@@ -599,15 +599,15 @@ void LTF::LiTeFit::PrintFull() const {
       }
    }
 
-   if ( ahat.rows() > 1 ) {
-      std::cout<<std::endl;
-      streamsize tmpprec = std::cout.precision();
-      std::cout<<"  Correlation matrix "<<std::endl;
-      std::cout.precision(3);
-      std::cout<<Cov_to_Cor(V)<<std::endl;
-      std::cout.precision(tmpprec);
-   }
-   std::cout<<std::endl;
+   //if ( ahat.rows() > 1 ) {
+   //   std::cout<<std::endl;
+   //   streamsize tmpprec = std::cout.precision();
+   //   std::cout<<"  Correlation matrix "<<std::endl;
+   //   std::cout.precision(3);
+   //   std::cout<<Cov_to_Cor(V)<<std::endl;
+   //   std::cout.precision(tmpprec);
+   //}
+   //std::cout<<std::endl;
    std::cout<<"  Chi^2                                "<< chisq << "  +/- "<<chisq_error<<std::endl;
    std::cout<<"  Chi^2/ndf                            "<< ((Dt.rows()-nPar)!=0 ? chisq / (Dt.rows()-nPar) : 0 ) <<std::endl;
    std::cout<<"  Chi^2 for each template              ";
@@ -1265,15 +1265,15 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
    // --- calculate result for mt and nuisance parameters epsilon
    Eigen::MatrixXd YtSTW        = YtS.transpose()*W;
    this->Hesse = YtSTW*YtS + E;   // 'discriminant' matrix D, the Hesse matrix (formerly called 'D')
-   if ( Hesse.determinant() < 1.e-8 ) {
-      cout<<"Warning! Determinant of Hesse matrix D is very small! ("<<Hesse.determinant()<<")"<<endl;
-      cout<<"Printing Hesse matrix D"<<endl<<Hesse<<endl<<endl;
-      cout<<"Printing matrix M^T    "<<endl<<Mc<<endl<<endl;
-
-      //cout<<"Johannes check if inversion is stable"<<endl;
-      //Eigen::MatrixXd test = Hesse*Hesse.inverse();
-      //cout<<test<<endl;
-   }
+   //if ( Hesse.determinant() < 1.e-8 ) {
+   //   cout<<"Warning! Determinant of Hesse matrix D is very small! ("<<Hesse.determinant()<<")"<<endl;
+   //cout<<"Printing Hesse matrix D"<<endl<<Hesse<<endl<<endl;
+   //   cout<<"Printing matrix M^T    "<<endl<<Mc<<endl<<endl;
+   //   cout<<"Johannes check if inversion is stable"<<endl;
+   //   Eigen::MatrixXd test = Hesse*Hesse.inverse();
+   //   cout<<test<<endl;
+      //}
+   
    this->InvHesse    = Hesse.inverse(); // the inverse Hesse matrix
    this->F           = InvHesse * (YtSTW); // the LTF-master-matrix
    this->ahat        = F * d_ybar; // this is the final fit-result for the multivariate LTF !

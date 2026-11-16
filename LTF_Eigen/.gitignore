@@ -1,0 +1,11 @@
+# Ignore a specific file
+#secret.env
+
+# Ignore all .log files
+log.*.txt
+*.tex
+
+# Ignore a folder
+files/
+build/
+matrices/

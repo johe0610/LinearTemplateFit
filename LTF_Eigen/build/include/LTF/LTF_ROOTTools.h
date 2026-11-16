@@ -148,4 +148,18 @@ static
 void plotFitComparison();
 
 
+// __________________________________________________________________________________ //
+//!
+//!
+//! Rebin for 2D histograms
+//! Takes the original matrix and the new binnings as input
+//! If no name is specified, the new histo will have the name of the original one
+//! Careful, there is no check if the bin edges agree!
+//!
+static
+TH2D* rebin(const TH2 *histOrig,
+	    const std::vector<double> &binEdgesX,
+	    const std::vector<double> &binEdgesY,
+	    const std::string &name);
+
 };

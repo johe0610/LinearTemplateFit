@@ -1,4 +1,3 @@
-//#include "include/LTF/LTF.h"
 #include "LTF/LTF.h"
 #include "LTF/LTF_ROOTTools.h"
 
@@ -29,6 +28,7 @@
 #include <TMatrixDSym.h>
 #include <TMatrixDSymEigen.h>
 #include <set>
+#include <TGaxis.h>
 
 using namespace std;
 
@@ -361,11 +361,20 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
    bool useNuisanceParameter = true;
    int nPar = 1; //M.cols()-1;
    double sum_error = 0; // this needs to be a vector in the case of more than 1 parameter
+   double sum_error_up = 0;
+   double sum_error_down = 0;
+   double max_error = 1.05; // 2.5
+   vector<string> template_uncertainties = {"PS", "aS_up", "aS_down", "isr_aS_up", "isr_aS_down", "fsr_scale_up", "fsr_scale_down", "herwig", "hdamp",
+					    "pthard", "recoilToTop", "A14Var1Up", "A14Var1Down", "CR1", "CR2", "bquark_frag", "lineshape", "DS", "NNLO_tt",
+					    "muR_05_muF_05", "muR_05_muF_10", "muR_10_muF_05", "muR_10_muF_20", "muR_20_muF_10", "muR_20_muF_20",
+					    "PDF_90901", "PDF_90902", "PDF_90903", "PDF_90904", "PDF_90905", "PDF_90906", "PDF_90907", "PDF_90908",
+					    "PDF_90909", "PDF_90910", "PDF_90911", "PDF_90912", "PDF_90913", "PDF_90914", "PDF_90915", "PDF_90916",
+					    "PDF_90917", "PDF_90918", "PDF_90919", "PDF_90920", "PDF_90921", "PDF_90922", "PDF_90923", "PDF_90924",
+					    "PDF_90925", "PDF_90926", "PDF_90927", "PDF_90928", "PDF_90929", "PDF_90930"};
 
    if ( !useNuisanceParameter ) {
      for ( int i = 0 ; i<nPar ; i++ ) {
          TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
-	 
          for ( const string &source: uncertainties ) {
             double error = 0;
             //if (source.find("stat.")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
@@ -375,7 +384,7 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
          }
          h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error));
          h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
-         h->SetBarWidth(0.85);
+         h->SetBarWidth(0.8);
          h->GetYaxis()->SetTitle("Uncertainty [GeV]");
          h->GetXaxis()->SetTickLength(0);
          h->Draw("hbar");
@@ -383,70 +392,211 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
    }
    else {
       for ( int i = 0 ; i<nPar ; i++ ) {
-	 c.SetLeftMargin(0.6);
-	 
+	c.Divide(1,2);
+	c.cd(1)->SetTopMargin(0.59);
+	c.cd(1)->SetBottomMargin(0.01);
+
 
 	 TH1D* h  = new TH1D(title, "", uncertainties.size()+1, 0, uncertainties.size()+1);
+	 TH1D* h_up  = new TH1D(Form("%s_up",title), "up_variation", uncertainties.size()+1, 0, uncertainties.size()+1);
+         TH1D* h_down  = new TH1D(Form("%s_down",title), "down_variation", uncertainties.size()+1, 0, uncertainties.size()+1);
+
+	 h->SetLineWidth(0);
+	 h_up->SetLineWidth(0);
+	 h_down->SetLineWidth(0);
+	 
          for ( const string &source: uncertainties ) {
            double error = 0;
-	   if (source.find("STAT_DATA")!= std::string::npos ) error =std::sqrt(fit.Vsource.find(source)->second(0,0));
-	   else if (source.find("STAT_MC")!= std::string::npos ) error =std::sqrt(fit.Vsource.find(source)->second(0,0));
-	   else if (source.find("pseudoDataStat")!= std::string::npos ) error =std::sqrt(fit.Vsource.find(source)->second(0,0));
-	   else    error = fabs(fit.DeltaSys.find(source)->second(i));
-	   
+	   double error_up = 0;
+	   double error_down = 0;
+	   if (source.find("STAT_DATA")!= std::string::npos ) {
+	     error =std::sqrt(fit.Vsource.find(source)->second(0,0));
+	     error_up = error;
+	     error_down = -1*error;
+	   }
+	   else if (source.find("STAT_MC")!= std::string::npos ) {
+	     error =std::sqrt(fit.Vsource.find(source)->second(0,0));
+	     error_up =	error;
+             error_down	= -1*error;
+           }
+	   else if (source.find("pseudoDataStat")!= std::string::npos ) {
+	     error =std::sqrt(fit.Vsource.find(source)->second(0,0));
+	     error_up =	error;
+             error_down	= -1*error;
+           }
+	   //else if (source.find("templ_unc_PS")!= std::string::npos ) {
+	   //  error = fit.DeltaSysExt.find(source)->second(i);
+	   //  error_up =	error;
+           //  error_down	= -1*error;
+           //}
+	   else if (std::find(template_uncertainties.begin(), template_uncertainties.end(), source) != template_uncertainties.end()) {
+	     //else if (source.find("herwig")!= std::string::npos || source.find("hdamp")!= std::string::npos){
+	     error = fit.DeltaSysY.find(source)->second(i);
+	     error_up = error;
+	     error_down = -1*error;
+	   }
+	   else    {
+	     error = fit.DeltaSys.find(source)->second(i);
+	     error_up = fit.DeltaSysExt.find(Form("%s_up", source.c_str()))->second(i);
+             error_down = fit.DeltaSysExt.find(Form("%s_down", source.c_str()))->second(i);
+	   }
            h->Fill(source.c_str(), error);
+	   h_up->Fill(source.c_str(), error_up);
+	   h_down->Fill(source.c_str(), error_down);
+	   
            sum_error += pow(error,2);
+	   sum_error_up += pow(error_up,2);
+           sum_error_down += pow(error_down,2);
+
          }
 	 if ( uncertainties.size() > 30 ) {
-	   h->GetXaxis()->SetLabelSize(6);
-           h->GetXaxis()->SetTitleSize(6);
-	   h->GetYaxis()->SetLabelSize(6);
-           h->GetYaxis()->SetTitleSize(6);
-	   h->GetYaxis()->SetTitleOffset(1.2);
-	   h->GetYaxis()->SetRangeUser(0.0, 1.5);
+	   h->GetXaxis()->SetLabelSize(5);
+           h->GetXaxis()->SetTitleSize(5);
+	   h->GetXaxis()->SetLabelOffset(.01);
+	   h->GetYaxis()->SetLabelSize(5);
+           h->GetYaxis()->SetTitleSize(5);
+	   h->GetYaxis()->SetTitleOffset(1.5);
+	   
          }
          else {
-	   h->GetYaxis()->SetRangeUser(0.0, 1.5);
 	   h->GetYaxis()->SetTitleOffset(1.2);
 	 }
+	 h->GetYaxis()->SetRangeUser(-max_error, max_error);
          h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error));
-         h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
-         h->SetBarOffset(0.1);
-         h->SetBarWidth(0.8);
-         h->GetYaxis()->SetTitle("Uncertainty [GeV]");
-         h->GetXaxis()->SetTickLength(0);
-         h->Draw("hbar");
+         h_up->SetBinContent(h_up->GetNbinsX(), std::sqrt(sum_error_up));
+         h_down->SetBinContent(h_down->GetNbinsX(), -1.0*std::sqrt(sum_error_down));
 
-	 c.Print(ps_name);
-         c.Clear();
-	 //c.SetLeftMargin(0.6);
 	 int nbins = uncertainties.size()+2;
-	 double x[nbins], y[nbins], xerr[nbins], xerr2[nbins], yerr[nbins];
-	 for (int i = 0; i <= nbins; i++) {
-	   y[i] = h->GetBinCenter(i);
-	   x[i] = 0;
-	   xerr[i] = 1.0;
-	   xerr2[i] = 2.0;
-	   yerr[i] = 1.0;
-	 }
-	 TGraphErrors *band = new TGraphErrors(nbins, x, y, xerr, yerr);
-	 band->SetFillColor(kGreen);
-	 TGraphErrors *band2 = new TGraphErrors(nbins, x, y, xerr2, yerr);
-         band2->SetFillColor(kYellow);
+	 double xval[nbins], yval[nbins], xerr[nbins], yerr[nbins];
+	 for (int i = 0; i < nbins; i++) {
+           xval[i] = h->GetBinCenter(i+1);
+           yval[i] = 0;
+           if (i % 2 == 0) {
+             xerr[i] = 0.0;
+	     yerr[i] = 0.0;
+	   }
+           else {
+             yerr[i] = max_error - 0.01*max_error;
+	     xerr[i] = 0.5;
+           }
+         }
 
-	 TH1D* h1  = new TH1D("NP", "", uncertainties.size(), 0, uncertainties.size());
+         TGraphErrors *band = new TGraphErrors(nbins, xval, yval, xerr, yerr);
+         band->SetFillColor(18);
+	 //h->SetBarOffset(0.05);
+	 //h->SetBarWidth(0.45);
+	 h->SetFillColor(kRed);
+         //h->SetLineColor(kRed);
+	 h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
+         h->GetXaxis()->SetTickLength(0);
+         //h->GetXaxis()->LabelsOption("v");
+	 h->GetXaxis()->SetLabelOffset(999);
+	 for ( int i = 1; i <= h->GetYaxis()->GetNlabels(); i++ ) h->GetYaxis()->ChangeLabel(i,270, -1, 22);
+	 if ( nbins > 30 ) h->GetYaxis()->SetLabelOffset(.005);
+	 h->GetYaxis()->SetTitle("#Delta m_{t} [GeV]");
+	 h->GetYaxis()->RotateTitle();
+	 TH1D* h_sym = (TH1D*)h->Clone("h_sym");
+	 h_sym->Scale(-1);
+	 h_sym->SetFillColor(kBlue);
+	 
+	 h_up->SetFillColor(kRed-9);
+         //h_up->SetLineColor(kGreen);
+	 h_down->SetFillColor(kBlue-9);
+         //h_down->SetLineColor(kBlue);
+
+	 h->Draw("hist text");
+	 band->Draw("same 2");
+	 h_up->Draw("hist same");
+         h_down->Draw("hist same");
+	 h->Draw("hist same");
+	 h_sym->Draw("hist same");
+	 
+	 for (int i = 1; i < nbins; i++) {
+	   TText *text = new TText();
+	   text->SetTextAlign(32);
+	   text->SetTextAngle(270);
+	   
+	   TText *label = new TText();
+	   label->SetTextAlign(32);
+	   label->SetTextAngle(270);
+	   
+	   if ( nbins > 32 ) {
+	     text->SetTextSize(5);
+	     text->SetText(h->GetBinCenter(i), -max_error+0.08, Form("%.2f", h->GetBinContent(i)));
+	     label->SetTextSize(5);
+	     label->SetText(h->GetBinCenter(i), max_error+0.05*max_error, h->GetXaxis()->GetBinLabel(i));//johannes this defines the x label offset
+	   }
+	   else {
+	     text->SetText(h->GetBinCenter(i), -max_error+0.1*max_error, Form("%.2f", h->GetBinContent(i)));
+	     label->SetText(h->GetBinCenter(i), max_error+0.02*max_error, h->GetXaxis()->GetBinLabel(i));
+	   }
+	   if ( fabs(h->GetBinContent(i)) >= 0.005 ) text->Draw("same");
+	   label->Draw("same");
+	 }
+	 
+	 //Double_t xmin = h->GetXaxis()->GetXmin();
+	 //Double_t xmax = h->GetXaxis()->GetXmax();
+	 //TGaxis *topAxis = new TGaxis(xmin, c.cd(2)->GetUymax(),
+	 //			      xmax, c.cd(2)->GetUymax(),
+	 //			      xmin, xmax, 510, "-");
+	 //topAxis->SetTitle("Top X axis");
+	 //topAxis->Draw("same");
+	 
+	 c.cd(1)->Update();
+	 c.cd(1)->RedrawAxis();
+	 //c.Print(ps_name);
+         //c.Clear();
+
+	 c.cd(2)->SetBottomMargin(0.59);
+	 c.cd(2)->SetTopMargin(0.01);
+	
+	 //c.SetLeftMargin(0.6);
+	 double x[nbins], y[nbins], xerr1[nbins], yerr0[nbins], yerr1[nbins], yerr2[nbins], yerr3[nbins], yerr4[nbins];
+	 for (int i = 0; i < nbins; i++) {
+	   x[i] = h->GetBinCenter(i+1);
+	   y[i] = 0;
+	   if (i % 2 == 0) {
+	     yerr0[i] = 0.0;
+	     yerr1[i] = 0.0;
+	     yerr2[i] = 0.0;
+	     yerr3[i] = 1.0;
+	     yerr4[i] = 2.0;
+	   }
+	   else {
+             yerr0[i] = 1.0;
+             yerr1[i] = 2.0;
+             yerr2[i] = 2.97;
+	     yerr3[i] = 0.0;
+             yerr4[i] = 0.0;
+	   }
+	   xerr1[i] = 0.5;
+	 }
+	 
+	 TGraphErrors *band0 = new TGraphErrors(nbins, x, y, xerr1, yerr0);
+         band0->SetFillColor(kGreen+1);
+	 TGraphErrors *band1 = new TGraphErrors(nbins, x, y, xerr1, yerr1);
+	 band1->SetFillColor(kYellow+1);
+	 TGraphErrors *band2 = new TGraphErrors(nbins, x, y, xerr1, yerr2);
+         band2->SetFillColor(18);
+	 TGraphErrors *band3 = new TGraphErrors(nbins, x, y, xerr1, yerr3);
+         band3->SetFillColor(kGreen);
+         TGraphErrors *band4 = new TGraphErrors(nbins, x, y, xerr1, yerr4);
+         band4->SetFillColor(kYellow);
+
+	 
+	 TH1D* h1  = new TH1D("NP", "", uncertainties.size()+1, 0, uncertainties.size()+1);
          TGraphErrors* g = new TGraphErrors(uncertainties.size());
          for ( long unsigned int j = 0; j < uncertainties.size(); j++ ) {
-	    h1->Fill(uncertainties[j].c_str(), fit.map_nuisance.find(uncertainties[j])->second.first);
-            h1->SetBinError(j,fit.map_nuisance.find(uncertainties[j])->second.second);
-            g->SetPoint(j, fit.map_nuisance.find(uncertainties[j])->second.first, j+0.5);
-	    g->SetPointError(j, fit.map_nuisance.find(uncertainties[j])->second.second, 0);
-	    //g->SetPoint(j, j+0.5, fit.map_nuisance.find(uncertainties[j])->second.first);
-            //g->SetPointError(j, 0, fit.map_nuisance.find(uncertainties[j])->second.second);
-	    //g->SetPointError(j, fit.map_nuisance.find(uncertainties[j])->second.second / fit.DeltaSys.find(uncertainties[j])->second(i), 0);
-         }
-         //h1->SetBinContent(h1->GetNbinsX(), 0.);
-         //h1->GetXaxis()->SetBinLabel(h1->GetNbinsX(), "");
+	      h1->Fill(uncertainties[j].c_str(), fit.map_nuisance.find(uncertainties[j])->second.first);
+	      h1->SetBinError(j,fit.map_nuisance.find(uncertainties[j])->second.second);
+	      g->SetPoint(j, j+0.5, fit.map_nuisance.find(uncertainties[j])->second.first);
+	      g->SetPointError(j, 0, fit.map_nuisance.find(uncertainties[j])->second.second);
+	      //g->SetPoint(j, j+0.5, fit.map_nuisance.find(uncertainties[j])->second.first);
+	      //g->SetPointError(j, 0, fit.map_nuisance.find(uncertainties[j])->second.second);
+	      //g->SetPointError(j, fit.map_nuisance.find(uncertainties[j])->second.second / fit.DeltaSys.find(uncertainties[j])->second(i), 0);
+	 }
+         h1->SetBinContent(h1->GetNbinsX(), 0.);
+         h1->GetXaxis()->SetBinLabel(h1->GetNbinsX(), "");
          gStyle->SetHistMinimumZero();
 	 
          h1->SetBarOffset(0.95);
@@ -459,40 +609,74 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char*
          g->SetMarkerColor(kBlue);
 	 g->SetMarkerSize(0.8);
 	 if ( uncertainties.size() > 30 ) {
-           h1->GetXaxis()->SetLabelSize(6);
-           h1->GetXaxis()->SetTitleSize(6);
-           h1->GetYaxis()->SetLabelSize(6);
-           h1->GetYaxis()->SetTitleSize(6);
-           h1->GetYaxis()->SetTitleOffset(1.2);
+           //h1->GetXaxis()->SetLabelSize(5);
+           //h1->GetXaxis()->SetTitleSize(5);
+	   //h1->GetXaxis()->SetTitleOffset(1.6);
+           h1->GetYaxis()->SetLabelSize(5);
+           h1->GetYaxis()->SetTitleSize(5);
+           h1->GetYaxis()->SetTitleOffset(1.6);
+	   //h1->GetYaxis()->SetLabelOffset(1);
            g->SetMarkerSize(0.5);
 	 }
 	 
-	 h1->GetYaxis()->SetTitle("Nuisance parameter");
          h1->GetXaxis()->SetTickLength(0);
+         h1->GetXaxis()->SetLabelOffset(999);
+	 h1->GetYaxis()->SetTitle("(#hat{#Theta} - #Theta_{0}) / #Delta#Theta");
+	 for ( int i = 1; i <= h1->GetYaxis()->GetNlabels(); i++ ) h1->GetYaxis()->ChangeLabel(i,270, -1, 22);
+	 if (nbins > 30 ) h1->GetYaxis()->SetLabelOffset(0.005);
 	 h1->GetYaxis()->SetRangeUser(-3,3);
+	 h1->GetYaxis()->RotateTitle();
 
-         h1->Draw("hbar e");
+         h1->Draw("hist e");
+	 band4->Draw("same 2");
+         band3->Draw("same 2");
 	 band2->Draw("same 2");
-	 band->Draw("same 2");
+	 band1->Draw("same 2");
+	 band0->Draw("same 2");
 	 g->Draw("same PE");
 	 //band->Draw("same 3");//("3 SAME");
 	 //g->Draw("same PE");
 
-         TLine* l = new TLine(0, 0, 0, h1->GetNbinsX());
+         TLine* l = new TLine(0, 0, h1->GetNbinsX(), 0);
          l->SetLineStyle(3);
          l->Draw("same");
 	 gPad->RedrawAxis();
 	 //gPad->RedrawAxis("G");
 	 TLine l1;
-	 l1.DrawLine(-3, h1->GetXaxis()->GetXmax (), 3, h1->GetXaxis()->GetXmax ());
-	 
+	 l1.DrawLine(h1->GetXaxis()->GetXmax (), -3, h1->GetXaxis()->GetXmax (), 3 );
+	 //if ( uncertainties.size() > 30 ) {
+	 for ( long unsigned int j = 0; j < uncertainties.size(); j++ ) {
+	   if ( fit.map_nuisance.find(uncertainties[j])->second.second > 0.005 ) {
+	     //h1->Fill(uncertainties[j].c_str(), fit.map_nuisance.find(uncertainties[j])->second.first);
+	     //h1->SetBinError(j,fit.map_nuisance.find(uncertainties[j])->second.second);
+	     TText *text = new TText();
+	     text->SetTextAlign(32);
+	     text->SetTextAngle(270);
+	     if ( uncertainties.size() > 30 ) {
+	       text->SetTextSize(5);
+	       text->SetText(h1->GetBinCenter(j+1), -2.9, Form("%.2f", fit.map_nuisance.find(uncertainties[j])->second.second));
+	     }
+	     else {
+	       text->SetText(h1->GetBinCenter(j+1), -2.9, Form("%.2f", fit.map_nuisance.find(uncertainties[j])->second.second));
+	     }
+	     text->Draw("same");
+	   }
+	 }
+	 //}
 	 c.Print(ps_name);
          c.Clear();
          h->Delete();
-         h1->Delete();
+	 h_up->Delete();
+	 h_down->Delete();
+	 h_sym->Delete();
+	 h1->Delete();
          g->Delete();
 	 band->Delete();
-	 band2->Delete();
+	 band0->Delete();
+         band1->Delete();
+         band2->Delete();
+         band3->Delete();
+	 band4->Delete();
 	 l->Delete();
 	 l1.Delete();
       }
@@ -683,6 +867,8 @@ void LTF_ROOTTools::makeErrorPlotDilepton(TCanvas& c1, const char* ps_name, cons
 					    "Recoil to top",
 					    "PDF",
 					    "top mass"};
+
+  
   vector<string> all_uncertainties;
   all_uncertainties.insert(all_uncertainties.end(), lepton_uncertainties.begin(), lepton_uncertainties.end());
   all_uncertainties.insert(all_uncertainties.end(), jes_uncertainties.begin(), jes_uncertainties.end());
@@ -794,7 +980,8 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
                                                  "MET_SoftTrk_ResoPara",
                                                  "MET_SoftTrk_ResoPerp",
                                                  "MET_SoftTrk_Scale",
-                                                 "WMASS_VAR_signal"};
+                                                 //"WMASS_VAR_signal"
+  };
 
   vector<string> b_tagging_uncertainties = {"FT_EFF_Eigen_B_0",
                                             "FT_EFF_Eigen_B_1",
@@ -835,16 +1022,27 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
                                        "THEORY_EWK_Wjets",
                                        "THEORY_SCALE_COMBINED_multiboson_noW",
                                        "THEORY_PDF4LHC_VARIATION_multiboson_noW",
-                                       "THEORY_EWK_multiboson_noW",
+                                       //"THEORY_EWK_multiboson_noW",
                                        "THEORY_CROSS_SECTION_other_top_noWt",
                                        "FAKES_Electron",
                                        "FAKES_Muon"};
 
   vector<string> other_uncertainties = {"LUMINOSITY",
 					"pseudoDataStat",
+					"Normalization",
 					"STAT_MC",
 					"STAT_DATA"};
 
+  vector<string> template_uncertainties = {"PDF_90930", "PDF_90929", "PDF_90928", "PDF_90927", "PDF_90926", "PDF_90925", "PDF_90924", "PDF_90923",
+                                           "PDF_90922", "PDF_90921", "PDF_90920", "PDF_90919", "PDF_90918", "PDF_90917", "PDF_90916", "PDF_90915",
+                                           "PDF_90914", "PDF_90913", "PDF_90912", "PDF_90911", "PDF_90910", "PDF_90909", "PDF_90908", "PDF_90907",
+                                           "PDF_90906", "PDF_90905", "PDF_90904", "PDF_90903", "PDF_90902", "PDF_90901",
+					   "muR_05_muF_05",
+					   "muR_05_muF_10", "muR_10_muF_05", "muR_10_muF_20", "muR_20_muF_10", "muR_20_muF_20",
+					   "PS", "aS_up", "aS_down", "isr_aS_up", "isr_aS_down", "fsr_scale_up", "fsr_scale_down", "herwig", "hdamp",
+					   "pthard", "recoilToTop", "A14Var1Up", "A14Var1Down", "CR1", "CR2", "bquark_frag", "lineshape", "DS", "NNLO_tt"
+  };
+  
   vector<string> all_uncertainties;
   all_uncertainties.insert(all_uncertainties.end(), lepton_uncertainties.begin(), lepton_uncertainties.end());
   all_uncertainties.insert(all_uncertainties.end(), jes_uncertainties.begin(), jes_uncertainties.end());
@@ -853,6 +1051,7 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
   all_uncertainties.insert(all_uncertainties.end(), b_tagging_uncertainties.begin(), b_tagging_uncertainties.end());
   all_uncertainties.insert(all_uncertainties.end(), modelling_uncertainties.begin(), modelling_uncertainties.end());
   all_uncertainties.insert(all_uncertainties.end(), bkgd_uncertainties.begin(), bkgd_uncertainties.end());
+  //all_uncertainties.insert(all_uncertainties.end(), template_uncertainties.begin(), template_uncertainties.end());
   all_uncertainties.insert(all_uncertainties.end(), other_uncertainties.begin(), other_uncertainties.end());
   
   std::map<string, double> error_summary;
@@ -864,22 +1063,25 @@ void LTF_ROOTTools::makeErrorPlotSingle(TCanvas& c1, const char* ps_name, const 
   error_summary.insert({"theory modelling", makeErrorPlot(c1, ps_name, "modelling uncertainties", fit, modelling_uncertainties)});
   error_summary.insert({"bkgd modelling",   makeErrorPlot(c1, ps_name, "background uncertainties", fit, bkgd_uncertainties)});
   error_summary.insert({"Stat.+Lumi",       makeErrorPlot(c1, ps_name, "statistical uncertainties", fit, other_uncertainties)});
-  makeErrorPlot(c1, ps_name, "all uncertainties", fit, all_uncertainties);
-  
-  TH1D* h  = new TH1D("Full error breakdown", "", error_summary.size()+1, 0, error_summary.size()+1);
-  double sum_error_sq = 0;
-  for( auto& tmp_err: error_summary ) {
-    h->Fill(tmp_err.first.c_str(), tmp_err.second);
-    sum_error_sq += pow(tmp_err.second,2);
-  }
+  error_summary.insert({"Template",         makeErrorPlot(c1, ps_name, "template uncertainties", fit, template_uncertainties)});
 
-  h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error_sq));
-  h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
-  h->SetBarWidth(0.85);
-  h->GetYaxis()->SetTitle("Uncertainty [GeV]");
-  h->GetXaxis()->SetTickLength(0);
-  h->GetXaxis()->LabelsOption("<");
-  h->Draw("hbar");
+  makeErrorPlot(c1, ps_name, "all uncertainties", fit, all_uncertainties);
+  {
+    TH1D* h  = new TH1D("Full error breakdown", "", error_summary.size()+1, 0, error_summary.size()+1);
+    double sum_error_sq = 0;
+    for( auto& tmp_err: error_summary ) {
+      h->Fill(tmp_err.first.c_str(), tmp_err.second);
+      sum_error_sq += pow(tmp_err.second,2);
+    }
+    
+    h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error_sq));
+    h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
+    h->SetBarWidth(0.85);
+    h->GetYaxis()->SetTitle("Uncertainty [GeV]");
+    h->GetXaxis()->SetTickLength(0);
+    h->GetXaxis()->LabelsOption("<");
+    h->Draw("hbar");
+  }
   c1.Print(ps_name);
   c1.Clear();
 }
@@ -933,19 +1135,31 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
    if (fit.GetLogNormal()) for (int i =1; i<=TheoFit->GetNbinsX();i++) TheoFit->SetBinContent(i, std::log(TheoFit->GetBinContent(i)));
    
    TCanvas c1("c1","LTF plots",800,800);
-   c1.SetRightMargin(0.05);
-   c1.SetLeftMargin(0.15);
-   c1.SetTopMargin(0.08);
-   // c1.SetRightMargin(0.02);
-
-   //const char* ps_name = fit.GetLogNormal() ?
-   //   "plots/LTFlog_plots.ps" :
-   //   "plots/LTF_plots.ps";
    c1.Print( (string(ps_name)+"[").c_str() );
-   c1.Divide(1, 2, 0, 0);
-   c1.cd(1)->SetBottomMargin(0);
-   c1.cd(2)->SetTopMargin(0);
-   if (!fit.GetLogNormal()) c1.cd(1)->SetLogy();
+
+   TPad *pad1 = new TPad("pad1", "pad1", 0, 0.4, 1, 1);   // top 60%
+   TPad *pad2 = new TPad("pad2", "pad2", 0, 0.0, 1, 0.4); // bottom 40%
+
+   pad1->SetTicks(1, 1);
+   pad2->SetTicks(1, 1);
+
+   pad1->Draw();
+   pad2->Draw("same");
+
+   pad1->cd();
+
+   gPad->SetRightMargin(0.05);
+   gPad->SetLeftMargin(0.15);
+   gPad->SetTopMargin(0.08);
+   gPad->SetBottomMargin(0);
+   if (!fit.GetLogNormal()) pad1->SetLogy();
+
+   pad2->cd();
+   gPad->SetRightMargin(0.05);
+   gPad->SetLeftMargin(0.15);
+   gPad->SetTopMargin(0.08);
+   gPad->SetTopMargin(0);
+
    // ---------------------------------------------- //
    // main plot
    // ---------------------------------------------- //
@@ -953,12 +1167,14 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
    data->SetMarkerStyle(20);
    data->SetMarkerSize(1.4);
    data->SetLineColor(kBlack);
-   vector<Color_t> colors = {kCyan-9, kGray+1, kYellow-6, kOrange+7, kOrange-7, kViolet+1, kGray, kRed+1, kOrange-3, kBlue+7};
+   //   vector<Color_t> colors = {kCyan-9, kGray+1, kYellow-6, kOrange+7, kOrange-7, kViolet+1, kGray, kRed+1, kOrange-3, kBlue+7};
+   vector<Color_t> colors = {kGray+1, kOrange+7, kViolet+1, kOrange-3, kBlue+7};
    for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
-      c1.cd(1);
+      pad1->cd();
       templates[iref]->SetLineWidth(2);
       if ( iref == 0 ) {
-         templates[0]->SetTitle((";"+xaxistitle+";"+yaxistitle).c_str());
+         templates[0]->SetTitle((";Bin number;"+yaxistitle).c_str());
+         //templates[0]->SetTitle((";"+xaxistitle+";"+yaxistitle).c_str());
          templates[0]->SetLineColor(kRed+1);
          //if ( templates[0]->GetMaximum()>0 )templates[0]->SetMinimum(0);
          if ( !fit.GetLogNormal() ) {
@@ -970,6 +1186,8 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
 	   templates[0]->SetMaximum(templates[0]->GetMaximum()*3.);
 	 }
          templates[0]->SetLineWidth(3);
+	 //templates[0]->GetXaxis()->SetTickLength(0.03);  // default is 0.03
+	 templates[0]->GetYaxis()->SetTickLength(0.02);
          templates[0]->DrawClone("hist E");
       }
       else if ( iref==reference_values.size()-1) {
@@ -983,16 +1201,17 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
          templates[iref]->SetLineWidth(2);
          templates[iref]->Draw("histsame E");
       }
-      c1.cd(2);
+      pad2->cd();
       TH1D* tmp = (TH1D*)templates[iref]->Clone("tmp");
       for ( int i = 1; i <= data->GetNbinsX(); i++ ) {
 	tmp->SetBinError(i, templates[iref]->GetBinError(i) / templates[iref]->GetBinContent(i) );
-        tmp->SetBinContent(i, templates[iref]->GetBinContent(i) / TheoFit->GetBinContent(i) );
-	//tmp->SetBinContent(i, templates[iref]->GetBinContent(i) / data->GetBinContent(i) );
+        //tmp->SetBinContent(i, templates[iref]->GetBinContent(i) / TheoFit->GetBinContent(i) );
+	tmp->SetBinContent(i, templates[iref]->GetBinContent(i) / data->GetBinContent(i) ); // data ratio
       }
       if ( iref == 0 ) {
-	tmp->GetYaxis()->SetRangeUser(0.45, 1.55);
+	tmp->GetYaxis()->SetRangeUser(0.58, 1.42);
 	tmp->GetYaxis()->CenterTitle();
+	tmp->GetYaxis()->SetTitleOffset(1.8);
 	tmp->GetYaxis()->SetTitle("Ratio to best model");
       }
       tmp->Draw("hist same E");
@@ -1005,11 +1224,12 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
    TH1D* data_clone = (TH1D*)data->Clone("data_clone");
    for ( int i = 1; i <= data->GetNbinsX(); i++ ) {
      data_clone->SetBinError(i, data_clone->GetBinError(i) / data_clone->GetBinContent(i) );
-     data_clone->SetBinContent(i, data_clone->GetBinContent(i) / TheoFit->GetBinContent(i) );
+     //data_clone->SetBinContent(i, data_clone->GetBinContent(i) / TheoFit->GetBinContent(i) );
+     data_clone->SetBinContent(i, 1.0  ); // data ratio
    }
    data_clone->Draw("e0same");
 
-   c1.cd(1);
+   pad1->cd();
    templates[0]->Draw("histsame");
 
    data->SetMarkerStyle(20);
@@ -1022,10 +1242,11 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
    TheoFit->SetLineStyle(2);
    TheoFit->Draw("histsame");
 
-   TLegend legend(0.18,0.74,0.94,0.97,"","NDC");
-   legend.SetNColumns(3);
+   TLegend legend(0.68,0.5,0.94,0.9,"","NDC");
+   //legend.SetNColumns(3);
    legend.SetFillStyle(0);
    legend.SetBorderSize(0);
+   legend.SetMargin(0.15);
    legend.AddEntry(data,"Data","E0P");
    for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
       legend.AddEntry(templates[iref],Form("Template m_{t}=%6.2f",reference_values[iref]),"FL");
@@ -1036,10 +1257,21 @@ void LTF_ROOTTools::plotLiTeFit(LTF::LiTeFit& fit, const vector<double>& bins,
    TLatex text;
    text.SetNDC();
    text.SetTextAlign(13);
-   text.DrawLatex(0.75,0.6,Form("m_{fit} =  %.2f +/- %.2f GeV",fit.ahat(0),fit.ahat_errorFit(0)));
+   text.DrawLatex(0.2,0.88,"#sqrt{s} = 13 TeV, Pseudo-data");
+   text.DrawLatex(0.2,0.84,"Fit result:");
+   text.DrawLatex(0.2,0.80,Form("m_{fit} =  %.2f",fit.ahat(0)));
+   text.DrawLatex(0.3,0.80,Form("+/- %.2f (stat.)",std::sqrt(fit.Vsource.find("STAT_DATA")->second(0,0))));
+   text.DrawLatex(0.3,0.76,Form("+/- %.2f (exp.)",std::sqrt(std::pow(fit.ahat_errorFit(0),2)-fit.Vsource.find("STAT_DATA")->second(0,0))));
+   text.DrawLatex(0.3,0.72,Form("+/- %.2f (tmpl.) GeV",fit.ahat_errorTmpl(0)));
 
+   //this->ahat_errorFit   = ahat_errorFit.cwiseSqrt().eval();
+   //this->ahat_errorExt   = ahat_errorExt.cwiseSqrt().eval();
+   //this->ahat_errorTmpl  = ahat_errorTmpl.cwiseSqrt().eval();
+   
    c1.Print(ps_name);
    c1.Clear();
+   //c1.Print( (string(ps_name)+"]").c_str() );
+   //return; // if you only want the first page
    c1.SetRightMargin(0.02);
    c1.SetTopMargin(0.02);
    c1.SetLeftMargin(0.16);
